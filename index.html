@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SahaVeteriner - Fiyat Hesaplama & Adisyon</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a202c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-sunlight">
+  <!-- Desktop / Preview Wrapper -->
+  <div class="app-layout" id="appLayout">
+    
+    <!-- Top Bar -->
+    <header class="app-header">
+      <div class="brand-container">
+        <div class="brand-icon">🐾</div>
+        <div>
+          <h1 class="brand-title">SahaVeteriner</h1>
+          <p class="brand-subtitle">Fiyat Hesaplama & Saha Adisyonu</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn-icon" title="Tema Değiştir (Güneş Işığı / Koyu Saha)">
+          <span id="themeIcon">☀️</span>
+        </button>
+        <button id="screenModeToggleBtn" class="btn-icon desktop-only" title="Telefon / Masaüstü Görünümü Değiştir">
+          <span id="screenModeIcon">📱</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="app-nav">
+      <button class="nav-tab active" data-target="tab-calc">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-text">Hesaplama</span>
+      </button>
+      <button class="nav-tab" data-target="tab-stock">
+        <span class="tab-icon">📦</span>
+        <span class="tab-text">Stok Takibi</span>
+        <span class="badge-count" id="criticalStockCountBadge" style="display:none;">0</span>
+      </button>
+      <button class="nav-tab" data-target="tab-params">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-text">Maliyet Kalemleri</span>
+      </button>
+      <button class="nav-tab" data-target="tab-settings">
+        <span class="tab-icon">🏢</span>
+        <span class="tab-text">Fiş & İletişim</span>
+      </button>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="app-content">
+      
+      <!-- ============================================== -->
+      <!-- 1. HESAPLAMA & ADİSYON SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-calc" class="tab-pane active">
+        
+        <!-- Quick Search & Batch Add Toolbar -->
+        <div class="card field-card">
+          <div class="card-title-row">
+            <h2 class="section-title">İlaç & Malzeme Seçimi</h2>
+            <button id="openBatchModalBtn" class="btn btn-primary btn-sm">
+              <span>➕</span> <strong>Çoklu Kalem Ekle</strong>
+            </button>
+          </div>
+
+          <div class="autocomplete-wrapper">
+            <div class="search-input-group">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="quickSearchInput" class="form-input" placeholder="İlaç veya malzeme adı yazın..." autocomplete="off">
+              <button id="clearSearchBtn" class="btn-clear" style="display:none;">✕</button>
+            </div>
+            <div id="autocompleteDropdown" class="autocomplete-dropdown" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Selected Items (Cart) -->
+        <div class="card field-card">
+          <div class="card-title-row">
+            <h2 class="section-title">Seçilen Kalemler (<span id="cartItemCount">0</span>)</h2>
+            <button id="clearCartBtn" class="btn btn-outline-danger btn-xs" style="display:none;">Tümünü Temizle</button>
+          </div>
+
+          <div id="cartEmptyState" class="empty-state">
+            <span class="empty-icon">📋</span>
+            <p>Henüz ilaç veya malzeme eklenmedi.</p>
+            <small>Yukarıdan arayarak veya "+ Çoklu Kalem Ekle" butonuna basarak seçim yapabilirsiniz.</small>
+          </div>
+
+          <div id="cartList" class="cart-items-list" style="display:none;">
+            <!-- Cart items rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Distance & Transport Section -->
+        <div class="card field-card" id="distanceCard">
+          <div class="card-title-row">
+            <h2 class="section-title">🚗 Ulaşım / Mesafe Hesabı</h2>
+            <label class="toggle-switch">
+              <input type="checkbox" id="distanceEnableToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div id="distanceInputsArea">
+            <div class="form-group">
+              <label class="form-label" for="distanceKmInput">Gidilen Mesafe (KM)</label>
+              <div class="input-with-suffix">
+                <input type="number" id="distanceKmInput" class="form-input text-bold" value="0" min="0" step="1">
+                <span class="input-suffix">KM</span>
+              </div>
+            </div>
+
+            <!-- Quick KM Chips -->
+            <div class="quick-chips">
+              <button class="chip-btn" data-km="5">+5 km</button>
+              <button class="chip-btn" data-km="10">+10 km</button>
+              <button class="chip-btn" data-km="15">+15 km</button>
+              <button class="chip-btn" data-km="25">+25 km</button>
+              <button class="chip-btn btn-chip-reset" id="resetKmBtn">Sıfırla</button>
+            </div>
+            
+            <div class="sub-cost-preview">
+              <span>Mesafe Toplamı:</span>
+              <strong id="distanceTotalDisplay">0.00 TL</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Calculation Total & Invoice Switch -->
+        <div class="card summary-card">
+          <div class="invoice-switch-row">
+            <div>
+              <span class="invoice-label">📋 Faturalandır (KDV Uygula)</span>
+              <p class="invoice-subtext" id="vatRateLabel">KDV Oranı: %18</p>
+            </div>
+            <label class="toggle-switch lg">
+              <input type="checkbox" id="vatToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="totals-breakdown">
+            <div class="total-row">
+              <span>Kalemler Toplamı:</span>
+              <strong id="summaryItemsTotal">0.00 TL</strong>
+            </div>
+            <div class="total-row" id="summaryDistanceRow">
+              <span>Ulaşım Bedeli:</span>
+              <strong id="summaryDistanceTotal">0.00 TL</strong>
+            </div>
+            <div class="total-row" id="summaryOtherParamsRow">
+              <span id="summaryOtherParamsLabel">Klinik & Diğer Giderler:</span>
+              <strong id="summaryOtherParamsTotal">0.00 TL</strong>
+            </div>
+            <div class="divider-dashed"></div>
+            <div class="total-row highlight">
+              <span>Ara Toplam (Net):</span>
+              <strong id="summarySubTotal">0.00 TL</strong>
+            </div>
+            <div class="total-row vat-row" id="summaryVatRow" style="display:none;">
+              <span>KDV Tutarı:</span>
+              <strong id="summaryVatTotal">0.00 TL</strong>
+            </div>
+            <div class="grand-total-box">
+              <span class="grand-label">ÖDENECEK TUTAR</span>
+              <span class="grand-value" id="summaryGrandTotal">0.00 TL</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons-group">
+            <button id="generateReceiptBtn" class="btn btn-action btn-xl">
+              <span>📄</span>
+              <div class="btn-text-group">
+                <span class="btn-main-title">Adisyon Oluştur & Önizle</span>
+                <span class="btn-sub-title">Görsel fişi incele ve WhatsApp'a aktar</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 2. STOK TAKİBİ & ENVANTER SEKME (Ayrı Ekran) -->
+      <!-- ============================================== -->
+      <section id="tab-stock" class="tab-pane">
+        
+        <!-- Stock KPI Banner -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-icon">📦</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiTotalItems">0</span>
+              <span class="kpi-label">Toplam İlaç/Malzeme</span>
+            </div>
+          </div>
+          <div class="kpi-card alert-kpi" id="kpiCriticalCard">
+            <span class="kpi-icon">⚠️</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiCriticalItems">0</span>
+              <span class="kpi-label">Kritik Stok Uyarısı</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Actions & Search -->
+        <div class="card field-card">
+          <div class="card-title-row">
+            <h2 class="section-title">Envanter & Stok Yönetimi</h2>
+            <div class="btn-group-responsive">
+              <button id="openNewItemModalBtn" class="btn btn-primary btn-sm">
+                <span>➕</span> Yeni Ürün
+              </button>
+              <button id="syncSheetsBtn" class="btn btn-outline-primary btn-sm" title="Google Sheets CSV senkronizasyonu">
+                <span>🔄</span> Sheets Senkronize Et
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="stock-filter-controls">
+            <div class="search-input-group">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="stockSearchInput" class="form-input" placeholder="Stokta ara (İsim, Kategori)...">
+            </div>
+
+            <div class="stock-filter-tabs">
+              <button class="filter-tab active" data-filter="all">Tümü (<span id="countAll">0</span>)</button>
+              <button class="filter-tab alert-filter" data-filter="critical">🚨 Kritik Stok (<span id="countCritical">0</span>)</button>
+            </div>
+
+            <!-- Categories pills -->
+            <div id="categoryPills" class="category-pills-row">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Stock Table / Cards -->
+          <div class="stock-list-container">
+            <div id="stockItemsList" class="stock-cards-list">
+              <!-- Rendered by stock.js -->
+            </div>
+          </div>
+
+          <!-- CSV Tools Accordion / Bar -->
+          <div class="csv-tools-bar">
+            <div class="csv-desc">
+              <small>💡 <strong>Google Sheets / CSV:</strong> İlaç ve maliyet listenizi CSV dosyasından içe aktarabilir veya dışa aktarabilirsiniz.</small>
+            </div>
+            <div class="csv-buttons">
+              <label class="btn btn-outline-secondary btn-sm file-upload-label">
+                <span>📥</span> CSV İçe Aktar
+                <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+              </label>
+              <button id="exportCsvBtn" class="btn btn-outline-secondary btn-sm">
+                <span>📤</span> CSV Olarak İndir
+              </button>
+              <button id="loadSampleDataBtn" class="btn btn-outline-secondary btn-sm">
+                <span>✨</span> Örnek Veri Yükle
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 3. MALİYET KALEMLERİ & PARAMETRELER SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-params" class="tab-pane">
+        
+        <div class="card field-card">
+          <div class="card-title-row">
+            <div>
+              <h2 class="section-title">Maliyet Parametreleri Yönetimi</h2>
+              <p class="section-desc">Kâr marjı, KM ücreti, klinik gideri ve ek maliyet kalemlerini özelleştirin.</p>
+            </div>
+            <button id="openNewParamModalBtn" class="btn btn-primary btn-sm">
+              <span>➕</span> Yeni Parametre Ekle
+            </button>
+          </div>
+
+          <!-- Parameters List -->
+          <div id="parametersList" class="parameters-list">
+            <!-- Rendered by parameters.js -->
+          </div>
+
+          <!-- Customer Visibility Info Alert -->
+          <div class="info-alert-box">
+            <span class="info-icon">👁️</span>
+            <div>
+              <strong>Adisyon Görünürlük & Maskeleme Kuralı:</strong>
+              <p>Müşteriye verdiğiniz fişte doğrudan görünmesini istemediğiniz sabit klinik bedelleri veya özel ek masraflar için <em>"Diğer Giderler Olarak Birleştir"</em> seçeneğini açabilirsiniz. Bu sayede maliyet hesaplamaya dahil edilir ancak adisyonda sade ve profesyonel bir şekilde tek satır olarak özetlenir.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 4. FİŞ & İLETİŞİM AYARLARI SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-settings" class="tab-pane">
+        
+        <div class="card field-card">
+          <h2 class="section-title">🏢 Klinik & Banka Bilgileri</h2>
+          <p class="section-desc">Adisyon/slip görselinin alt kısmında yer alacak resmi ve ödeme bilgileri.</p>
+
+          <form id="clinicSettingsForm" class="settings-form">
+            <div class="form-group">
+              <label class="form-label" for="settingClinicName">Klinik / Hekim Ünvanı</label>
+              <input type="text" id="settingClinicName" class="form-input" value="VETERİNER HİZMET DETAYI">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingBankName">Banka Adı</label>
+              <input type="text" id="settingBankName" class="form-input" value="Ziraat Bankası">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingIban">IBAN Numarası</label>
+              <input type="text" id="settingIban" class="form-input text-mono" value="TR12 0001 0002 0003 0004 0005 06">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingAddress">İşletme / Klinik Adresi</label>
+              <input type="text" id="settingAddress" class="form-input" value="Kamçıllı, Mandıra Sokak No 12, 10085 Karesi/Balıkesir">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingPhone">İletişim Telefonu (WhatsApp)</label>
+              <input type="text" id="settingPhone" class="form-input text-mono" value="0552 185 03 08">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingVatRate">Varsayılan KDV Oranı (%)</label>
+              <input type="number" id="settingVatRate" class="form-input" value="18" min="0" max="100">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingSheetsUrl">Google Sheets Yayınlanan CSV Linki</label>
+              <input type="url" id="settingSheetsUrl" class="form-input text-mono" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+              <small class="field-hint">Google Sheets > Dosya > Paylaş > Web'de Yayınla > CSV formatını seçip yapıştırın.</small>
+            </div>
+
+            <div class="form-actions-row">
+              <button type="submit" class="btn btn-primary">💾 Ayarları Kaydet</button>
+              <button type="button" id="resetDefaultsBtn" class="btn btn-outline-danger">Fabrika Ayarlarına Dön</button>
+            </div>
+          </form>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Action Status Indicator -->
+    <footer class="app-footer">
+      <span class="offline-badge" id="onlineStatusBadge">🟢 Çevrimdışı Kullanıma Hazır</span>
+      <span class="version-text">SahaVeteriner v1.2</span>
+    </footer>
+
+  </div> <!-- End .app-layout -->
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 1: ÇOKLU KALEM EKLEME MODALI -->
+  <!-- ============================================== -->
+  <div id="batchAddModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">➕ Çoklu İlaç & Kalem Ekle</h3>
+          <p class="modal-subtitle">Birden fazla ürünü adetleriyle birlikte seçip tek seferde ekleyin.</p>
+        </div>
+        <button class="btn-modal-close" id="closeBatchModalBtn">✕</button>
+      </div>
+
+      <div class="modal-search-bar">
+        <div class="search-input-group">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="batchSearchInput" class="form-input" placeholder="İlaç ara...">
+        </div>
+        <div id="batchCategoryChips" class="category-pills-row compact"></div>
+      </div>
+
+      <div class="modal-body scrollable">
+        <div id="batchItemList" class="batch-items-grid">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="batch-selected-summary">
+          <span>Seçilen Kalem: <strong id="batchSelectedCount">0</strong></span>
+        </div>
+        <div class="modal-btn-group">
+          <button id="batchCancelBtn" class="btn btn-outline-secondary">İptal</button>
+          <button id="batchConfirmBtn" class="btn btn-primary">
+            <span>✅</span> Seçilenleri Sepete Ekle
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 2: GÖRSEL ADİSYON / FİŞ ÖNİZLEME & WHATSAPP PAYLAŞIM -->
+  <!-- ============================================== -->
+  <div id="receiptPreviewModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">📄 Adisyon Önizleme & Onay</h3>
+          <p class="modal-subtitle">Görsel fişi ve hesaplama detaylarını kontrol edin.</p>
+        </div>
+        <button class="btn-modal-close" id="closeReceiptModalBtn">✕</button>
+      </div>
+
+      <!-- Preview Tabs: Görsel Fiş vs Metin Mesajı -->
+      <div class="preview-mode-tabs">
+        <button class="preview-tab active" id="tabViewVisual">🖼️ Görsel Fiş (JPG Slip)</button>
+        <button class="preview-tab" id="tabViewText">💬 WhatsApp Metin Formatı</button>
+      </div>
+
+      <div class="modal-body scrollable modal-preview-body">
+        
+        <!-- 1. Visual Receipt Container (Canvas + Paper Look) -->
+        <div id="visualReceiptWrapper" class="receipt-paper-wrapper">
+          <div id="receiptPaper" class="receipt-paper">
+            <!-- Visual HTML Rendering (Also rendered into Canvas for JPG) -->
+            <div class="receipt-header-center">
+              <h2 class="receipt-brand-title" id="receiptPreviewTitle">VETERİNER HİZMET DETAYI</h2>
+              <div class="receipt-date-time" id="receiptDateTime">18.08.2026 14:30</div>
+            </div>
+
+            <div class="receipt-divider-thick"></div>
+
+            <div class="receipt-table-header">
+              <div class="col-item">Ürün / Hizmet Adı</div>
+              <div class="col-qty">Adet/KM</div>
+              <div class="col-price">Tutar</div>
+            </div>
+
+            <div class="receipt-divider-thin"></div>
+
+            <div id="receiptItemsContainer" class="receipt-items-container">
+              <!-- Rendered items -->
+            </div>
+
+            <div class="receipt-divider-thick"></div>
+
+            <div class="receipt-calc-totals">
+              <div class="receipt-total-line">
+                <span>Ara Toplam:</span>
+                <span id="receiptAraToplam">0.00 TL</span>
+              </div>
+              <div class="receipt-total-line" id="receiptKdvLine">
+                <span id="receiptKdvTitle">KDV (%18):</span>
+                <span id="receiptKdv">0.00 TL</span>
+              </div>
+              <div class="receipt-total-line grand">
+                <span>Ödenecek Tutar:</span>
+                <span id="receiptGenelToplam">0.00 TL</span>
+              </div>
+            </div>
+
+            <div class="receipt-divider-thick"></div>
+
+            <div class="receipt-footer-info">
+              <div><strong>Banka:</strong> <span id="receiptBank">Ziraat Bankası</span></div>
+              <div><strong>IBAN:</strong> <span id="receiptIban" class="text-mono">TR12 0001 0002 0003 0004 0005 06</span></div>
+              <div><strong>Adres:</strong> <span id="receiptAddress">Kamçıllı, Mandıra Sokak No 12, 10085 Karesi/Balıkesir</span></div>
+              <div><strong>Tel:</strong> <span id="receiptPhone">0552 185 03 08</span></div>
+            </div>
+
+            <div class="receipt-divider-thin"></div>
+
+            <div class="receipt-legal-warning">
+              MALİ BELGE DEĞİLDİR
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Text Message Preview Wrapper -->
+        <div id="textReceiptWrapper" class="text-receipt-wrapper" style="display:none;">
+          <textarea id="whatsappTextOutput" class="form-textarea text-mono" rows="12" readonly></textarea>
+        </div>
+
+        <!-- Hidden canvas for rendering HD JPG -->
+        <canvas id="hiddenReceiptCanvas" style="display:none;"></canvas>
+
+      </div>
+
+      <div class="modal-footer preview-footer">
+        <div class="preview-actions">
+          <button id="whatsappShareBtn" class="btn btn-success btn-lg">
+            <span>💬</span> <strong>WhatsApp ile Paylaş</strong>
+          </button>
+          <button id="downloadJpgBtn" class="btn btn-outline-primary">
+            <span>📥</span> Görseli İndir (.JPG)
+          </button>
+          <button id="copyTextBtn" class="btn btn-outline-secondary">
+            <span>📋</span> Metni Kopyala
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 3: YENİ ÜRÜN EKLE / DÜZENLE MODALI -->
+  <!-- ============================================== -->
+  <div id="productEditModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="productModalTitle">➕ Yeni İlaç / Malzeme Ekle</h3>
+        <button class="btn-modal-close" id="closeProductModalBtn">✕</button>
+      </div>
+      <form id="productEditForm" class="modal-body">
+        <input type="hidden" id="editProductIndex" value="-1">
+        
+        <div class="form-group">
+          <label class="form-label" for="editProdName">Ürün / Malzeme Adı *</label>
+          <input type="text" id="editProdName" class="form-input" placeholder="Örn: Serum 500 ml" required>
+        </div>
+
+        <div class="field-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="editProdCost">Birim Maliyet (TL) *</label>
+            <input type="number" id="editProdCost" class="form-input" placeholder="0.00" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProdCategory">Kategori</label>
+            <input type="text" id="editProdCategory" class="form-input" placeholder="Örn: Serum & Sıvılar" list="categorySuggestions">
+            <datalist id="categorySuggestions">
+              <option value="Serum & Sıvılar">
+              <option value="Vitamin & Mineral">
+              <option value="Antibiyotikler">
+              <option value="Antienflamatuar">
+              <option value="Sarf Malzeme">
+              <option value="Aşı & Parazit">
+              <option value="Doğum & Jinekoloji">
+              <option value="Meme Sağlığı">
+            </datalist>
+          </div>
+        </div>
+
+        <div class="field-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="editProdStock">Mevcut Stok Adedi *</label>
+            <input type="number" id="editProdStock" class="form-input" placeholder="0" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProdMinStock">Min. Stok Uyarı Sınırı *</label>
+            <input type="number" id="editProdMinStock" class="form-input" placeholder="0" min="0" required>
+          </div>
+        </div>
+
+        <div class="modal-footer-form">
+          <button type="button" id="cancelProductBtn" class="btn btn-outline-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 4: YENİ MALİYET PARAMETRESİ EKLE / DÜZENLE -->
+  <!-- ============================================== -->
+  <div id="paramEditModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="paramModalTitle">⚙️ Yeni Maliyet Kalemi Ekle</h3>
+        <button class="btn-modal-close" id="closeParamModalBtn">✕</button>
+      </div>
+      <form id="paramEditForm" class="modal-body">
+        <input type="hidden" id="editParamId" value="">
+        
+        <div class="form-group">
+          <label class="form-label" for="editParamName">Kalem / Parametre Adı *</label>
+          <input type="text" id="editParamName" class="form-input" placeholder="Örn: Gece Nöbet Farkı, Acil Müdahale" required>
+        </div>
+
+        <div class="field-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="editParamType">Hesaplama Tipi *</label>
+            <select id="editParamType" class="form-select" required>
+              <option value="fixed">Sabit Tutar (TL)</option>
+              <option value="percent">Yüzde Oranı (%)</option>
+              <option value="multiplier">Mesafe/Adet Çarpanı (TL/birim)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editParamValue">Varsayılan Değer *</label>
+            <input type="number" id="editParamValue" class="form-input" placeholder="0.00" step="0.01" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Müşteri Adisyonunda Görünürlük *</label>
+          <div class="radio-card-group">
+            <label class="radio-card">
+              <input type="radio" name="paramVisibility" value="separate" checked>
+              <div class="radio-card-content">
+                <strong>Ayrı Satırda Göster</strong>
+                <small>Adisyonda kendi adıyla ve tutarıyla görünür.</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="paramVisibility" value="masked">
+              <div class="radio-card-content">
+                <strong>"Diğer Giderler" Olarak Birleştir (Gizle)</strong>
+                <small>Tutar hesaplamaya eklenir ancak fişte tek başına yazmaz, "Diğer Giderler" başlığı altında toplanır.</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer-form">
+          <button type="button" id="cancelParamBtn" class="btn btn-outline-secondary">İptal</button>
+          <button type="submit" class="btn btn-primary">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast" style="display:none;"></div>
+
+  <!-- Scripts -->
+  <script src="parameters.js"></script>
+  <script src="stock.js"></script>
+  <script src="receipt.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
