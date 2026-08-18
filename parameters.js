@@ -1,7 +1,7 @@
 /**
  * SahaVeteriner - Dinamik Maliyet Parametreleri Modülü (parameters.js)
- * Kâr marjı, KM ücreti, sabit giderler ve özel ek maliyetlerin yönetimini sağlar.
- * Müşteri adisyonu görünürlük maskelemesini ("Diğer Giderler") destekler.
+ * Kâr marjı, KM ücreti, sabit klinik gideri ve ek maliyetlerin yönetimini sağlar.
+ * Sabit Klinik Masrafını Kalemlere Orantılı Dağıtma (Maliyet Giydirme) özelliğini destekler.
  */
 
 const DEFAULT_PARAMETERS = [
@@ -33,9 +33,9 @@ const DEFAULT_PARAMETERS = [
     type: 'fixed',
     value: 400.00, // 400 TL
     enabled: true,
-    visibility: 'masked', // Adisyonda "Diğer Giderler / Hizmet Bedeli" olarak birleştirilir
+    visibility: 'separate', // 'separate' | 'masked'
     isSystem: false,
-    removable: true, // Komple kaldırılabilir!
+    removable: true,
     description: 'Her işleme standart olarak eklenen sabit servis payı.'
   },
   {
@@ -43,7 +43,7 @@ const DEFAULT_PARAMETERS = [
     name: 'Sarf Malzeme & Dezenfeksiyon Payı',
     type: 'fixed',
     value: 50.00, // 50 TL
-    enabled: false, // İsteğe bağlı kapalı başlar
+    enabled: false,
     visibility: 'masked',
     isSystem: false,
     removable: true,
@@ -54,7 +54,9 @@ const DEFAULT_PARAMETERS = [
 class ParameterManager {
   constructor() {
     this.storageKey = 'sahavet_parameters_v2';
+    this.distributeKey = 'sahavet_distribute_fixed_expense_v2';
     this.parameters = this.loadParameters();
+    this.distributeFixedExpense = this.loadDistributeFixedExpense();
   }
 
   loadParameters() {
@@ -80,6 +82,18 @@ class ParameterManager {
     }
   }
 
+  loadDistributeFixedExpense() {
+    return localStorage.getItem(this.distributeKey) === 'true';
+  }
+
+  setDistributeFixedExpense(val) {
+    this.distributeFixedExpense = !!val;
+    localStorage.setItem(this.distributeKey, this.distributeFixedExpense ? 'true' : 'false');
+    if (window.app && typeof window.app.onParametersChanged === 'function') {
+      window.app.onParametersChanged();
+    }
+  }
+
   getAll() {
     return this.parameters;
   }
@@ -98,6 +112,11 @@ class ParameterManager {
     return (p && p.enabled) ? parseFloat(p.value) || 0 : 0;
   }
 
+  getFixedClinicFee() {
+    const p = this.get('clinic_fixed_fee');
+    return (p && p.enabled) ? parseFloat(p.value) || 0 : 0;
+  }
+
   addParameter(paramData) {
     const newParam = {
       id: 'custom_' + Date.now(),
@@ -105,7 +124,7 @@ class ParameterManager {
       type: paramData.type || 'fixed',
       value: parseFloat(paramData.value) || 0,
       enabled: true,
-      visibility: paramData.visibility || 'separate', // 'separate' | 'masked'
+      visibility: paramData.visibility || 'separate',
       isSystem: false,
       removable: true,
       description: paramData.description || 'Özel tanımlı maliyet kalemi'
@@ -147,18 +166,23 @@ class ParameterManager {
 
   resetToDefaults() {
     this.parameters = JSON.parse(JSON.stringify(DEFAULT_PARAMETERS));
+    this.distributeFixedExpense = false;
+    localStorage.removeItem(this.distributeKey);
     this.saveParameters();
   }
 
   /**
-   * Belirli bir sepet ve KM için aktif parametrelerin tutarlarını hesaplar.
-   * Adisyonda ayrı gösterilecekler ile 'Diğer Giderler' olarak toplanacakları ayırır.
+   * Belirli bir sepet ve KM için parametre dökümünü hesaplar.
+   * Eğer 'distributeFixedExpense' aktifse ve sepette ilaç varsa,
+   * sabit klinik gideri ayrı bir satır olarak listelenmez (ilaçların içine yedirilir).
    */
-  calculateBreakdown(cartSubtotal, distanceKm) {
+  calculateBreakdown(cartSubtotal, distanceKm, hasCartItems = false) {
     let visibleItems = [];
     let maskedTotal = 0;
     let maskedItemsList = [];
     let totalAdditionalCost = 0;
+
+    const isDistributing = this.distributeFixedExpense && hasCartItems;
 
     for (const param of this.parameters) {
       if (!param.enabled) continue;
@@ -179,6 +203,11 @@ class ParameterManager {
 
       totalAdditionalCost += amount;
 
+      // Sabit Klinik Gideri dağıtılıyorsa, fişte ve görünür listede ayrı satır olarak gösterilmez!
+      if (isDistributing && param.id === 'clinic_fixed_fee') {
+        continue;
+      }
+
       if (param.visibility === 'masked') {
         maskedTotal += amount;
         maskedItemsList.push({ name: param.name, amount: amount });
@@ -193,7 +222,7 @@ class ParameterManager {
       }
     }
 
-    // Eğer gizlenen kalemler varsa adisyona "Diğer Giderler / Hizmet Bedeli" tek satır olarak eklenir
+    // Eğer gizlenen kalemler varsa tek satırda topla
     if (maskedTotal > 0) {
       visibleItems.push({
         id: 'masked_other_expenses',
@@ -209,7 +238,8 @@ class ParameterManager {
       visibleItems,
       maskedTotal,
       maskedItemsList,
-      totalAdditionalCost
+      totalAdditionalCost,
+      isDistributing
     };
   }
 
@@ -219,6 +249,31 @@ class ParameterManager {
 
     container.innerHTML = '';
 
+    // Orantılı Sabit Gider Dağıtımı Banner / Kartı
+    const distributeCard = document.createElement('div');
+    distributeCard.className = 'card field-card distribute-setting-card';
+    distributeCard.innerHTML = `
+      <div class="card-title-row">
+        <div>
+          <h3 class="section-title" style="font-size:1rem; display:flex; align-items:center; gap:8px;">
+            <span>✨</span> Sabit Gideri İlaç Fiyatlarına Orantılı Dağıt (Maliyet Giydirme)
+          </h3>
+          <p class="section-desc">
+            Açık olduğunda <strong>Sabit Klinik Gideri (${this.getFixedClinicFee().toFixed(2)} TL)</strong> fişte ayrı bir satır olarak görünmez; ilaçların kendi kârlı tutarları oranında fiyatlarına yedirilir.
+          </p>
+          <small style="color:var(--primary); font-weight:700;">
+            💡 Kural: Kâr oranı sadece ürünün ham maliyetine uygulanır; sabit gider kârsız yalın tutarıyla paylaştırılır.
+          </small>
+        </div>
+        <label class="toggle-switch lg">
+          <input type="checkbox" id="distributeFixedExpenseToggle" ${this.distributeFixedExpense ? 'checked' : ''}>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    `;
+    container.appendChild(distributeCard);
+
+    // Parametre Kartları
     this.parameters.forEach(param => {
       const card = document.createElement('div');
       card.className = `param-item-card ${param.enabled ? '' : 'disabled-opacity'}`;
@@ -230,11 +285,15 @@ class ParameterManager {
 
       const isProfitMargin = param.id === 'profit_margin';
       const isDistance = param.id === 'distance_rate';
+      const isClinicFee = param.id === 'clinic_fixed_fee';
 
       card.innerHTML = `
         <div class="param-header-row">
           <div>
-            <span class="param-title">${param.name}</span>
+            <span class="param-title">
+              ${param.name}
+              ${isClinicFee && this.distributeFixedExpense ? '<span class="badge-masked" style="margin-left:6px;">✨ Dağıtımda</span>' : ''}
+            </span>
             <p class="section-desc">${param.description || ''}</p>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
@@ -264,10 +323,10 @@ class ParameterManager {
             <div>
               <strong>Adisyonda Müşteriye Görünme Şekli:</strong>
               <div style="font-size:0.72rem; color:var(--text-muted);">
-                ${param.visibility === 'masked' ? '🔒 "Diğer Giderler" başlığı altında toplanır (Ayrı görünmez)' : '👁️ Kendi adıyla ayrı satırda listelenir'}
+                ${isClinicFee && this.distributeFixedExpense ? '✨ İlaç fiyatlarına orantılı dağıtılır (Ayrı satır basılmaz)' : param.visibility === 'masked' ? '🔒 "Diğer Giderler" başlığı altında toplanır' : '👁️ Kendi adıyla ayrı satırda listelenir'}
               </div>
             </div>
-            <select class="form-select param-vis-select" data-id="${param.id}" style="max-width:200px; padding:6px 10px; font-size:0.78rem;">
+            <select class="form-select param-vis-select" data-id="${param.id}" style="max-width:200px; padding:6px 10px; font-size:0.78rem;" ${isClinicFee && this.distributeFixedExpense ? 'disabled' : ''}>
               <option value="separate" ${param.visibility === 'separate' ? 'selected' : ''}>👁️ Ayrı Satırda Göster</option>
               <option value="masked" ${param.visibility === 'masked' ? 'selected' : ''}>🔒 "Diğer Giderler" Olarak Birleştir</option>
             </select>
@@ -282,6 +341,15 @@ class ParameterManager {
   }
 
   attachEvents() {
+    // Distribute toggle
+    const distToggle = document.getElementById('distributeFixedExpenseToggle');
+    if (distToggle) {
+      distToggle.addEventListener('change', (e) => {
+        this.setDistributeFixedExpense(e.target.checked);
+        this.renderUI();
+      });
+    }
+
     // Value changes
     document.querySelectorAll('.param-value-input').forEach(input => {
       input.addEventListener('change', (e) => {
@@ -312,7 +380,7 @@ class ParameterManager {
     // Delete buttons
     document.querySelectorAll('.delete-param-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = e.target.getAttribute('data-id');
+        const id = btn.getAttribute('data-id');
         if (confirm('Bu maliyet kalemini tamamen kaldırmak istediğinize emin misiniz?')) {
           this.deleteParameter(id);
           this.renderUI();

@@ -52,4 +52,22 @@ class Urun {
     minStok: (json['minStok'] as num?)?.toInt() ?? 0,
     kategori: json['kategori'] ?? 'Genel',
   );
+
+  Urun copyWith({
+    String? id,
+    String? urunAdi,
+    double? birimMaliyet,
+    int? mevcutStok,
+    int? minStok,
+    String? kategori,
+  }) {
+    return Urun(
+      id: id ?? this.id,
+      urunAdi: urunAdi ?? this.urunAdi,
+      birimMaliyet: birimMaliyet ?? this.birimMaliyet,
+      mevcutStok: mevcutStok ?? this.mevcutStok,
+      minStok: minStok ?? this.minStok,
+      kategori: kategori ?? this.kategori,
+    );
+  }
 }

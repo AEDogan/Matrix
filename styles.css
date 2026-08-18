@@ -193,7 +193,7 @@ body {
 /* Navigation Tabs */
 .app-nav {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   background-color: var(--bg-card);
   border-bottom: 2px solid var(--border-color);
   position: sticky;
@@ -1551,3 +1551,245 @@ body {
     overflow: hidden;
   }
 }
+
+/* ==========================================================================
+   Yeni Eklenen Modlar, Gider Giydirme & Satış Logları Stilleri
+   ========================================================================== */
+
+/* Mode Selector (Uygulanan Tedavi vs. Fiyat Teklifi) */
+.mode-selector-card {
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mode-buttons-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mode-toggle-btn {
+  background-color: var(--bg-card-alt);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.mode-btn-icon {
+  font-size: 1.5rem;
+}
+
+.mode-btn-text strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.mode-btn-text small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+#modeBtnTreatment.active {
+  background-color: var(--success-bg);
+  border-color: var(--success);
+}
+#modeBtnTreatment.active .mode-btn-text strong {
+  color: var(--success);
+}
+
+#modeBtnQuote.active {
+  background-color: var(--primary-bg);
+  border-color: var(--primary);
+}
+#modeBtnQuote.active .mode-btn-text strong {
+  color: var(--primary);
+}
+
+.mode-hint {
+  font-size: 0.76rem;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card-alt);
+  color: var(--text-muted);
+  border-left: 3px solid var(--primary);
+}
+
+/* Quick feature box for proportional expense */
+.quick-feature-box {
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feature-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feature-icon {
+  font-size: 1.4rem;
+}
+
+.feature-info strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+
+.feature-info p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.info-alert-box.compact {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+/* Sales Logs */
+.sales-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-item-card {
+  background-color: var(--bg-card-alt);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.log-item-card.log-treatment {
+  border-left: 4px solid var(--success);
+}
+
+.log-item-card.log-quote {
+  border-left: 4px solid var(--primary);
+}
+
+.log-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.log-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.log-type-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-treatment {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.badge-quote {
+  background-color: var(--primary-bg);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.log-customer-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.log-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-date-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.log-summary-content {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  background-color: var(--bg-card);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.log-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.log-stock-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.status-stock-deducted {
+  color: var(--success);
+}
+
+.status-stock-fixed {
+  color: var(--text-muted);
+}
+
+.log-grand-amount {
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.badge-info {
+  background-color: var(--primary);
+}
+
+.modal-mode-banner {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.receipt-customer-line {
+  font-size: 11px;
+  color: #333333;
+  margin-top: 3px;
+  font-weight: 600;
+}
+

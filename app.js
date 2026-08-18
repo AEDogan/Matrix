@@ -1,10 +1,13 @@
 /**
  * SahaVeteriner - Ana Uygulama Kontrolcüsü (app.js)
- * Sepet yönetimi, canlı hesaplama, modal akışları ve sekme navigasyonu
+ * Sepet yönetimi, canlı hesaplama (kârsız yalın sabit gider dağıtımı),
+ * İşlem modu seçimi (Uygulanan Tedavi vs. Fiyat Teklifi), stoktan düşme & loglama
  */
 
 class AppController {
   constructor() {
+    this.mode = 'treatment'; // 'treatment' (Tedavi - Stok Düşer) | 'quote' (Fiyat Teklifi - Stok Sabit)
+    this.customerName = '';
     this.cart = []; // [{ item: Product, qty: 1 }]
     this.distanceKm = 0;
     this.isDistanceEnabled = true;
@@ -16,14 +19,16 @@ class AppController {
   }
 
   init() {
-    // Kayıtlı ayarları yükle
+    // Kayıtlı KDV ayarını yükle
     const savedVat = localStorage.getItem('sahavet_vat_rate');
     if (savedVat) this.vatRate = parseFloat(savedVat) || 18;
-    document.getElementById('vatRateLabel').textContent = `KDV Oranı: %${this.vatRate}`;
+    const vatLabel = document.getElementById('vatRateLabel');
+    if (vatLabel) vatLabel.textContent = `KDV Oranı: %${this.vatRate}`;
 
     // Modülleri başlat
     if (window.stockManager) window.stockManager.renderUI();
     if (window.paramManager) window.paramManager.renderUI();
+    if (window.logManager) window.logManager.renderUI();
 
     this.bindEvents();
     this.recalculate();
@@ -55,10 +60,10 @@ class AppController {
 
     const updateStatus = () => {
       if (navigator.onLine) {
-        badge.innerHTML = '🟢 Çevrimiçi (Sheets Bağlantısı Aktif)';
+        badge.innerHTML = '🟢 Çevrimiçi (Sheets Senkronizasyonu Hazır)';
         badge.style.color = 'var(--success)';
       } else {
-        badge.innerHTML = '🟡 Çevrimdışı Mod (Yerel Hafıza Aktif)';
+        badge.innerHTML = '🟡 Çevrimdışı Saha Modu (Yerel Hafıza Aktif)';
         badge.style.color = 'var(--accent-amber)';
       }
     };
@@ -66,6 +71,26 @@ class AppController {
     window.addEventListener('online', updateStatus);
     window.addEventListener('offline', updateStatus);
     updateStatus();
+  }
+
+  // İşlem Modu Değiştir (Tedavi vs Teklif)
+  setMode(newMode) {
+    this.mode = newMode;
+    const btnTreatment = document.getElementById('modeBtnTreatment');
+    const btnQuote = document.getElementById('modeBtnQuote');
+    const hintEl = document.getElementById('modeHintText');
+
+    if (newMode === 'treatment') {
+      if (btnTreatment) btnTreatment.classList.add('active');
+      if (btnQuote) btnQuote.classList.remove('active');
+      if (hintEl) hintEl.innerHTML = '💉 <strong>Uygulanan Tedavi:</strong> İşlem tamamlandığında kullanılan ilaçlar otomatik olarak stoktan düşülür ve satış kaydı işlenir.';
+    } else {
+      if (btnQuote) btnQuote.classList.add('active');
+      if (btnTreatment) btnTreatment.classList.remove('active');
+      if (hintEl) hintEl.innerHTML = '📄 <strong>Fiyat Teklifi / Bilgilendirme:</strong> İlaç stoklarına dokunulmaz, sadece müşteriye bilgilendirme amaçlı teklif dökümü sunulur.';
+    }
+
+    this.recalculate();
   }
 
   // Sepete ürün ekle
@@ -130,11 +155,32 @@ class AppController {
     if (clearCartBtn) clearCartBtn.style.display = 'inline-block';
 
     const profitMargin = window.paramManager ? window.paramManager.getProfitMargin() : 25;
+    const isDistributing = window.paramManager ? window.paramManager.distributeFixedExpense : false;
+    const fixedFee = window.paramManager ? window.paramManager.getFixedClinicFee() : 0;
+
+    // Kârlı tutarlar ve orantılı pay hesaplama
+    let totalKarliTutar = 0;
+    this.cart.forEach(ci => {
+      const karliFiyat = ci.item.unitCost * (1 + (profitMargin / 100));
+      totalKarliTutar += karliFiyat * ci.qty;
+    });
 
     cartList.innerHTML = '';
     this.cart.forEach(ci => {
-      const unitSalePrice = ci.item.unitCost * (1 + (profitMargin / 100));
-      const lineTotal = unitSalePrice * ci.qty;
+      const baseKarliFiyat = ci.item.unitCost * (1 + (profitMargin / 100));
+      const lineKarliTotal = baseKarliFiyat * ci.qty;
+
+      let displayUnitPrice = baseKarliFiyat;
+      let displayLineTotal = lineKarliTotal;
+      let addedExpense = 0;
+
+      if (isDistributing && totalKarliTutar > 0 && fixedFee > 0) {
+        const shareRatio = lineKarliTotal / totalKarliTutar;
+        addedExpense = fixedFee * shareRatio; // Kârsız yalın pay
+        displayLineTotal = lineKarliTotal + addedExpense;
+        displayUnitPrice = displayLineTotal / ci.qty;
+      }
+
       const isCritical = (parseInt(ci.item.currentStock) || 0) <= (parseInt(ci.item.minStock) || 0);
 
       const card = document.createElement('div');
@@ -145,7 +191,8 @@ class AppController {
             <div class="cart-item-name">${ci.item.name}</div>
             <div class="cart-item-cost-info">
               Maliyet: ${ci.item.unitCost.toFixed(2)} TL | Kâr: %${profitMargin}
-              ${isCritical ? '<span class="badge-alert" style="margin-left:4px;">🚨 Kritik Stok</span>' : ''}
+              ${isDistributing && addedExpense > 0 ? `<span class="badge-masked" title="Sabit giderden ${addedExpense.toFixed(2)} TL giydirildi">+${addedExpense.toFixed(2)} TL Gider</span>` : ''}
+              ${isCritical ? '<span class="badge-alert" style="margin-left:4px;">🚨 Kritik Stok: ' + ci.item.currentStock + '</span>' : ''}
             </div>
           </div>
           <button class="btn-remove-item" data-id="${ci.item.id}" title="Listeden çıkar">✕</button>
@@ -158,8 +205,8 @@ class AppController {
             <button class="btn-step cart-step-plus" data-id="${ci.item.id}">+</button>
           </div>
           <div class="cart-item-total">
-            <span class="cart-item-total-val">${lineTotal.toFixed(2)} TL</span>
-            <span class="cart-item-unit-val">${unitSalePrice.toFixed(2)} TL / adet</span>
+            <span class="cart-item-total-val">${displayLineTotal.toFixed(2)} TL</span>
+            <span class="cart-item-unit-val">${displayUnitPrice.toFixed(2)} TL / adet</span>
           </div>
         </div>
       `;
@@ -178,23 +225,61 @@ class AppController {
     });
   }
 
-  // Canlı Hesaplama Motoru
+  // =========================================================================
+  // CANLI HESAPLAMA MOTORU (PDF Şartnamesindeki Exact Formül ile)
+  // =========================================================================
   recalculate() {
     const profitMargin = window.paramManager ? window.paramManager.getProfitMargin() : 25;
     const kmRate = window.paramManager ? window.paramManager.getKmRate() : 25;
+    const isDistributing = window.paramManager ? window.paramManager.distributeFixedExpense : false;
+    const fixedFee = window.paramManager ? window.paramManager.getFixedClinicFee() : 0;
+    const hasCart = this.cart.length > 0;
 
-    // KM Göstergesi Güncelle
-    const kmRateDisplay = document.getElementById('kmRateDisplay');
-    if (kmRateDisplay) kmRateDisplay.textContent = `${kmRate.toFixed(2)} TL/km`;
-
-    // 1. Kalemler Toplamı
-    let itemsTotal = 0;
-    this.cart.forEach(ci => {
-      const unitSalePrice = ci.item.unitCost * (1 + (profitMargin / 100));
-      itemsTotal += unitSalePrice * ci.qty;
+    // 1. İlaçların Ham ve Kârlı Maliyetlerini Hesapla
+    // Formül kuralı: Kâr SADECE ürünün ham maliyetine uygulanır:
+    // karliFiyat = hamMaliyet * (1 + karOrani / 100)
+    let totalKarliTutar = 0;
+    const computedCartItems = this.cart.map(ci => {
+      const hamMaliyet = ci.item.unitCost;
+      const karliBirim = hamMaliyet * (1 + (profitMargin / 100));
+      const lineKarli = karliBirim * ci.qty;
+      totalKarliTutar += lineKarli;
+      return {
+        id: ci.item.id,
+        name: ci.item.name,
+        qty: ci.qty,
+        hamMaliyet: hamMaliyet,
+        karliBirim: karliBirim,
+        lineKarli: lineKarli
+      };
     });
 
-    // 2. Ulaşım Tutarı
+    // 2. Eğer Sabit Gider Dağıtımı AÇIKSA ve sepette ürün varsa:
+    // Sabit klinik gideri kârsız (yalın tutarıyla) ilaçlara oranlanır
+    let itemsTotal = 0;
+    const finalCartItems = computedCartItems.map(ci => {
+      let finalLineTotal = ci.lineKarli;
+      let finalUnitPrice = ci.karliBirim;
+      let addedExpense = 0;
+
+      if (isDistributing && hasCart && totalKarliTutar > 0 && fixedFee > 0) {
+        const oran = ci.lineKarli / totalKarliTutar;
+        addedExpense = fixedFee * oran; // Kârsız yalın pay
+        finalLineTotal = ci.lineKarli + addedExpense;
+        finalUnitPrice = finalLineTotal / ci.qty;
+      }
+
+      itemsTotal += finalLineTotal;
+
+      return {
+        ...ci,
+        unitPrice: finalUnitPrice,
+        total: finalLineTotal,
+        addedExpense: addedExpense
+      };
+    });
+
+    // 3. Ulaşım Tutarı
     const effectiveKm = this.isDistanceEnabled ? this.distanceKm : 0;
     const distanceTotal = effectiveKm * kmRate;
 
@@ -207,15 +292,13 @@ class AppController {
       document.getElementById('summaryDistanceTotal').textContent = `${distanceTotal.toFixed(2)} TL`;
     }
 
-    // 3. Diğer Parametreler (Dinamik)
-    const breakdown = window.paramManager ? window.paramManager.calculateBreakdown(itemsTotal, effectiveKm) : {
-      visibleItems: [],
-      maskedTotal: 0,
-      totalAdditionalCost: distanceTotal
-    };
+    // 4. Diğer Parametreler (Dinamik)
+    const breakdown = window.paramManager 
+      ? window.paramManager.calculateBreakdown(totalKarliTutar, effectiveKm, hasCart) 
+      : { visibleItems: [], maskedTotal: 0, totalAdditionalCost: distanceTotal };
 
-    // Mesafe haricindeki ek parametre toplamları
-    const otherParamsTotal = Math.max(0, breakdown.totalAdditionalCost - distanceTotal);
+    // Dağıtılmayan veya mesafe harici ek parametreler
+    const otherParamsTotal = Math.max(0, breakdown.totalAdditionalCost - distanceTotal - (isDistributing && hasCart ? fixedFee : 0));
     const summaryOtherRow = document.getElementById('summaryOtherParamsRow');
     if (summaryOtherRow) {
       if (otherParamsTotal > 0) {
@@ -226,10 +309,27 @@ class AppController {
       }
     }
 
-    // 4. Ara Toplam
-    const subTotal = itemsTotal + breakdown.totalAdditionalCost;
+    // Dağıtım Bilgi Uyarısı
+    const distNotice = document.getElementById('distributedExpenseNotice');
+    if (distNotice) {
+      if (isDistributing && hasCart && fixedFee > 0) {
+        distNotice.style.display = 'flex';
+        document.getElementById('distNoticeAmount').textContent = `${fixedFee.toFixed(2)} TL`;
+      } else {
+        distNotice.style.display = 'none';
+      }
+    }
 
-    // 5. KDV
+    // 5. Ara Toplam
+    // Eğer sabit gider dağıtıldıysa itemsTotal zaten fixedFee'yi içerir
+    let subTotal = 0;
+    if (isDistributing && hasCart) {
+      subTotal = itemsTotal + distanceTotal + otherParamsTotal;
+    } else {
+      subTotal = itemsTotal + breakdown.totalAdditionalCost;
+    }
+
+    // 6. KDV
     let vatAmount = 0;
     if (this.isVatEnabled) {
       vatAmount = subTotal * (this.vatRate / 100);
@@ -239,7 +339,7 @@ class AppController {
       document.getElementById('summaryVatRow').style.display = 'none';
     }
 
-    // 6. Genel Toplam
+    // 7. Genel Toplam
     const grandTotal = subTotal + vatAmount;
 
     // Arayüz Değerlerini Güncelle
@@ -247,11 +347,11 @@ class AppController {
     document.getElementById('summarySubTotal').textContent = `${subTotal.toFixed(2)} TL`;
     document.getElementById('summaryGrandTotal').textContent = `${grandTotal.toFixed(2)} TL`;
 
-    // Aktif Parametreler Özetini Güncelle
-    this.renderActiveParamsSummary();
-
     return {
+      mode: this.mode,
+      customer: this.customerName,
       itemsTotal,
+      finalCartItems,
       distanceTotal,
       effectiveKm,
       subTotal,
@@ -259,47 +359,14 @@ class AppController {
       vatRate: this.vatRate,
       vatAmount,
       grandTotal,
+      isDistributing: isDistributing && hasCart && fixedFee > 0,
       breakdown
     };
   }
 
-  renderActiveParamsSummary() {
-    const container = document.getElementById('activeParamsSummary');
-    if (!container || !window.paramManager) return;
-
-    const params = window.paramManager.getAll().filter(p => p.enabled);
-    container.innerHTML = '';
-
-    params.forEach(p => {
-      const badge = document.createElement('div');
-      badge.className = 'param-summary-chip';
-      badge.style.display = 'inline-flex';
-      badge.style.alignItems = 'center';
-      badge.style.gap = '6px';
-      badge.style.padding = '4px 10px';
-      badge.style.margin = '2px 4px 2px 0';
-      badge.style.borderRadius = 'var(--radius-full)';
-      badge.style.backgroundColor = 'var(--bg-card-alt)';
-      badge.style.border = '1px solid var(--border-color)';
-      badge.style.fontSize = '0.75rem';
-      badge.style.fontWeight = '700';
-
-      let valText = `${p.value} TL`;
-      if (p.type === 'percent') valText = `%${p.value}`;
-      if (p.type === 'multiplier') valText = `${p.value} TL/km`;
-
-      badge.innerHTML = `
-        <span>${p.name}:</span>
-        <strong style="color:var(--primary); font-family:var(--font-mono);">${valText}</strong>
-        ${p.visibility === 'masked' ? '<span class="badge-masked">🔒 Diğer Giderler</span>' : ''}
-      `;
-      container.appendChild(badge);
-    });
-  }
-
   // Event Listeners
   bindEvents() {
-    // Sekme Navigasyonu
+    // Sekme Navigasyonu (5 Sekme: Hesaplama, Stok, Loglar, Parametreler, Ayarlar)
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -312,19 +379,45 @@ class AppController {
 
         // Sekme özel yenilemeler
         if (targetId === 'tab-stock' && window.stockManager) window.stockManager.renderUI();
+        if (targetId === 'tab-logs' && window.logManager) window.logManager.renderUI();
         if (targetId === 'tab-params' && window.paramManager) window.paramManager.renderUI();
       });
     });
 
-    // Link Navigasyonları (örn: Düzenle ➔)
-    document.querySelectorAll('.link-nav').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = link.getAttribute('data-target');
-        const tabBtn = document.querySelector(`.nav-tab[data-target="${target}"]`);
-        if (tabBtn) tabBtn.click();
+    // İşlem Modu Butonları (Uygulanan Tedavi vs Fiyat Teklifi)
+    const btnTreatment = document.getElementById('modeBtnTreatment');
+    const btnQuote = document.getElementById('modeBtnQuote');
+
+    if (btnTreatment) {
+      btnTreatment.addEventListener('click', () => this.setMode('treatment'));
+    }
+    if (btnQuote) {
+      btnQuote.addEventListener('click', () => this.setMode('quote'));
+    }
+
+    // Müşteri / Hasta Sahibi Girişi
+    const custInput = document.getElementById('calcCustomerInput');
+    if (custInput) {
+      custInput.addEventListener('input', (e) => {
+        this.customerName = e.target.value;
       });
-    });
+    }
+
+    // Sabit Gider Dağıtım Hızlı Toggle (Hesaplama Ekranında)
+    const quickDistToggle = document.getElementById('quickDistributeToggle');
+    if (quickDistToggle) {
+      quickDistToggle.checked = window.paramManager ? window.paramManager.distributeFixedExpense : false;
+      quickDistToggle.addEventListener('change', (e) => {
+        if (window.paramManager) {
+          window.paramManager.setDistributeFixedExpense(e.target.checked);
+          this.renderCart();
+          this.recalculate();
+          this.showToast(e.target.checked 
+            ? 'Sabit klinik gideri ilaç fiyatlarına giydirildi ✨' 
+            : 'Sabit gider ayrı kalem olarak gösterilecek 📋');
+        }
+      });
+    }
 
     // Tema Değiştirici (Güneş Işığı / Koyu Saha)
     document.getElementById('themeToggleBtn').addEventListener('click', () => {
@@ -368,7 +461,7 @@ class AppController {
                 <div>
                   <div class="auto-item-title">
                     ${item.name}
-                    ${isCritical ? '<span class="badge-alert">🚨 Stok Az</span>' : ''}
+                    ${isCritical ? '<span class="badge-alert">🚨 Stok: ' + item.currentStock + '</span>' : ''}
                   </div>
                   <div class="auto-item-meta">Stok: ${item.currentStock} ${item.category ? `• ${item.category}` : ''}</div>
                 </div>
@@ -486,19 +579,29 @@ class AppController {
       document.getElementById('textReceiptWrapper').style.display = 'block';
     });
 
-    // WhatsApp Paylaşımı
+    // WhatsApp Paylaşımı (ve Otomatik Stok Düşme & Loglama)
     document.getElementById('whatsappShareBtn').addEventListener('click', async () => {
       const calcData = this.prepareReceiptData();
       await window.receiptGenerator.shareToWhatsApp(calcData);
-      this.showToast('WhatsApp paylaşımı başlatıldı');
+      this.finalizeTransaction(calcData);
     });
 
-    // JPG İndir
+    // JPG İndir (ve Otomatik Stok Düşme & Loglama)
     document.getElementById('downloadJpgBtn').addEventListener('click', async () => {
       const calcData = this.prepareReceiptData();
       await window.receiptGenerator.downloadJpg(calcData);
-      this.showToast('Adisyon JPG olarak indirildi');
+      this.finalizeTransaction(calcData);
     });
+
+    // Sadece İşlemi Onayla ve Arşivle Butonu
+    const finalizeBtn = document.getElementById('finalizeOnlyBtn');
+    if (finalizeBtn) {
+      finalizeBtn.addEventListener('click', () => {
+        const calcData = this.prepareReceiptData();
+        this.finalizeTransaction(calcData);
+        this.closeReceiptPreviewModal();
+      });
+    }
 
     // Metni Kopyala
     document.getElementById('copyTextBtn').addEventListener('click', () => {
@@ -507,6 +610,53 @@ class AppController {
         this.showToast('Adisyon metni panoya kopyalandı! 📋');
       });
     });
+
+    // -------------------------------------------------------------
+    // LOG SEKME BUTONLARI (CSV İndir & Temizle)
+    // -------------------------------------------------------------
+    const exportLogsBtn = document.getElementById('exportLogsCsvBtn');
+    if (exportLogsBtn) {
+      exportLogsBtn.addEventListener('click', () => {
+        if (window.logManager) {
+          window.logManager.exportCsv();
+          this.showToast('Satış ve Teklif Logları CSV olarak indirildi! 📥');
+        }
+      });
+    }
+
+    const clearLogsBtn = document.getElementById('clearAllLogsBtn');
+    if (clearLogsBtn) {
+      clearLogsBtn.addEventListener('click', () => {
+        if (confirm('Tüm geçmiş satış ve teklif loglarını silmek istediğinize emin misiniz?')) {
+          if (window.logManager) {
+            window.logManager.clearAll();
+            this.showToast('Tüm log geçmişi temizlendi.');
+          }
+        }
+      });
+    }
+
+    // Log Filtreleme Butonları
+    document.querySelectorAll('.log-filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.log-filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        if (window.logManager) {
+          window.logManager.activeFilter = tab.getAttribute('data-filter');
+          window.logManager.renderUI();
+        }
+      });
+    });
+
+    const logSearchInput = document.getElementById('logSearchInput');
+    if (logSearchInput) {
+      logSearchInput.addEventListener('input', (e) => {
+        if (window.logManager) {
+          window.logManager.searchTerm = e.target.value;
+          window.logManager.renderUI();
+        }
+      });
+    }
 
     // -------------------------------------------------------------
     // MODAL 3: Yeni Ürün / Düzenleme Modalı
@@ -639,7 +789,6 @@ class AppController {
     // -------------------------------------------------------------
     const clinicForm = document.getElementById('clinicSettingsForm');
     if (clinicForm) {
-      // Değerleri doldur
       const info = window.receiptGenerator ? window.receiptGenerator.getClinicInfo() : {};
       document.getElementById('settingClinicName').value = info.title || 'VETERİNER HİZMET DETAYI';
       document.getElementById('settingBankName').value = info.bank || 'Ziraat Bankası';
@@ -663,7 +812,8 @@ class AppController {
         localStorage.setItem('sahavet_sheets_url', document.getElementById('settingSheetsUrl').value);
         
         this.vatRate = updated.vatRate;
-        document.getElementById('vatRateLabel').textContent = `KDV Oranı: %${this.vatRate}`;
+        const vatLabel = document.getElementById('vatRateLabel');
+        if (vatLabel) vatLabel.textContent = `KDV Oranı: %${this.vatRate}`;
         this.recalculate();
         this.showToast('Ayarlar başarıyla kaydedildi! 💾');
       });
@@ -749,7 +899,6 @@ class AppController {
       });
     });
 
-    // Arama dinleyicisi
     document.getElementById('batchSearchInput').oninput = () => this.renderBatchItems();
   }
 
@@ -782,20 +931,18 @@ class AppController {
   // -------------------------------------------------------------
   prepareReceiptData() {
     const calc = this.recalculate();
-    const profitMargin = window.paramManager ? window.paramManager.getProfitMargin() : 25;
-
-    // Tüm kalemleri birleştir
     const allItems = [];
+    const summaryParts = [];
 
     // İlaçlar
-    this.cart.forEach(ci => {
-      const unitSalePrice = ci.item.unitCost * (1 + (profitMargin / 100));
+    calc.finalCartItems.forEach(ci => {
       allItems.push({
-        name: ci.item.name,
+        name: ci.name,
         qty: ci.qty,
-        unitPrice: unitSalePrice,
-        total: unitSalePrice * ci.qty
+        unitPrice: ci.unitPrice,
+        total: ci.total
       });
+      summaryParts.push(`${ci.qty}x ${ci.name}`);
     });
 
     // Parametreler (Görünür olanlar + 'Diğer Giderler')
@@ -806,15 +953,22 @@ class AppController {
         unitPrice: vi.unitPrice,
         total: vi.total
       });
+      summaryParts.push(vi.name);
     });
 
     return {
+      mode: this.mode,
+      customer: this.customerName,
+      itemsSummary: summaryParts.join(', '),
       allItems,
+      distanceKm: calc.effectiveKm,
+      distanceTotal: calc.distanceTotal,
       subTotal: calc.subTotal,
       isVatEnabled: calc.isVatEnabled,
       vatRate: calc.vatRate,
       vatAmount: calc.vatAmount,
-      grandTotal: calc.grandTotal
+      grandTotal: calc.grandTotal,
+      distributedExpense: calc.isDistributing
     };
   }
 
@@ -833,6 +987,40 @@ class AppController {
 
   closeReceiptPreviewModal() {
     document.getElementById('receiptPreviewModal').style.display = 'none';
+  }
+
+  /**
+   * İşlemi Onayla / Tamamla (Stok Düşme ve Log Kaydetme)
+   */
+  finalizeTransaction(receiptData) {
+    // 1. Eğer Uygulanan Tedavi ise stoktan düş
+    if (this.mode === 'treatment') {
+      let deductedCount = 0;
+      this.cart.forEach(ci => {
+        const prod = window.stockManager.get(ci.item.id);
+        if (prod) {
+          prod.currentStock = Math.max(0, (parseInt(prod.currentStock) || 0) - ci.qty);
+          deductedCount++;
+        }
+      });
+
+      if (deductedCount > 0 && window.stockManager) {
+        window.stockManager.saveInventory();
+        window.stockManager.renderUI();
+      }
+    }
+
+    // 2. Log Modülüne Kaydet
+    if (window.logManager) {
+      window.logManager.addLog(receiptData);
+    }
+
+    // 3. Kullanıcıya bildirim
+    if (this.mode === 'treatment') {
+      this.showToast('✅ Tedavi tamamlandı, stoklar güncellendi ve log kaydedildi!');
+    } else {
+      this.showToast('📄 Fiyat teklifi arşive kaydedildi (stoklar korundu).');
+    }
   }
 
   // Ürün Düzenleme / Ekleme Modal
@@ -876,6 +1064,11 @@ class AppController {
   }
 
   onParametersChanged() {
+    const quickDist = document.getElementById('quickDistributeToggle');
+    if (quickDist && window.paramManager) {
+      quickDist.checked = window.paramManager.distributeFixedExpense;
+    }
+    this.renderCart();
     this.recalculate();
   }
 }

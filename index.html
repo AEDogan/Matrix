@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SahaVeteriner - Fiyat Hesaplama & Adisyon</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a202c">
+  <meta name="theme-color" content="#0284c7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,24 +37,29 @@
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
+    <!-- Navigation Tabs (5 Sekmeli Mobil & Saha Düzeni) -->
     <nav class="app-nav">
       <button class="nav-tab active" data-target="tab-calc">
         <span class="tab-icon">⚡</span>
-        <span class="tab-text">Hesaplama</span>
+        <span class="tab-text">Hesapla</span>
       </button>
       <button class="nav-tab" data-target="tab-stock">
         <span class="tab-icon">📦</span>
-        <span class="tab-text">Stok Takibi</span>
+        <span class="tab-text">Stok</span>
         <span class="badge-count" id="criticalStockCountBadge" style="display:none;">0</span>
+      </button>
+      <button class="nav-tab" data-target="tab-logs">
+        <span class="tab-icon">📜</span>
+        <span class="tab-text">Geçmiş</span>
+        <span class="badge-count badge-info" id="logsCountBadge" style="display:none;">0</span>
       </button>
       <button class="nav-tab" data-target="tab-params">
         <span class="tab-icon">⚙️</span>
-        <span class="tab-text">Maliyet Kalemleri</span>
+        <span class="tab-text">Giderler</span>
       </button>
       <button class="nav-tab" data-target="tab-settings">
         <span class="tab-icon">🏢</span>
-        <span class="tab-text">Fiş & İletişim</span>
+        <span class="tab-text">Ayarlar</span>
       </button>
     </nav>
 
@@ -66,6 +71,39 @@
       <!-- ============================================== -->
       <section id="tab-calc" class="tab-pane active">
         
+        <!-- Mode Switcher (Uygulanan Tedavi vs. Fiyat Teklifi) -->
+        <div class="mode-selector-card">
+          <div class="mode-buttons-group">
+            <button type="button" id="modeBtnTreatment" class="mode-toggle-btn active">
+              <span class="mode-btn-icon">💉</span>
+              <div class="mode-btn-text">
+                <strong>Uygulanan Tedavi</strong>
+                <small>Stoktan Düşülür</small>
+              </div>
+            </button>
+            <button type="button" id="modeBtnQuote" class="mode-toggle-btn">
+              <span class="mode-btn-icon">📄</span>
+              <div class="mode-btn-text">
+                <strong>Fiyat Teklifi</strong>
+                <small>Stoklar Sabit Kalır</small>
+              </div>
+            </button>
+          </div>
+          <div class="mode-hint" id="modeHintText">
+            💉 <strong>Uygulanan Tedavi:</strong> İşlem tamamlandığında kullanılan ilaçlar otomatik olarak stoktan düşülür ve satış kaydı işlenir.
+          </div>
+        </div>
+
+        <!-- Customer & Location Header -->
+        <div class="card field-card" style="padding: 12px 16px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="calcCustomerInput" style="font-size:0.8rem; font-weight:700;">
+              👤 Hasta Sahibi / Çiftlik / Müşteri (Opsiyonel):
+            </label>
+            <input type="text" id="calcCustomerInput" class="form-input" placeholder="Örn: Ahmet Yılmaz / Mandıra Köyü">
+          </div>
+        </div>
+
         <!-- Quick Search & Batch Add Toolbar -->
         <div class="card field-card">
           <div class="card-title-row">
@@ -138,6 +176,28 @@
           </div>
         </div>
 
+        <!-- Expense Distribution Quick Bar -->
+        <div class="quick-feature-box">
+          <div class="feature-info">
+            <span class="feature-icon">✨</span>
+            <div>
+              <strong>Sabit Gideri İlaç Fiyatlarına Orantılı Dağıt</strong>
+              <p>Sabit klinik giderini fişte ayrı göstermez, kârsız olarak ilaçlara giydirir.</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="quickDistributeToggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div id="distributedExpenseNotice" class="info-alert-box compact" style="display:none;">
+          <span class="info-icon">💡</span>
+          <div>
+            Sabit Klinik Bedeli (<strong id="distNoticeAmount">400.00 TL</strong>) ilaç kalemlerine kârsız olarak orantılı dağıtıldı.
+          </div>
+        </div>
+
         <!-- Live Calculation Total & Invoice Switch -->
         <div class="card summary-card">
           <div class="invoice-switch-row">
@@ -194,7 +254,7 @@
       </section>
 
       <!-- ============================================== -->
-      <!-- 2. STOK TAKİBİ & ENVANTER SEKME (Ayrı Ekran) -->
+      <!-- 2. STOK TAKİBİ & ENVANTER SEKME -->
       <!-- ============================================== -->
       <section id="tab-stock" class="tab-pane">
         
@@ -244,7 +304,7 @@
 
             <!-- Categories pills -->
             <div id="categoryPills" class="category-pills-row">
-              <!-- Rendered by JS -->
+              <!-- Rendered by stock.js -->
             </div>
           </div>
 
@@ -258,7 +318,7 @@
           <!-- CSV Tools Accordion / Bar -->
           <div class="csv-tools-bar">
             <div class="csv-desc">
-              <small>💡 <strong>Google Sheets / CSV:</strong> İlaç ve maliyet listenizi CSV dosyasından içe aktarabilir veya dışa aktarabilirsiniz.</small>
+              <small>💡 <strong>Google Sheets / CSV:</strong> İlaç ve maliyet listenizi CSV formatında Google Sheets üzerinden senkronize edebilir veya dışa aktarabilirsiniz.</small>
             </div>
             <div class="csv-buttons">
               <label class="btn btn-outline-secondary btn-sm file-upload-label">
@@ -266,7 +326,7 @@
                 <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
               </label>
               <button id="exportCsvBtn" class="btn btn-outline-secondary btn-sm">
-                <span>📤</span> CSV Olarak İndir
+                <span>📤</span> CSV İndir
               </button>
               <button id="loadSampleDataBtn" class="btn btn-outline-secondary btn-sm">
                 <span>✨</span> Örnek Veri Yükle
@@ -278,7 +338,70 @@
       </section>
 
       <!-- ============================================== -->
-      <!-- 3. MALİYET KALEMLERİ & PARAMETRELER SEKME -->
+      <!-- 3. SATIŞ & TEKLİF GEÇMİŞİ (LOGLAR) SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-logs" class="tab-pane">
+        
+        <!-- Log KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-icon">💉</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiTreatmentRevenue">0.00 TL</span>
+              <span class="kpi-label">Uygulanan Tedavi Cirosu</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-icon">📄</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiQuoteRevenue">0.00 TL</span>
+              <span class="kpi-label">Verilen Teklif Tutarı</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card field-card">
+          <div class="card-title-row">
+            <div>
+              <h2 class="section-title">Satış & Teklif Geçmişi (Satis_Loglari)</h2>
+              <p class="section-desc" id="kpiTotalLogsCount">0 İşlem Kayıtlı</p>
+            </div>
+            <div class="btn-group-responsive">
+              <button id="exportLogsCsvBtn" class="btn btn-outline-primary btn-sm" title="Google Sheets uyumlu CSV indir">
+                <span>📤</span> Logları CSV İndir
+              </button>
+              <button id="clearAllLogsBtn" class="btn btn-outline-danger btn-xs" title="Tüm geçmişi temizle">
+                <span>🗑️</span> Temizle
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="stock-filter-controls">
+            <div class="search-input-group">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="logSearchInput" class="form-input" placeholder="Müşteri, ilaç veya tarih ara...">
+            </div>
+
+            <div class="stock-filter-tabs">
+              <button class="filter-tab log-filter-tab active" data-filter="all">Tüm İşlemler</button>
+              <button class="filter-tab log-filter-tab" data-filter="treatment">💉 Tedaviler (Stoklu)</button>
+              <button class="filter-tab log-filter-tab" data-filter="quote">📄 Teklifler (Stoksuz)</button>
+            </div>
+          </div>
+
+          <!-- Logs List -->
+          <div class="logs-list-container">
+            <div id="salesLogsList" class="sales-logs-list">
+              <!-- Rendered by logs.js -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 4. MALİYET KALEMLERİ & PARAMETRELER SEKME -->
       <!-- ============================================== -->
       <section id="tab-params" class="tab-pane">
         
@@ -303,7 +426,7 @@
             <span class="info-icon">👁️</span>
             <div>
               <strong>Adisyon Görünürlük & Maskeleme Kuralı:</strong>
-              <p>Müşteriye verdiğiniz fişte doğrudan görünmesini istemediğiniz sabit klinik bedelleri veya özel ek masraflar için <em>"Diğer Giderler Olarak Birleştir"</em> seçeneğini açabilirsiniz. Bu sayede maliyet hesaplamaya dahil edilir ancak adisyonda sade ve profesyonel bir şekilde tek satır olarak özetlenir.</p>
+              <p>Müşteriye verdiğiniz fişte doğrudan görünmesini istemediğiniz sabit klinik bedelleri veya özel ek masraflar için <em>"Sabit Gideri İlaç Fiyatlarına Orantılı Dağıt"</em> veya <em>"Diğer Giderler Olarak Birleştir"</em> seçeneklerini kullanabilirsiniz.</p>
             </div>
           </div>
         </div>
@@ -311,7 +434,7 @@
       </section>
 
       <!-- ============================================== -->
-      <!-- 4. FİŞ & İLETİŞİM AYARLARI SEKME -->
+      <!-- 5. FİŞ & İLETİŞİM AYARLARI SEKME -->
       <!-- ============================================== -->
       <section id="tab-settings" class="tab-pane">
         
@@ -370,7 +493,7 @@
     <!-- Bottom Action Status Indicator -->
     <footer class="app-footer">
       <span class="offline-badge" id="onlineStatusBadge">🟢 Çevrimdışı Kullanıma Hazır</span>
-      <span class="version-text">SahaVeteriner v1.2</span>
+      <span class="version-text">SahaVeteriner v2.0</span>
     </footer>
 
   </div> <!-- End .app-layout -->
@@ -394,7 +517,6 @@
           <span class="search-icon">🔍</span>
           <input type="text" id="batchSearchInput" class="form-input" placeholder="İlaç ara...">
         </div>
-        <div id="batchCategoryChips" class="category-pills-row compact"></div>
       </div>
 
       <div class="modal-body scrollable">
@@ -439,6 +561,11 @@
 
       <div class="modal-body scrollable modal-preview-body">
         
+        <!-- Status / Mode Info Banner -->
+        <div class="modal-mode-banner">
+          <span id="receiptModeBadge" class="badge-treatment">💉 UYGULANAN TEDAVİ (Stoktan Düşülecek)</span>
+        </div>
+
         <!-- 1. Visual Receipt Container (Canvas + Paper Look) -->
         <div id="visualReceiptWrapper" class="receipt-paper-wrapper">
           <div id="receiptPaper" class="receipt-paper">
@@ -446,6 +573,9 @@
             <div class="receipt-header-center">
               <h2 class="receipt-brand-title" id="receiptPreviewTitle">VETERİNER HİZMET DETAYI</h2>
               <div class="receipt-date-time" id="receiptDateTime">18.08.2026 14:30</div>
+              <div id="receiptCustomerRow" class="receipt-customer-line" style="display:none;">
+                <strong>Hasta Sahibi / Müşteri:</strong> <span id="receiptCustomerName"></span>
+              </div>
             </div>
 
             <div class="receipt-divider-thick"></div>
@@ -509,10 +639,13 @@
       <div class="modal-footer preview-footer">
         <div class="preview-actions">
           <button id="whatsappShareBtn" class="btn btn-success btn-lg">
-            <span>💬</span> <strong>WhatsApp ile Paylaş</strong>
+            <span>💬</span> <strong>WhatsApp ile Paylaş & Kaydet</strong>
           </button>
           <button id="downloadJpgBtn" class="btn btn-outline-primary">
-            <span>📥</span> Görseli İndir (.JPG)
+            <span>📥</span> JPG İndir
+          </button>
+          <button id="finalizeOnlyBtn" class="btn btn-outline-secondary">
+            <span>✅</span> Sadece Kaydet
           </button>
           <button id="copyTextBtn" class="btn btn-outline-secondary">
             <span>📋</span> Metni Kopyala
@@ -647,6 +780,7 @@
   <!-- Scripts -->
   <script src="parameters.js"></script>
   <script src="stock.js"></script>
+  <script src="logs.js"></script>
   <script src="receipt.js"></script>
   <script src="app.js"></script>
 </body>

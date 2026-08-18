@@ -1,6 +1,6 @@
 /**
  * SahaVeteriner - Görsel Adisyon & Fiş Oluşturucu ve WhatsApp Paylaşım Servisi (receipt.js)
- * HTML5 Canvas ile piksel hassasiyetinde .JPG formatında Adisyon üretir.
+ * HTML5 Canvas ile piksel hassasiyetinde .JPG formatında Adisyon/Teklif Slip üretir.
  */
 
 class ReceiptGenerator {
@@ -37,9 +37,24 @@ class ReceiptGenerator {
     const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
                     now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
+    // Mod Başlığı Belirleme (Uygulanan Tedavi vs Fiyat Teklifi)
+    const isQuote = receiptData.mode === 'quote';
+    const activeTitle = isQuote ? 'FİYAT TEKLİFİ / BİLGİLENDİRME' : (info.title || 'VETERİNER HİZMET DETAYI');
+
     // Başlık ve Tarih
-    document.getElementById('receiptPreviewTitle').textContent = info.title;
+    document.getElementById('receiptPreviewTitle').textContent = activeTitle;
     document.getElementById('receiptDateTime').textContent = dateStr;
+
+    // Müşteri / Hasta Sahibi Bilgisi
+    const custContainer = document.getElementById('receiptCustomerRow');
+    if (custContainer) {
+      if (receiptData.customer && receiptData.customer.trim() !== '') {
+        custContainer.style.display = 'block';
+        document.getElementById('receiptCustomerName').textContent = receiptData.customer;
+      } else {
+        custContainer.style.display = 'none';
+      }
+    }
 
     // Kalemler
     const container = document.getElementById('receiptItemsContainer');
@@ -76,17 +91,35 @@ class ReceiptGenerator {
     document.getElementById('receiptAddress').textContent = info.address;
     document.getElementById('receiptPhone').textContent = info.phone;
 
+    // Mod Bilgisi Rozeti
+    const modeBadge = document.getElementById('receiptModeBadge');
+    if (modeBadge) {
+      if (isQuote) {
+        modeBadge.className = 'badge-quote';
+        modeBadge.textContent = '📄 FİYAT TEKLİFİ (Stoktan Düşülmez)';
+      } else {
+        modeBadge.className = 'badge-treatment';
+        modeBadge.textContent = '💉 UYGULANAN TEDAVİ (Stoktan Düşülecek)';
+      }
+    }
+
     // WhatsApp Metin Şablonunu Oluştur
-    const textOutput = this.generateWhatsAppText(receiptData, info, dateStr);
+    const textOutput = this.generateWhatsAppText(receiptData, info, dateStr, activeTitle);
     document.getElementById('whatsappTextOutput').value = textOutput;
   }
 
   /**
    * WhatsApp İçin Şık Formatlı Metin Şablonu Üretir
    */
-  generateWhatsAppText(receiptData, info, dateStr) {
-    let text = `🐾 *${info.title.toUpperCase()}*\n`;
+  generateWhatsAppText(receiptData, info, dateStr, activeTitle) {
+    const isQuote = receiptData.mode === 'quote';
+    const headerTitle = activeTitle || (isQuote ? 'FİYAT TEKLİFİ / BİLGİLENDİRME' : 'VETERİNER HİZMET DETAYI');
+
+    let text = `🐾 *${headerTitle.toUpperCase()}*\n`;
     text += `📅 Tarih: ${dateStr}\n`;
+    if (receiptData.customer && receiptData.customer.trim() !== '') {
+      text += `👤 *Müşteri / Hasta Sahibi:* ${receiptData.customer}\n`;
+    }
     text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
 
     receiptData.allItems.forEach(item => {
@@ -122,17 +155,20 @@ class ReceiptGenerator {
     const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
                     now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
+    const isQuote = receiptData.mode === 'quote';
+    const activeTitle = isQuote ? 'FİYAT TEKLİFİ / BİLGİLENDİRME' : (info.title || 'VETERİNER HİZMET DETAYI');
+
     const width = 500;
     const padding = 28;
-    const contentWidth = width - (padding * 2);
 
     // Dinamik yükseklik hesaplama
     let estimatedHeight = 360;
+    if (receiptData.customer && receiptData.customer.trim() !== '') estimatedHeight += 20;
     estimatedHeight += receiptData.allItems.length * 28;
     if (receiptData.isVatEnabled) estimatedHeight += 24;
 
     const canvas = this.canvas || document.createElement('canvas');
-    const scale = 2; // Retina / High DPI netliği için 2x
+    const scale = 2; // Retina netliği
     canvas.width = width * scale;
     canvas.height = estimatedHeight * scale;
 
@@ -149,14 +185,21 @@ class ReceiptGenerator {
     ctx.fillStyle = '#000000';
     ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(info.title.toUpperCase(), width / 2, y);
+    ctx.fillText(activeTitle.toUpperCase(), width / 2, y);
     y += 20;
 
-    // Tarih
+    // Tarih & Müşteri
     ctx.fillStyle = '#555555';
     ctx.font = '12px "Plus Jakarta Sans", sans-serif';
     ctx.fillText(dateStr, width / 2, y);
     y += 16;
+
+    if (receiptData.customer && receiptData.customer.trim() !== '') {
+      ctx.fillStyle = '#111111';
+      ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(`Hasta Sahibi / Müşteri: ${receiptData.customer}`, width / 2, y);
+      y += 16;
+    }
 
     // Kalın Ayraç Çizgisi
     ctx.strokeStyle = '#000000';
@@ -193,7 +236,6 @@ class ReceiptGenerator {
 
     receiptData.allItems.forEach(item => {
       ctx.textAlign = 'left';
-      // Uzun ürün isimlerini kısalt
       let displayName = item.name;
       if (displayName.length > 24) displayName = displayName.slice(0, 23) + '…';
       ctx.fillText(displayName, padding, y);
@@ -298,7 +340,7 @@ class ReceiptGenerator {
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
         resolve(blob);
-      }, 'image/jpeg', 0.88); // 88% JPEG kalite (30-50 KB boyut)
+      }, 'image/jpeg', 0.88);
     });
   }
 
@@ -310,26 +352,28 @@ class ReceiptGenerator {
     const now = new Date();
     const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
                     now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-    const messageText = this.generateWhatsAppText(receiptData, info, dateStr);
+    const isQuote = receiptData.mode === 'quote';
+    const activeTitle = isQuote ? 'FİYAT TEKLİFİ / BİLGİLENDİRME' : (info.title || 'VETERİNER HİZMET DETAYI');
+    const messageText = this.generateWhatsAppText(receiptData, info, dateStr, activeTitle);
 
     try {
       const jpgBlob = await this.generateJpgBlob(receiptData);
-      const file = new File([jpgBlob], `Adisyon_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const filename = `${isQuote ? 'Teklif' : 'Adisyon'}_${Date.now()}.jpg`;
+      const file = new File([jpgBlob], filename, { type: 'image/jpeg' });
 
-      // Web Share API (Android cihazlarda dosya + metin paylaşımı desteklenir)
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: info.title,
+          title: activeTitle,
           text: messageText
         });
         return { success: true, method: 'web_share' };
       }
     } catch (e) {
-      console.log('Web Share API desteklenmiyor veya iptal edildi, WhatsApp URL fallback devrede:', e);
+      console.log('Web Share API fallback devrede:', e);
     }
 
-    // Fallback: Doğrudan WhatsApp Web / Uygulama Linkine yönlendir
+    // Fallback: WhatsApp link
     const encodedText = encodeURIComponent(messageText);
     const waUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
     window.open(waUrl, '_blank');
@@ -338,14 +382,15 @@ class ReceiptGenerator {
   }
 
   /**
-   * Görseli Cihaza İndir
+   * Görseli Cihaza İndir (.JPG)
    */
   async downloadJpg(receiptData) {
+    const isQuote = receiptData.mode === 'quote';
     const jpgBlob = await this.generateJpgBlob(receiptData);
     const url = URL.createObjectURL(jpgBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Veteriner_Adisyon_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.jpg`;
+    link.download = `Veteriner_${isQuote ? 'Teklif' : 'Adisyon'}_${new Date().toISOString().slice(0,10)}_${Date.now().toString().slice(-4)}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
