@@ -1,9 +1,10 @@
-﻿# Build outputs & Binaries
+# Build outputs & Binaries
 *.apk
 *.aab
 *.idsig
 *.zip
 *.dex
+*.jar
 /android/classes/
 /android/r_java/
 /android/bundle_tmp/

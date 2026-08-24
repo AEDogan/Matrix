@@ -27,18 +27,22 @@ $env:JAVA_HOME = $jdkDir
 $env:PATH = "$jdkDir\bin;$env:PATH"
 
 $assetsDir = "$androidDir\assets"
+$appVersion = "v8.1"
 $keystorePath = "$androidDir\sahaveteriner_release.keystore"
 
 # Desktop output paths
 $realDesktop = [Environment]::GetFolderPath('Desktop')
 $desktopOutputs = @(
+    "$realDesktop\VetAssist_PlayStore_v8.1",
+    "C:\Users\ahmet\Desktop\VetAssist_PlayStore_v8.1",
+    "C:\Users\ahmet\OneDrive\Masaüstü\VetAssist_PlayStore_v8.1",
     "$realDesktop\VetAssist_PlayStore_v0.8",
     "C:\Users\ahmet\Desktop\VetAssist_PlayStore_v0.8",
     "C:\Users\ahmet\OneDrive\Masaüstü\VetAssist_PlayStore_v0.8"
 )
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "🐾 VetAssist v0.8 - Release APK & Play Store AAB Builder 🐾" -ForegroundColor Cyan
+Write-Host "🐾 VetAssist $appVersion - Release APK & Play Store AAB Builder 🐾" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Sync & Obfuscate Web Assets
@@ -136,8 +140,8 @@ Get-ChildItem -Path $androidDir -Filter "classes*.dex" | ForEach-Object {
 }
 
 if (!(Test-Path $distDir)) { New-Item -ItemType Directory -Path $distDir | Out-Null }
-$releaseApk = "$distDir\VetAssist_v0.8_Release.apk"
-$testApk = "$distDir\VetAssist_v0.8_Test_Yuklenebilir.apk"
+$releaseApk = "$distDir\VetAssist_v8.1_Release.apk"
+$testApk = "$distDir\VetAssist_v8.1_Test_Yuklenebilir.apk"
 
 if (Test-Path $releaseApk) { Remove-Item $releaseApk -Force }
 if (Test-Path $testApk) { Remove-Item $testApk -Force }
@@ -155,7 +159,7 @@ Write-Host "[6/7] APK Dijital Imzasi dogrulaniyor..." -ForegroundColor Yellow
 
 # 7. Generate AAB with Bundletool
 Write-Host "[7/7] Google Play Store Android App Bundle (.aab) hazirlaniyor..." -ForegroundColor Yellow
-$aabOutput = "$distDir\VetAssist_v0.8_PlayStore.aab"
+$aabOutput = "$distDir\VetAssist_v8.1_PlayStore.aab"
 
 if (Test-Path $bundletoolJar) {
     $bundleDir = "$androidDir\bundle_tmp"
@@ -206,9 +210,9 @@ if (Test-Path $bundletoolJar) {
 foreach ($desk in $desktopOutputs) {
     if (Test-Path (Split-Path -Parent $desk)) {
         if (!(Test-Path $desk)) { New-Item -ItemType Directory -Path $desk -Force | Out-Null }
-        Copy-Item "$distDir\VetAssist_v0.8_PlayStore.aab" "$desk\VetAssist_v0.8_PlayStore.aab" -Force
-        Copy-Item "$distDir\VetAssist_v0.8_Release.apk" "$desk\VetAssist_v0.8_Release.apk" -Force
-        Copy-Item "$distDir\VetAssist_v0.8_Test_Yuklenebilir.apk" "$desk\VetAssist_v0.8_Test_Yuklenebilir.apk" -Force
+        Copy-Item "$distDir\VetAssist_v8.1_PlayStore.aab" "$desk\VetAssist_v8.1_PlayStore.aab" -Force
+        Copy-Item "$distDir\VetAssist_v8.1_Release.apk" "$desk\VetAssist_v8.1_Release.apk" -Force
+        Copy-Item "$distDir\VetAssist_v8.1_Test_Yuklenebilir.apk" "$desk\VetAssist_v8.1_Test_Yuklenebilir.apk" -Force
         Copy-Item "$keystorePath" "$desk\sahaveteriner_release.keystore" -Force
         if (Test-Path "$webDir\Feature_Graphic_1024x500.png") {
             Copy-Item "$webDir\Feature_Graphic_1024x500.png" "$desk\Feature_Graphic_1024x500.png" -Force
@@ -222,7 +226,7 @@ foreach ($desk in $desktopOutputs) {
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "🎉 VETASSIST v0.8 BASARIYLA DERLENDI!" -ForegroundColor Green
-Write-Host "📱 Guvenli Imzali APK : $distDir\VetAssist_v0.8_Release.apk" -ForegroundColor Cyan
-Write-Host "🏪 Play Store AAB    : $distDir\VetAssist_v0.8_PlayStore.aab" -ForegroundColor Cyan
+Write-Host "🎉 VETASSIST v8.1 BASARIYLA DERLENDI!" -ForegroundColor Green
+Write-Host "📱 Guvenli Imzali APK : $distDir\VetAssist_v8.1_Release.apk" -ForegroundColor Cyan
+Write-Host "🏪 Play Store AAB    : $distDir\VetAssist_v8.1_PlayStore.aab" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Green
