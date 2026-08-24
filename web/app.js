@@ -1137,6 +1137,21 @@ class AppController {
       });
     }
 
+    // Guide Modal Events
+    const openGuideBtn = document.getElementById('openGuideModalBtn');
+    const closeGuideBtn = document.getElementById('closeGuideModalBtn');
+    const guideModal = document.getElementById('userGuideModal');
+    if (openGuideBtn && guideModal) {
+      openGuideBtn.addEventListener('click', () => {
+        guideModal.style.display = 'flex';
+      });
+    }
+    if (closeGuideBtn && guideModal) {
+      closeGuideBtn.addEventListener('click', () => {
+        guideModal.style.display = 'none';
+      });
+    }
+
     // Stock Sheets Lock & Sync
     this.bindStockSheetsLockEvents();
   }

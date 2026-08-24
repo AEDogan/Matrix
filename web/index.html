@@ -503,8 +503,11 @@
               </button>
             </div>
 
-            <!-- Privacy Policy Link -->
-            <div style="text-align:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--glass-border-subtle);">
+            <!-- Guide and Privacy Links -->
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:14px; padding-top:10px; border-top:1px solid var(--glass-border-subtle);">
+              <button type="button" id="openGuideModalBtn" class="btn btn-outline" style="font-size:0.75rem; padding:5px 12px; border-radius:20px; border-color:var(--primary); color:var(--primary);">
+                <span data-i18n="guide_btn_title">📖 Kullanım Kılavuzu</span>
+              </button>
               <a href="https://sites.google.com/d/17dYGaGlT2j_FXkCMffl7jOLWJkx5dJpY/p/1_l2H7LDnRSEo8GApEAaIWjhrmNAns9P_/edit" id="privacyPolicyLink" target="_blank" style="font-size:0.75rem; color:var(--text-muted); text-decoration:underline; display:inline-flex; align-items:center; gap:4px;">
                 <span>🔒</span> <span data-i18n="privacy_policy_title">Gizlilik Politikası</span>
               </a>
@@ -857,6 +860,47 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 6: KULLANIM KILAVUZU & HAKKINDA (GUIDE) -->
+  <!-- ============================================== -->
+  <div id="userGuideModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" data-i18n="guide_modal_title">📖 VetAssist Kullanım Kılavuzu</h3>
+          <p class="modal-subtitle" data-i18n="guide_modal_sub">Saha veteriner hekimliği için pratik kullanım ipuçları</p>
+        </div>
+        <button class="btn-modal-close" id="closeGuideModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body scrollable" style="max-height: 65vh; display:flex; flex-direction:column; gap:12px; font-size:0.85rem; line-height:1.45;">
+        <div class="glass-card" style="padding:12px;">
+          <h4 style="font-size:0.9rem; color:var(--primary); margin-bottom:4px;" data-i18n="guide_sec_calc_title">1. Maliyet & Fiyat Hesaplama</h4>
+          <p class="section-desc" style="font-size:0.8rem; margin:0;" data-i18n="guide_sec_calc_desc">Tedavi (maliyet gizli, net fiyatlı) ve Teklif (kalem detaylı) modları arasında geçiş yapabilirsiniz. Mesafe alanına KM girerek yol ücretini otomatik ekleyin.</p>
+        </div>
+
+        <div class="glass-card" style="padding:12px;">
+          <h4 style="font-size:0.9rem; color:var(--primary); margin-bottom:4px;" data-i18n="guide_sec_sheets_title">2. Google Sheets Stok Senkronizasyonu</h4>
+          <p class="section-desc" style="font-size:0.8rem; margin:0;" data-i18n="guide_sec_sheets_desc">Stok sekmesindeki "Sheets" butonuna basarak Google tablonuzdaki tüm ilaç ve fiyat listesini tek tıkla uygulamaya aktarın. Senkronizasyon için kısa bir sponsorlu video izlenir.</p>
+        </div>
+
+        <div class="glass-card" style="padding:12px;">
+          <h4 style="font-size:0.9rem; color:var(--primary); margin-bottom:4px;" data-i18n="guide_sec_receipt_title">3. WhatsApp Görsel Adisyon (JPG) Paylaşımı</h4>
+          <p class="section-desc" style="font-size:0.8rem; margin:0;" data-i18n="guide_sec_receipt_desc">"Adisyon Görseli (JPG)" butonuna dokunduğunuzda klinik ve IBAN bilgilerinizle şık bir görsel oluşturulur ve WhatsApp ile tek tıkla yetiştiriciye gönderilir.</p>
+        </div>
+
+        <div class="glass-card" style="padding:12px;">
+          <h4 style="font-size:0.9rem; color:var(--primary); margin-bottom:4px;" data-i18n="guide_sec_offline_title">4. Çevrimdışı (Offline) Çalışma</h4>
+          <p class="section-desc" style="font-size:0.8rem; margin:0;" data-i18n="guide_sec_offline_desc">İnternetin çekmediği ahır ve köylerde tüm hesaplama ve adisyon işlevleri kesintisiz olarak çalışır.</p>
+        </div>
+
+        <div style="text-align:center; padding:8px 0; color:var(--text-muted); font-size:0.75rem;">
+          VetAssist v0.8 &bull; Saha Veteriner Hekim Yazılımı
+        </div>
+      </div>
     </div>
   </div>
 
