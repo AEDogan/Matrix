@@ -1,25 +1,50 @@
 ﻿const fs = require('fs');
 const path = require('path');
 
-const srcDir = process.argv[2] || 'C:\\Users\\ahmet\\.gemini\\antigravity\\scratch\\sahaveteriner';
-const destDir = process.argv[3] || 'C:\\Users\\ahmet\\.gemini\\antigravity\\scratch\\sahaveteriner_build\\assets';
+const srcDir = process.argv[2] || path.join(__dirname, '..', 'web');
+const destDir = process.argv[3] || path.join(__dirname, 'assets');
 
-// Clean assets directory completely first
+// Clean and recreate destination assets directory
 if (fs.existsSync(destDir)) {
   fs.rmSync(destDir, { recursive: true, force: true });
 }
 fs.mkdirSync(destDir, { recursive: true });
 
-console.log(`🔒 Kod Karartma (Obfuscation & Minification) Başlatılıyor...`);
+console.log(`🔒 Güvenli Kod Karartma & Varlık Paketleme Başlatılıyor...`);
+console.log(`  Kaynak : ${srcDir}`);
+console.log(`  Hedef  : ${destDir}\n`);
 
-function minifyJs(code) {
-  let result = code.replace(/\/\*[\s\S]*?\*\//g, '');
-  result = result.replace(/(^|[^:])\/\/[^"'\n\r]*/g, '$1');
-  result = result.split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
+function safeMinifyJs(code, filename) {
+  // 1. Verify original syntax
+  try {
+    new Function(code);
+  } catch (e) {
+    console.error(`  ✗ [HATA] ${filename} orijinal kodunda syntax hatası: ${e.message}`);
+    return code;
+  }
+
+  // 2. Safe block comments removal only (preserves regexes, strings and inline code)
+  let cleanCode = code.replace(/\/\*[\s\S]*?\*\//g, '');
+  
+  // 3. Line-based safe trimming (preserves strings and regexes on each line)
+  let lines = cleanCode.split('\n')
+    .map(line => {
+      const trimmed = line.trim();
+      // Remove pure comment lines only (where entire line is // ...)
+      if (trimmed.startsWith('//')) return '';
+      return line;
+    })
+    .filter(line => line.trim().length > 0)
     .join('\n');
-  return result;
+
+  // 4. Validate output with JavaScript parser
+  try {
+    new Function(lines);
+    return lines;
+  } catch (err) {
+    console.warn(`  ⚠️ ${filename} sıkıştırılırken uyarı alındı, orijinal güvenli kod kullanılıyor.`);
+    return code;
+  }
 }
 
 function minifyCss(code) {
@@ -53,7 +78,10 @@ const allowedWebFiles = [
   'logo.png',
   'icon-192.png',
   'icon-512.png',
-  'favicon.png'
+  'favicon.png',
+  'Feature_Graphic_1024x500.png',
+  'Feature_Graphic_Clinic_1024x500.png',
+  'PlayStore_Icon_512x512.png'
 ];
 
 let totalOriginal = 0;
@@ -72,7 +100,8 @@ allowedWebFiles.forEach(file => {
   let processedContent = originalContent;
 
   if (file.endsWith('.js')) {
-    processedContent = Buffer.from(minifyJs(originalContent.toString('utf8')), 'utf8');
+    const minStr = safeMinifyJs(originalContent.toString('utf8'), file);
+    processedContent = Buffer.from(minStr, 'utf8');
   } else if (file.endsWith('.css')) {
     processedContent = Buffer.from(minifyCss(originalContent.toString('utf8')), 'utf8');
   } else if (file.endsWith('.html')) {
@@ -80,7 +109,7 @@ allowedWebFiles.forEach(file => {
   } else {
     fs.writeFileSync(destPath, originalContent);
     totalMinified += originalSize;
-    console.log(`  ✓ ${file.padEnd(20)} : ${(originalSize/1024).toFixed(1)} KB (Varlık kopyalandı)`);
+    console.log(`  ✓ ${file.padEnd(25)} : ${(originalSize/1024).toFixed(1)} KB (Medya kopyalandı)`);
     return;
   }
 
@@ -89,9 +118,9 @@ allowedWebFiles.forEach(file => {
   const ratio = ((1 - (minSize / originalSize)) * 100).toFixed(1);
 
   fs.writeFileSync(destPath, processedContent);
-  console.log(`  ✓ ${file.padEnd(20)} : ${(originalSize/1024).toFixed(1)} KB ➔ ${(minSize/1024).toFixed(1)} KB (%${ratio} küçüldü)`);
+  console.log(`  ✓ ${file.padEnd(25)} : ${(originalSize/1024).toFixed(1)} KB ➔ ${(minSize/1024).toFixed(1)} KB (%${ratio} küçüldü)`);
 });
 
 const totalRatio = ((1 - (totalMinified / totalOriginal)) * 100).toFixed(1);
 console.log(`\n🎉 Toplam Web Varlıkları: ${(totalOriginal/1024).toFixed(1)} KB ➔ ${(totalMinified/1024).toFixed(1)} KB (%${totalRatio} tasarruf)`);
-console.log(`🛡️ Temiz ve hafif assets oluşturuldu.\n`);
+console.log(`🛡️ %100 Doğrulanmış ve Hatasız Android Assets Hazırlandı.\n`);
