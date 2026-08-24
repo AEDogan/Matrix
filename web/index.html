@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>VetAssist v0.8 - Saha Veteriner Hekim Asistanı</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-sunlight">
+  
+  <!-- Main App Layout -->
+  <div class="app-layout" id="appLayout">
+    
+    <!-- Top Bar (Frosted Glass Header) -->
+    <header class="app-header">
+      <div class="brand-container">
+        <div class="brand-icon">
+          <img src="logo.png" alt="VetAssist Logo" class="brand-logo-img">
+        </div>
+        <div>
+          <h1 class="brand-title">VetAssist</h1>
+          <p class="brand-subtitle" data-i18n="brand_subtitle">Fiyat Hesaplama & Saha Adisyonu</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn-icon-glass" title="Tema Değiştir" data-i18n-title="theme_toggle_title">
+          <span id="themeIcon">☀️</span>
+        </button>
+        <button id="openSettingsDrawerBtn" class="btn-icon-glass" title="Menü" data-i18n-title="btn_settings">
+          <span>⚙️</span>
+          <span class="btn-text-sm" data-i18n="btn_settings">Menü</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="app-content">
+      
+      <!-- ============================================== -->
+      <!-- 1. HESAPLAMA & ADİSYON SEKME (ANA ÇALIŞMA ALANI) -->
+      <!-- ============================================== -->
+      <section id="tab-calc" class="tab-pane active">
+        
+        <!-- Mode Switcher (Pill Glass) -->
+        <div class="mode-segmented-control">
+          <button type="button" id="modeBtnTreatment" class="mode-pill-btn active">
+            <span class="mode-icon">💉</span>
+            <span data-i18n="mode_treatment_title">Uygulanan Tedavi</span>
+          </button>
+          <button type="button" id="modeBtnQuote" class="mode-pill-btn">
+            <span class="mode-icon">📄</span>
+            <span data-i18n="mode_quote_title">Fiyat Teklifi</span>
+          </button>
+        </div>
+
+        <div class="mode-hint-compact" id="modeHintText" data-i18n="mode_treatment_hint">
+          💉 <strong>Uygulanan Tedavi:</strong> İşlem tamamlandığında kullanılan ilaçlar otomatik olarak stoktan düşülür ve satış kaydı işlenir.
+        </div>
+
+        <!-- Customer & Location Header -->
+        <div class="glass-card" style="padding: 12px 14px; margin-bottom: 12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="calcCustomerInput" style="font-size:0.78rem;" data-i18n="customer_label">
+              👤 Hasta Sahibi / Çiftlik / Müşteri (Opsiyonel):
+            </label>
+            <input type="text" id="calcCustomerInput" class="form-input" placeholder="Örn: Ahmet Yılmaz / Mandıra Köyü" data-i18n-placeholder="customer_placeholder">
+          </div>
+        </div>
+
+        <!-- Quick Search & Batch Add Toolbar -->
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h2 class="section-title" data-i18n="med_selection_title">İlaç & Malzeme Seçimi</h2>
+            <button id="openBatchModalBtn" class="btn btn-primary btn-sm">
+              <span>➕</span> <span data-i18n="btn_batch_add">Çoklu Kalem Ekle</span>
+            </button>
+          </div>
+
+          <div class="autocomplete-wrapper">
+            <div class="search-input-group">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="quickSearchInput" class="form-input" placeholder="İlaç veya malzeme adı yazın..." data-i18n-placeholder="quick_search_placeholder" autocomplete="off">
+              <button id="clearSearchBtn" class="btn-clear" style="display:none;">✕</button>
+            </div>
+            <div id="autocompleteDropdown" class="autocomplete-dropdown" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Quick Protocols / Treatment Presets Bar (IKEA Effect) -->
+        <div class="presets-container">
+          <div class="presets-header">
+            <span class="presets-title" data-i18n="presets_title">⚡ Hızlı Protokoller & Çantam:</span>
+            <button type="button" id="openPresetModalHeaderBtn" class="btn-xs btn-outline-secondary" style="border-radius:var(--radius-full); font-weight:700; display:flex; align-items:center; gap:4px;" title="Yeni Hazır Set Oluştur">
+              <span>➕</span> <span data-i18n="btn_new_preset_short">Yeni Set Ekle</span>
+            </button>
+          </div>
+          <div id="presetsScrollRow" class="presets-scroll-row">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Selected Items (Cart) -->
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h2 class="section-title"><span data-i18n="cart_title">Seçilen Kalemler</span> (<span id="cartItemCount">0</span>)</h2>
+            <button id="clearCartBtn" class="btn btn-outline-danger btn-xs" style="display:none;" data-i18n="btn_clear_cart">Tümünü Temizle</button>
+          </div>
+
+          <div id="cartEmptyState" class="empty-state">
+            <span class="empty-icon">📋</span>
+            <p data-i18n="cart_empty_title" style="font-weight:700;">Henüz ilaç veya malzeme eklenmedi.</p>
+            <small data-i18n="cart_empty_sub">Yukarıdan arayarak, hazır protokollere basarak veya "+ Çoklu Ekle" ile seçim yapabilirsiniz.</small>
+          </div>
+
+          <div id="cartList" class="cart-items-list" style="display:none;">
+            <!-- Cart items rendered dynamically -->
+          </div>
+
+          <!-- Save Cart as Preset Bar -->
+          <div id="cartPresetBar" class="cart-preset-action-row" style="display:none;">
+            <button type="button" id="btnSaveCartAsPreset" class="btn-save-preset">
+              <span>★</span> <span data-i18n="btn_save_as_preset">Bu Sepeti Set Olarak Kaydet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Travel & Additional Costs -->
+        <div class="collapsible-box">
+          <button type="button" class="collapsible-header" id="distanceCollapsibleBtn">
+            <span class="section-title" data-i18n="distance_title">🚗 Ulaşım & Yol Mesafesi Ekle</span>
+            <span id="distanceCollapsibleIcon" style="font-weight:bold;">➕</span>
+          </button>
+
+          <div class="collapsible-body" id="distanceCollapsibleBody">
+            <div class="form-group">
+              <label class="form-label" for="distanceKmInput" data-i18n="distance_km_label">Gidilen Mesafe (KM)</label>
+              <div class="search-input-group">
+                <input type="number" id="distanceKmInput" class="form-input text-bold text-mono" value="0" min="0" step="1">
+              </div>
+            </div>
+
+            <!-- Quick KM Chips -->
+            <div class="quick-chips">
+              <button type="button" class="chip-btn" data-km="5">+5 km</button>
+              <button type="button" class="chip-btn" data-km="10">+10 km</button>
+              <button type="button" class="chip-btn" data-km="25">+25 km</button>
+              <button type="button" class="chip-btn" data-km="50">+50 km</button>
+              <button type="button" class="chip-btn btn-chip-reset" id="resetKmBtn" data-i18n="btn_reset_km">⟲ Sıfırla</button>
+            </div>
+            
+            <div class="sub-cost-preview">
+              <span data-i18n="distance_total_label">Mesafe Toplamı:</span>
+              <strong id="distanceTotalDisplay" class="text-mono">0.00 TL</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Distributed Expense Notice (If enabled in settings) -->
+        <div id="distributedExpenseNotice" class="mode-hint-compact" style="display:none; background: var(--primary-bg); color: var(--primary-text); border: 1px solid var(--glass-border-active);">
+          <span class="info-icon">💡</span>
+          <span id="distNoticeContent">Sabit Klinik Bedeli ilaç kalemlerine orantılı dağıtıldı.</span>
+        </div>
+
+        <!-- Grand Total & Action Card -->
+        <div class="summary-glass-card">
+          <div class="totals-breakdown">
+            <div class="total-row">
+              <span data-i18n="summary_items_total">Kalemler Toplamı:</span>
+              <strong id="summaryItemsTotal">0.00 TL</strong>
+            </div>
+            <div class="total-row" id="summaryDistanceRow" style="display:none;">
+              <span data-i18n="summary_distance_total">Ulaşım Bedeli:</span>
+              <strong id="summaryDistanceTotal">0.00 TL</strong>
+            </div>
+            <div class="total-row" id="summaryOtherParamsRow" style="display:none;">
+              <span id="summaryOtherParamsLabel" data-i18n="summary_other_params">Diğer Hizmet Giderleri:</span>
+              <strong id="summaryOtherParamsTotal">0.00 TL</strong>
+            </div>
+            <div class="divider-dashed"></div>
+            <div class="total-row highlight">
+              <span data-i18n="summary_subtotal">Ara Toplam (Net):</span>
+              <strong id="summarySubTotal">0.00 TL</strong>
+            </div>
+            <div class="total-row vat-row" id="summaryVatRow" style="display:none;">
+              <span data-i18n="summary_vat_total">KDV Tutarı:</span>
+              <strong id="summaryVatTotal">0.00 TL</strong>
+            </div>
+          </div>
+
+          <div class="grand-total-hero">
+            <span class="grand-label" data-i18n="summary_grand_total">ÖDENECEK TUTAR</span>
+            <span class="grand-value" id="summaryGrandTotal">0.00 TL</span>
+          </div>
+
+          <!-- Primary Massive Action Button -->
+          <button id="generateReceiptBtn" class="btn-action-primary">
+            <span class="btn-icon-large">📄</span>
+            <div class="btn-text-column">
+              <span class="btn-title-main" data-i18n="btn_create_receipt">Adisyon Oluştur & Paylaş</span>
+              <span class="btn-title-sub" data-i18n="btn_create_receipt_sub">WhatsApp ile görsel veya metin olarak gönderin</span>
+            </div>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 2. STOK TAKİBİ & ENVANTER SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-stock" class="tab-pane">
+        
+        <!-- Stock KPI Banner -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-icon">📦</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiTotalItems">0</span>
+              <span class="kpi-label" data-i18n="kpi_total_items">Toplam İlaç/Malzeme</span>
+            </div>
+          </div>
+          <div class="kpi-card" id="kpiCriticalCard">
+            <span class="kpi-icon">⚠️</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiCriticalItems" style="color:var(--danger);">0</span>
+              <span class="kpi-label" data-i18n="kpi_critical_items">Kritik Stok Uyarısı</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Actions & Search -->
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h2 class="section-title" data-i18n="stock_management_title">Envanter & Stok Yönetimi</h2>
+            <div style="display:flex; gap:6px;">
+              <button id="openNewItemModalBtn" class="btn btn-primary btn-sm">
+                <span>➕</span> <span data-i18n="btn_new_product">Yeni Ürün</span>
+              </button>
+              <button id="syncSheetsBtn" class="btn btn-outline-primary btn-sm" title="Google Sheets CSV senkronizasyonu">
+                <span>🔄</span> <span data-i18n="btn_sync_sheets">Sheets</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="stock-filter-controls">
+            <div class="search-input-group">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="stockSearchInput" class="form-input" placeholder="Stokta ara (İsim, Kategori)..." data-i18n-placeholder="stock_search_placeholder">
+            </div>
+
+            <div class="stock-filter-tabs">
+              <button class="filter-tab active" data-filter="all"><span data-i18n="filter_all">Tümü</span> (<span id="countAll">0</span>)</button>
+              <button class="filter-tab" data-filter="critical"><span data-i18n="filter_critical">🚨 Kritik Stok</span> (<span id="countCritical">0</span>)</button>
+            </div>
+
+            <!-- Categories pills -->
+            <div id="categoryPills" class="category-pills-row">
+              <!-- Rendered by stock.js -->
+            </div>
+          </div>
+
+          <!-- Stock List -->
+          <div id="stockItemsList" class="stock-cards-list">
+            <!-- Rendered by stock.js -->
+          </div>
+
+          <!-- Google Sheets Stok Güncelleme & Kilitli Link Kaydetme Kartı -->
+          <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--glass-border-subtle);">
+            <div class="card-title-row" style="margin-bottom:6px;">
+              <h3 class="section-title" style="font-size:0.86rem;">
+                <span>🔄</span> <span data-i18n="sheets_sync_title">Google Sheets Stok Senkronizasyon Linki</span>
+              </h3>
+            </div>
+            <p class="section-desc" style="margin-bottom:8px;" data-i18n="sheets_sync_desc">
+              Stok listenizi Google Sheets üzerinden güncellemek için web'de yayınlanan CSV linkinizi girin.
+            </p>
+            
+            <div class="form-group" style="margin-bottom:6px;">
+              <div style="display:flex; gap:6px;">
+                <input type="url" id="stockTabSheetsUrlInput" class="form-input text-mono" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" readonly>
+                <button type="button" id="toggleStockUrlLockBtn" class="btn btn-outline-secondary btn-sm" title="Kilidi Aç/Kapat">
+                  <span id="stockUrlLockIcon">🔒</span> <span id="stockUrlLockText" data-i18n="lock_unlock_btn">Kilidi Aç</span>
+                </button>
+              </div>
+              <small class="section-desc" id="stockUrlLockHint" data-i18n="lock_hint_locked" style="margin-top:4px; display:block;">🔒 Link kilitlidir. Yanlışlıkla düzenlenmemesi için korunmaktadır.</small>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="button" id="saveStockUrlBtn" class="btn btn-outline-primary btn-sm" style="display:none;">
+                <span>💾</span> <span data-i18n="btn_save_link">Linki Kaydet</span>
+              </button>
+              <button type="button" id="syncStockTabSheetsBtn" class="btn btn-primary btn-sm">
+                <span>🔄</span> <span data-i18n="btn_sync_stock_now">Sheets'ten Stok Güncelle</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- CSV Import/Export -->
+          <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+            <label class="btn btn-outline-secondary btn-sm" style="cursor:pointer;">
+              <span>📥</span> <span data-i18n="btn_import_csv">CSV İçe Aktar</span>
+              <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+            </label>
+            <button id="exportCsvBtn" class="btn btn-outline-secondary btn-sm">
+              <span>📤</span> <span data-i18n="btn_export_csv">CSV İndir</span>
+            </button>
+            <button id="loadSampleDataBtn" class="btn btn-outline-secondary btn-sm">
+              <span>✨</span> <span data-i18n="btn_load_sample">Örnek Veri Yükle</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 3. SATIŞ & TEKLİF GEÇMİŞİ (LOGLAR) SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-logs" class="tab-pane">
+        
+        <!-- Log KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-icon">💉</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiTreatmentRevenue">0.00 TL</span>
+              <span class="kpi-label" data-i18n="kpi_treatment_revenue">Uygulanan Tedavi Cirosu</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-icon">📄</span>
+            <div class="kpi-info">
+              <span class="kpi-num" id="kpiQuoteRevenue">0.00 TL</span>
+              <span class="kpi-label" data-i18n="kpi_quote_revenue">Verilen Teklif Tutarı</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title-row">
+            <div>
+              <h2 class="section-title" data-i18n="logs_title">Satış & Teklif Geçmişi</h2>
+              <p class="section-desc" id="kpiTotalLogsCount">0 İşlem Kayıtlı</p>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button id="exportLogsCsvBtn" class="btn btn-outline-primary btn-sm" title="Google Sheets uyumlu CSV indir">
+                <span>📤</span> <span data-i18n="btn_export_logs">CSV</span>
+              </button>
+              <button id="clearAllLogsBtn" class="btn btn-outline-danger btn-xs" title="Tüm geçmişi temizle">
+                <span>🗑️</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="stock-filter-controls">
+            <div class="search-input-group">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="logSearchInput" class="form-input" placeholder="Müşteri, ilaç veya tarih ara..." data-i18n-placeholder="logs_search_placeholder">
+            </div>
+
+            <div class="stock-filter-tabs">
+              <button class="filter-tab log-filter-tab active" data-filter="all" data-i18n="filter_logs_all">Tüm İşlemler</button>
+              <button class="filter-tab log-filter-tab" data-filter="treatment" data-i18n="filter_logs_treatment">💉 Tedaviler</button>
+              <button class="filter-tab log-filter-tab" data-filter="quote" data-i18n="filter_logs_quote">📄 Teklifler</button>
+            </div>
+          </div>
+
+          <!-- Logs List -->
+          <div id="salesLogsList" class="sales-logs-list">
+            <!-- Rendered by logs.js -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Floating Glass Bottom Navigation (3 Tabs) -->
+    <div class="floating-nav-container">
+      <nav class="app-nav-floating">
+        <button class="nav-pill-tab active" data-target="tab-calc">
+          <span class="tab-icon">⚡</span>
+          <span class="tab-text" data-i18n="tab_calc">Adisyon</span>
+        </button>
+        <button class="nav-pill-tab" data-target="tab-stock">
+          <span class="tab-icon">📦</span>
+          <span class="tab-text" data-i18n="tab_stock">Stok</span>
+          <span class="badge-count" id="criticalStockCountBadge" style="display:none;">0</span>
+        </button>
+        <button class="nav-pill-tab" data-target="tab-logs">
+          <span class="tab-icon">📜</span>
+          <span class="tab-text" data-i18n="tab_logs">Geçmiş</span>
+          <span class="badge-count" id="logsCountBadge" style="display:none; background:var(--primary);">0</span>
+        </button>
+      </nav>
+    </div>
+
+  </div> <!-- End .app-layout -->
+
+
+  <!-- ========================================================================== -->
+  <!-- SLIDE-OVER DRAWER: KLİNİK, MALİYET & SİSTEM AYARLARI -->
+  <!-- ========================================================================== -->
+  <div id="settingsDrawer" class="drawer-backdrop" style="display:none;">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h3 class="drawer-title" data-i18n="settings_drawer_title">⚙️ Ayarlar & Parametreler</h3>
+        <button class="btn-modal-close" id="closeSettingsDrawerBtn">✕</button>
+      </div>
+
+      <div class="drawer-tabs">
+        <button class="drawer-tab-btn active" id="drawerTabClinicBtn" data-target="drawer-pane-clinic" data-i18n="drawer_tab_clinic">🏢 Klinik & Banka</button>
+        <button class="drawer-tab-btn" id="drawerTabParamsBtn" data-target="drawer-pane-params" data-i18n="drawer_tab_params">⚙️ Maliyet Parametreleri</button>
+        <button class="drawer-tab-btn" id="drawerTabPresetsBtn" data-target="drawer-pane-presets" data-i18n="drawer_tab_presets">✨ Hazır Tedavi Setleri</button>
+      </div>
+
+      <div class="drawer-body">
+        
+        <!-- Pane 1: Klinik & Banka Ayarları -->
+        <div id="drawer-pane-clinic" class="drawer-pane active">
+          <form id="clinicSettingsForm">
+            <div class="form-group">
+              <label class="form-label" for="settingLanguage" data-i18n="settings_lang_label">🌐 Uygulama Dili / Language</label>
+              <select id="settingLanguage" class="form-select text-bold">
+                <option value="tr">🇹🇷 Türkçe (Turkish)</option>
+                <option value="en">🇬🇧 English</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingClinicName" data-i18n="settings_clinic_name">Klinik / Hekim Ünvanı</label>
+              <input type="text" id="settingClinicName" class="form-input" value="VETERİNER HİZMET DETAYI">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingBankName" data-i18n="settings_bank_name">Banka Adı</label>
+              <input type="text" id="settingBankName" class="form-input" value="Ziraat Bankası">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingIban" data-i18n="settings_iban">IBAN Numarası</label>
+              <input type="text" id="settingIban" class="form-input text-mono" value="TR12 0001 0002 0003 0004 0005 06">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingAddress" data-i18n="settings_address">İşletme / Klinik Adresi</label>
+              <input type="text" id="settingAddress" class="form-input" value="Kamçıllı, Mandıra Sokak No 12, 10085 Karesi/Balıkesir">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingPhone" data-i18n="settings_phone">İletişim Telefonu (WhatsApp)</label>
+              <input type="text" id="settingPhone" class="form-input text-mono" value="0552 185 03 08">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingVatRate" data-i18n="settings_vat_rate">Varsayılan KDV Oranı (%)</label>
+              <input type="number" id="settingVatRate" class="form-input" value="18" min="0" max="100">
+            </div>
+
+            <!-- Global Distribute Expense Toggle -->
+            <div class="glass-card" style="padding:12px; margin: 12px 0;">
+              <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                <div>
+                  <strong style="font-size:0.85rem;" data-i18n="distribute_toggle_title">Sabit Gideri İlaç Fiyatlarına Dağıt</strong>
+                  <p class="section-desc" data-i18n="distribute_toggle_sub" style="margin-top:2px;">Sabit klinik giderini fişte ayrı göstermez, kârsız olarak ilaçlara giydirir.</p>
+                </div>
+                <input type="checkbox" id="globalDistributeExpenseToggle" style="width:20px; height:20px;">
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="settingSheetsUrl" data-i18n="settings_sheets_url">Google Sheets Yayınlanan CSV Linki</label>
+              <input type="url" id="settingSheetsUrl" class="form-input text-mono" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv">
+              <small class="section-desc" data-i18n="settings_sheets_hint" style="margin-top:4px; display:block;">Google Sheets > Dosya > Paylaş > Web'de Yayınla > CSV formatını seçip yapıştırın.</small>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+              <button type="submit" class="btn btn-primary" data-i18n="btn_save_settings">💾 Ayarları Kaydet</button>
+              <button type="button" id="resetDefaultsBtn" class="btn btn-outline-danger" data-i18n="btn_reset_defaults">Fabrika Ayarlarına Dön</button>
+            </div>
+
+            <!-- Developer Support & Rewarded Video Card -->
+            <div class="glass-card" style="padding:14px; margin-top:16px; border:1px solid rgba(2,132,199,0.3); background:rgba(2,132,199,0.06);">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-size:1.2rem;">🌟</span>
+                <strong style="font-size:0.88rem; color:var(--text-main);" data-i18n="support_dev_title">VetAssist'e Destek Olun</strong>
+              </div>
+              <p class="section-desc" style="font-size:0.76rem; margin-bottom:8px;" data-i18n="support_dev_desc">
+                Uygulamanın ücretsiz kalmasını sağlamak ve geliştirmeyi desteklemek için kısa bir video reklam izleyebilirsiniz.
+              </p>
+              <button type="button" id="btnWatchRewardedAd" class="btn-rewarded-support">
+                <span>🎬</span> <span data-i18n="btn_watch_support_video">Kısa Video İzle & Destek Ol</span>
+              </button>
+            </div>
+
+            <!-- Privacy Policy Link -->
+            <div style="text-align:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--glass-border-subtle);">
+              <a href="https://sites.google.com/d/17dYGaGlT2j_FXkCMffl7jOLWJkx5dJpY/p/1_l2H7LDnRSEo8GApEAaIWjhrmNAns9P_/edit" id="privacyPolicyLink" target="_blank" style="font-size:0.75rem; color:var(--text-muted); text-decoration:underline; display:inline-flex; align-items:center; gap:4px;">
+                <span>🔒</span> <span data-i18n="privacy_policy_title">Gizlilik Politikası</span>
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Pane 2: Maliyet Parametreleri -->
+        <div id="drawer-pane-params" class="drawer-pane" style="display:none;">
+          <div class="card-title-row" style="margin-bottom:8px;">
+            <div>
+              <h4 class="section-title" data-i18n="params_title">Maliyet Parametreleri</h4>
+              <p class="section-desc" data-i18n="params_desc">Kâr marjı, KM ücreti ve ek maliyetleri özelleştirin.</p>
+            </div>
+            <button id="openNewParamModalBtn" class="btn btn-primary btn-sm">
+              <span>➕</span> <span data-i18n="btn_new_param">Yeni Ekle</span>
+            </button>
+          </div>
+
+          <div id="parametersList" class="parameters-list" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Rendered by parameters.js -->
+          </div>
+        </div>
+
+        <!-- Pane 3: Hazır Tedavi Setleri Yönetimi -->
+        <div id="drawer-pane-presets" class="drawer-pane" style="display:none;">
+          <div class="card-title-row" style="margin-bottom:12px;">
+            <div>
+              <h4 class="section-title" data-i18n="drawer_tab_presets">✨ Hazır Tedavi Setleri</h4>
+              <p class="section-desc">Sık kullanılan reçete veya saha çantası paketleriniz.</p>
+            </div>
+            <button type="button" id="openPresetModalDrawerBtn" class="btn btn-primary btn-sm">
+              <span>➕</span> <span data-i18n="btn_create_new_preset">Yeni Set Oluştur</span>
+            </button>
+          </div>
+
+          <div id="drawerPresetsList" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="closeSettingsDrawerFooterBtn" data-i18n="btn_close_drawer">✕ Kapat</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 1: ÇOKLU KALEM EKLEME MODALI -->
+  <!-- ============================================== -->
+  <div id="batchAddModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">➕ <span data-i18n="batch_modal_title">Çoklu İlaç & Kalem Ekle</span></h3>
+          <p class="modal-subtitle" data-i18n="batch_modal_sub">Birden fazla ürünü adetleriyle birlikte seçip tek seferde ekleyin.</p>
+        </div>
+        <button class="btn-modal-close" id="closeBatchModalBtn">✕</button>
+      </div>
+
+      <div style="padding: 12px 20px; border-bottom: 1px solid var(--glass-border-subtle);">
+        <div class="search-input-group">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="batchSearchInput" class="form-input" placeholder="İlaç ara..." data-i18n-placeholder="batch_search_placeholder">
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div id="batchItemList" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.85rem; font-weight:700;"><span data-i18n="batch_selected_count">Seçilen Kalem:</span> <strong id="batchSelectedCount" class="text-mono">0</strong></span>
+          <div style="display:flex; gap:8px;">
+            <button id="batchCancelBtn" class="btn btn-outline-secondary btn-sm" data-i18n="btn_cancel">İptal</button>
+            <button id="batchConfirmBtn" class="btn btn-primary btn-sm">
+              <span>✅</span> <span data-i18n="btn_confirm_batch">Sepete Ekle</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 2: GÖRSEL ADİSYON / FİŞ ÖNİZLEME & SADELEŞTİRİLMİŞ WHATSAPP -->
+  <!-- ============================================== -->
+  <div id="receiptPreviewModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container" style="max-width: 460px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">📄 <span data-i18n="receipt_modal_title">Adisyon Paylaşımı</span></h3>
+          <p class="modal-subtitle" data-i18n="receipt_modal_sub">Aşağıdaki seçeneklerden birine basarak WhatsApp üzerinden paylaşın.</p>
+        </div>
+        <button class="btn-modal-close" id="closeReceiptModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Visual Receipt Container -->
+        <div id="visualReceiptWrapper" class="receipt-paper-wrapper">
+          <div id="receiptPaper" class="receipt-paper">
+            <div class="receipt-header-center">
+              <h2 class="receipt-brand-title" id="receiptPreviewTitle">VETERİNER HİZMET DETAYI</h2>
+              <div class="receipt-date-time" id="receiptDateTime"></div>
+              <div id="receiptCustomerRow" class="receipt-customer-line" style="display:none; font-size:11px; margin-top:3px;">
+                <strong data-i18n="receipt_customer_label">Hasta Sahibi / Müşteri:</strong> <span id="receiptCustomerName"></span>
+              </div>
+            </div>
+
+            <div class="receipt-divider-thick"></div>
+
+            <div class="receipt-table-header">
+              <div class="col-item" data-i18n="receipt_th_item">Ürün / Hizmet Adı</div>
+              <div class="col-qty" data-i18n="receipt_th_qty">Adet/KM</div>
+              <div class="col-price" data-i18n="receipt_th_total">Tutar</div>
+            </div>
+
+            <div class="receipt-divider-thin"></div>
+
+            <div id="receiptItemsContainer" class="receipt-items-container">
+              <!-- Rendered items -->
+            </div>
+
+            <div class="receipt-divider-thick"></div>
+
+            <div class="receipt-calc-totals">
+              <div class="receipt-total-line">
+                <span data-i18n="receipt_subtotal">Ara Toplam:</span>
+                <span id="receiptAraToplam" class="text-mono">0.00 TL</span>
+              </div>
+              <div class="receipt-total-line" id="receiptKdvLine" style="display:none;">
+                <span id="receiptKdvTitle">KDV:</span>
+                <span id="receiptKdv" class="text-mono">0.00 TL</span>
+              </div>
+              <div class="receipt-total-line grand">
+                <span data-i18n="receipt_grand_total">Ödenecek Tutar:</span>
+                <span id="receiptGenelToplam" class="text-mono">0.00 TL</span>
+              </div>
+            </div>
+
+            <div class="receipt-divider-thick"></div>
+
+            <div class="receipt-footer-info">
+              <div><strong data-i18n="receipt_bank_label">Banka:</strong> <span id="receiptBank">Ziraat Bankası</span></div>
+              <div><strong data-i18n="receipt_iban_label">IBAN:</strong> <span id="receiptIban" class="text-mono">TR12 0001 0002 0003 0004 0005 06</span></div>
+              <div><strong data-i18n="receipt_addr_label">Adres:</strong> <span id="receiptAddress">Balıkesir</span></div>
+              <div><strong data-i18n="receipt_tel_label">Tel:</strong> <span id="receiptPhone">0552 185 03 08</span></div>
+            </div>
+
+            <div class="receipt-divider-thin"></div>
+
+            <div class="receipt-legal-warning" data-i18n="receipt_legal_warning">
+              MALİ BELGE DEĞİLDİR
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden canvas for rendering HD JPG -->
+        <canvas id="hiddenReceiptCanvas" style="display:none;"></canvas>
+
+      </div>
+
+      <!-- SADELEŞTİRİLMİŞ WHATSAPP AKSİYONU: SADECE WHATSAPP İLE JPG GÖNDER -->
+      <div class="modal-footer" style="padding: 14px 18px;">
+        <button id="whatsappJpgOnlyBtn" class="btn-whatsapp-jpg-main" style="width: 100%;">
+          <span>📸</span> <span data-i18n="btn_whatsapp_jpg">WhatsApp ile Görsel (JPG Slip) Gönder</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 3: YENİ ÜRÜN EKLE / DÜZENLE MODALI -->
+  <!-- ============================================== -->
+  <div id="productEditModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="productModalTitle">➕ <span data-i18n="modal_add_product_title">Yeni İlaç / Malzeme Ekle</span></h3>
+        <button class="btn-modal-close" id="closeProductModalBtn">✕</button>
+      </div>
+      <form id="productEditForm" class="modal-body">
+        <input type="hidden" id="editProductIndex" value="-1">
+        
+        <div class="form-group">
+          <label class="form-label" for="editProdName" data-i18n="prod_name_label">Ürün / Malzeme Adı *</label>
+          <input type="text" id="editProdName" class="form-input" placeholder="Örn: Serum 500 ml" data-i18n-placeholder="prod_name_placeholder" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label" for="editProdCost" data-i18n="prod_cost_label">Birim Maliyet (TL) *</label>
+            <input type="number" id="editProdCost" class="form-input" placeholder="0.00" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProdCategory" data-i18n="prod_category_label">Kategori</label>
+            <input type="text" id="editProdCategory" class="form-input" placeholder="Örn: Serum & Sıvılar" list="categorySuggestions">
+            <datalist id="categorySuggestions">
+              <option value="Serum & Sıvılar">
+              <option value="Vitamin & Mineral">
+              <option value="Antibiyotikler">
+              <option value="Antienflamatuar">
+              <option value="Sarf Malzeme">
+              <option value="Aşı & Parazit">
+              <option value="Doğum & Jinekoloji">
+              <option value="Meme Sağlığı">
+            </datalist>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label" for="editProdStock" data-i18n="prod_stock_label">Mevcut Stok Adedi *</label>
+            <input type="number" id="editProdStock" class="form-input" placeholder="0" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProdMinStock" data-i18n="prod_min_stock_label">Min. Stok Uyarı Sınırı *</label>
+            <input type="number" id="editProdMinStock" class="form-input" placeholder="0" min="0" required>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+          <button type="button" id="cancelProductBtn" class="btn btn-outline-secondary btn-sm" data-i18n="btn_cancel">İptal</button>
+          <button type="submit" class="btn btn-primary btn-sm" data-i18n="btn_save">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL 4: YENİ MALİYET PARAMETRESİ EKLE / DÜZENLE -->
+  <!-- ============================================== -->
+  <div id="paramEditModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="paramModalTitle">⚙️ <span data-i18n="modal_add_param_title">Yeni Maliyet Kalemi Ekle</span></h3>
+        <button class="btn-modal-close" id="closeParamModalBtn">✕</button>
+      </div>
+      <form id="paramEditForm" class="modal-body">
+        <input type="hidden" id="editParamId" value="">
+        
+        <div class="form-group">
+          <label class="form-label" for="editParamName" data-i18n="param_name_label">Kalem / Parametre Adı *</label>
+          <input type="text" id="editParamName" class="form-input" placeholder="Örn: Gece Nöbet Farkı, Acil Müdahale" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label" for="editParamType" data-i18n="param_type_label">Hesaplama Tipi *</label>
+            <select id="editParamType" class="form-select" required>
+              <option value="fixed" data-i18n="param_type_fixed">Sabit Tutar (TL)</option>
+              <option value="percent" data-i18n="param_type_percent">Yüzde Oranı (%)</option>
+              <option value="multiplier" data-i18n="param_type_multiplier">Mesafe/Adet Çarpanı (TL/birim)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editParamValue" data-i18n="param_value_label">Varsayılan Değer *</label>
+            <input type="number" id="editParamValue" class="form-input" placeholder="0.00" step="0.01" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="param_vis_label">Müşteri Adisyonunda Görünürlük *</label>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+              <input type="radio" name="paramVisibility" value="separate" checked>
+              <span data-i18n="param_vis_radio_sep">Ayrı Satırda Göster</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+              <input type="radio" name="paramVisibility" value="masked">
+              <span data-i18n="param_vis_radio_mask">"Diğer Giderler" Olarak Birleştir (Gizle)</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+          <button type="button" id="cancelParamBtn" class="btn btn-outline-secondary btn-sm" data-i18n="btn_cancel">İptal</button>
+          <button type="submit" class="btn btn-primary btn-sm" data-i18n="btn_save">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 5: YENİ TEDAVİ SETİ / PROTOKOL OLUŞTURMA -->
+  <!-- ============================================== -->
+  <div id="presetCreateModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-container" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="presetModalTitle">✨ <span data-i18n="modal_preset_title">Yeni Tedavi Seti Oluştur</span></h3>
+          <p class="modal-subtitle" data-i18n="modal_preset_sub">Sık kullandığınız ilaçları tek tıkla uygulanabilir hazır paket olarak kaydedin.</p>
+        </div>
+        <button class="btn-modal-close" id="closePresetModalBtn">✕</button>
+      </div>
+
+      <form id="presetCreateForm" class="modal-body scrollable" style="max-height: 60vh;">
+        <input type="hidden" id="editPresetId" value="">
+
+        <!-- Set Name & Emoji -->
+        <div class="form-group">
+          <label class="form-label" for="presetNameInput" data-i18n="preset_name_label">Set / Protokol Adı *</label>
+          <div style="display:flex; gap:8px;">
+            <select id="presetIconSelect" class="form-select" style="width: 70px; font-size:1.2rem; text-align:center; padding:6px;">
+              <option value="🩺">🩺</option>
+              <option value="💉">💉</option>
+              <option value="🧪">🧪</option>
+              <option value="💊">💊</option>
+              <option value="🛡️">🛡️</option>
+              <option value="🐂">🐂</option>
+              <option value="🐄">🐄</option>
+              <option value="🐑">🐑</option>
+              <option value="🐕">🐕</option>
+              <option value="🐈">🐈</option>
+            </select>
+            <input type="text" id="presetNameInput" class="form-input" placeholder="Örn: Doğum Sonrası Bakım, Rutin Parazit..." required style="flex:1;">
+          </div>
+        </div>
+
+        <!-- Items Picker Section -->
+        <div class="form-group" style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label" style="margin-bottom:0;" data-i18n="preset_items_label">Sete Dahil Edilecek İlaçlar & Adetler</label>
+            <span style="font-size:0.75rem; font-weight:700; color:var(--primary);" id="presetSelectedItemCount">0 kalem seçildi</span>
+          </div>
+          
+          <div class="search-input-group" style="margin-bottom:8px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="presetItemSearch" class="form-input" placeholder="İlaç veya malzeme ara..." style="font-size:0.85rem; padding:8px 12px 8px 36px;">
+          </div>
+
+          <div id="presetItemsPickerList" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; padding-right:4px;">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+          <button type="button" id="cancelPresetBtn" class="btn btn-outline-secondary btn-sm" data-i18n="btn_cancel">İptal</button>
+          <button type="submit" class="btn btn-primary btn-sm">
+            <span>💾</span> <span data-i18n="btn_save_preset">Seti Kaydet</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Version Indicator (Right Bottom) -->
+  <div class="floating-version-tag" id="appVersionBadge"><span data-i18n="version_text">test version</span></div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast" style="display:none;"></div>
+
+  <!-- Scripts -->
+  <script src="i18n.js"></script>
+  <script src="parameters.js"></script>
+  <script src="stock.js"></script>
+  <script src="logs.js"></script>
+  <script src="receipt.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

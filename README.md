@@ -1,68 +1,72 @@
-# 🐾 VetAssist - Fiyat Hesaplama & Adisyon Uygulaması (Veterinary Field Billing & Assistant)
+﻿# 🐾 VetAssist v0.8 - Saha Veteriner Hekim Asistanı
 
-Saha veteriner hekimlerinin internet bağlantısı olan veya olmayan (offline) ortamlarda ilaç/malzeme maliyetleri, mesafe (KM) ücreti ve klinik hizmet bedellerini kullanarak hızlıca fiyat hesaplamasını ve sonucunu **WhatsApp üzerinden görsel adisyon (JPG slip)** olarak paylaşmasını sağlayan, Türkçe ve İngilizce destekli saha uygulaması.
-
----
-
-## 🌟 Temel Özellikler
-
-- **🌐 Türkçe & İngilizce Çoklu Dil Desteği:** Ayarlar sekmesinden tek tıkla dil değiştirme (TR/EN). Fiş görseli, WhatsApp metni ve tüm arayüz anında seçilen dile uyarlanır.
-- **☀️ Güneş Işığı & Saha Ergonomisi:** Açık alanda parlamayı önleyen yüksek kontrastlı açık tema, gece nöbeti için koyu tema, büyük dokunmatik butonlar.
-- **⚡ Canlı Fiyat Hesaplama:**
-  - Hızlı ilaç/ürün arama (autocomplete) + **"+ Çoklu Kalem Ekle"** seçeneği.
-  - Mesafe (KM) girişi ve tek tıkla hızlı KM çipleri (+5, +10, +15, +25 km).
-  - Canlı ara toplam, KDV (%18 / %20) anahtarı ve büyük ödenecek tutar göstergesi.
-- **📦 Stok Takip & Envanter Yönetimi (Ayrı Ekran):**
-  - Minimum stok sınırına düşen ürünler için `🚨 KRİTİK STOK` uyarısı.
-  - Tablo üzerinden anında `+` / `-` stok güncelleme.
-  - Google Sheets CSV bağlantısından veya yerel CSV dosyasından senkronizasyon.
-- **⚙️ Dinamik Maliyet Parametreleri & Görünürlük Maskelemesi:**
-  - Kâr marjı, KM ücreti, klinik gideri ve ek maliyet kalemlerini özelleştirme/silme.
-  - Fişte tek başına görünmesini istemediğiniz kalemler için `🔒 "Diğer Giderler" Olarak Birleştir` seçeneği.
-- **📄 Görsel Fiş (Adisyon / JPG) & WhatsApp Paylaşımı:**
-  - Onay öncesi hekime tam ekran interaktif önizleme.
-  - HTML5 Canvas ile piksel hassasiyetinde optimize (~35 KB) JPG slip üretimi.
-  - WhatsApp metin formatı ve görsel paylaşımı.
-  - IBAN, Banka, Klinik Adresi, İletişim Telefonu ve kırmızı **MALİ BELGE DEĞİLDİR** ibaresi.
-- **📱 Android & Offline-First:**
-  - Cihazın yerel hafızasında (LocalStorage / Service Worker / PWA / Native APK) çalışır; internetsiz köylerde bile tam fonksiyoneldir.
-  - Google Play Store uyumlu imzalı **Release APK** ve **Android App Bundle (.aab)** çıktıları.
+VetAssist, saha veteriner hekimlerinin maliyet hesaplama, stok takibi, adisyon (makbuz) oluşturma ve WhatsApp üzerinden görsel paylaşım yapmasını sağlayan modern bir Android uygulamasıdır.
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma
+## 📁 Proje Dizin Yapısı
 
-### 1. Yerel Olarak Çalıştırma (Web / Mobil Tarayıcı)
-Node.js yüklü herhangi bir sistemde tek komutla çalıştırabilirsiniz:
-
-```bash
-node server.js
-```
-
-Tarayıcınızda açın:
-👉 `http://localhost:3000`
-
----
-
-## 📂 Proje Yapısı
-
-```
-sahaveteriner/
-├── index.html              # Ana arayüz, 5 sekme ve modallar
-├── styles.css              # Yüksek kontrastlı saha teması
-├── i18n.js                 # Türkçe & İngilizce sözlük ve dinamik dil motoru
-├── app.js                  # Canlı hesaplama motoru, sepet ve kontrolcü
-├── stock.js                # Ayrı stok & envanter yönetimi, Sheets senkronizasyonu
-├── parameters.js           # Dinamik maliyet ve görünürlük maskelemesi
-├── logs.js                 # Satış ve fiyat teklifi arşiv modülü
-├── receipt.js              # Canvas JPG adisyon üreticisi ve WhatsApp servisi
-├── manifest.json           # Android PWA tanımlayıcısı
-├── service-worker.js       # Offline-first önbellek servisi
-├── server.js               # Hafif yerel sunucu scripti
-└── sample_data.csv         # Örnek veteriner ilaç ve maliyet tablosu
+```text
+C:\Projeler\VetAssist_v0.8\
+├── web\                      # Orijinal Web Kaynak Kodları (HTML / JS / CSS)
+│   ├── index.html            # Ana arayüz ve sekme mimarisi
+│   ├── styles.css            # Glassmorphism & Sunlight temaları
+│   ├── app.js                # Ana kontrolcü ve reaktif hesaplama
+│   ├── stock.js              # İlaç/stok yönetimi ve Google Sheets CSV entegrasyonu
+│   ├── parameters.js         # Maliyet, KM ve kâr marjı parametreleri
+│   ├── receipt.js            # JPG adisyon ve görsel makbuz motoru
+│   ├── logs.js               # Satış ve teklif geçmişi
+│   ├── i18n.js               # Türkçe / İngilizce dil paketi
+│   ├── manifest.json         # PWA yapılandırması
+│   └── assets                # Logo, ikonlar ve Play Store grafikleri
+│
+├── android\                  # Android Native Wrapper & Derleme Katmanı
+│   ├── AndroidManifest.xml   # Target SDK 35 (Android 15), İzinler & Reklam ID'si
+│   ├── src\                  # MainActivity.java, AppFileProvider.java
+│   ├── res\                  # XML kaynakları, stiller, strings.xml
+│   ├── admob_libs\           # Google Play Services Ads SDK kütüphaneleri
+│   ├── sahaveteriner_release.keystore # Dijital İmzalama Anahtarı
+│   ├── minify_assets.js      # Otomatik kod karartma ve sıkıştırma betiği
+│   └── build_all.ps1         # ⚡ Tek Tıkla Release APK & Play Store AAB Derleme Betiği
+│
+├── dist\                     # Üretilen İmzalı Yayın Paketleri
+│   ├── VetAssist_v0.8_PlayStore.aab
+│   ├── VetAssist_v0.8_Release.apk
+│   └── VetAssist_v0.8_Test_Yuklenebilir.apk
+│
+└── README.md                 # Bu döküman
 ```
 
 ---
 
-## 📄 Lisans
-MIT License - Dilediğiniz gibi kullanabilir ve geliştirebilirsiniz.
+## ⚡ Tek Tıkla Derleme (Build Pipeline)
+
+Yeni bir güncelleme yaptığınızda doğrudan PowerShell üzerinden şu komutu çalıştırmanız yeterlidir:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Projeler\VetAssist_v0.8\android\build_all.ps1"
+```
+
+Bu betik otomatik olarak:
+1. `web\` klasöründeki kodları sıkıştırıp karartır (`Minification & Obfuscation`).
+2. Android kaynaklarını ve Java sınıflarını derler.
+3. Android 15 uyumlu **Release APK** ve **Google Play Store AAB** dosyalarını üretip imzalar.
+4. Paketleri hem `dist\` klasörüne hem de **Masaüstünüzdeki `VetAssist_PlayStore_v0.8`** klasörüne aktarır.
+
+---
+
+## 🔑 Dijital Anahtar (Keystore) Bilgileri
+
+* **Keystore Konumu:** `C:\Projeler\VetAssist_v0.8\android\sahaveteriner_release.keystore`
+* **Key Alias:** `sahaveteriner`
+* **Keystore Şifresi:** `sahaveteriner2026`
+* **İmza Algoritması:** RSA 2048-bit (v1, v2, v3 Signature Schemes)
+
+---
+
+## 📢 Google AdMob Yapılandırması
+
+* **AdMob Uygulama Kimliği (App ID):** `ca-app-pub-5230008726928578~8135974410`
+* **1. Sabit Alt Banner:** `ca-app-pub-5230008726928578/5973729983`
+* **3. Geçmiş Sekmesi Bannerı:** `ca-app-pub-5230008726928578/1083677026`
+* **🎬 Ödüllü Video Reklam (Google Sheets Sync):** `ca-app-pub-5230008726928578/6663306766`

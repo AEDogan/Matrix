@@ -1,24 +1,28 @@
-# Bağımlılıklar
-node_modules/
+﻿# Build outputs & Binaries
+*.apk
+*.aab
+*.idsig
+*.zip
+*.dex
+/android/classes/
+/android/r_java/
+/android/bundle_tmp/
+/android/proto_extracted/
+/android/assets/
+/android/admob_extracted/
+/android/admob_libs/
+/android/base.apk
+/android/base.zip
+/android/compiled_res.zip
+/android/compiled_admob_*.zip
+/android/src/**/R.java
+/dist/
+/tools/
+
+# OS & Editor files
 .DS_Store
 Thumbs.db
-
-# Loglar ve Geçici Dosyalar
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Flutter / Dart Derleme Dosyaları
-flutter_code/.dart_tool/
-flutter_code/.flutter-plugins
-flutter_code/.flutter-plugins-dependencies
-flutter_code/.packages
-flutter_code/build/
-flutter_code/.pub-cache/
-flutter_code/.pub/
-
-# IDE Ayarları
 .vscode/
 .idea/
-*.iml
+node_modules/
