@@ -829,9 +829,10 @@ class AppController {
   }
 
   bindEvents() {
-    // 1. Navigation Tabs (3 Tabs)
+    // 1. Navigation Tabs (Top 3 Tabs: Adisyon, Stok, Geçmiş)
     document.querySelectorAll('.nav-pill-tab').forEach(tabBtn => {
       tabBtn.addEventListener('click', () => {
+        const wasActive = tabBtn.classList.contains('active');
         document.querySelectorAll('.nav-pill-tab').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
@@ -842,9 +843,10 @@ class AppController {
 
         if (targetId === 'tab-calc') {
           this.recalculate();
-        } else {
-          const capsule = document.getElementById('floatingSummaryCapsule');
-          if (capsule) capsule.style.display = 'none';
+          if (wasActive && this.cart.length > 0) {
+            const btn = document.getElementById('generateReceiptBtn');
+            if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         }
 
         if (targetId === 'tab-stock' && window.stockManager) window.stockManager.renderUI();

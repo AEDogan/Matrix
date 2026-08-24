@@ -245,32 +245,29 @@ body {
   font-weight: 700;
 }
 
-/* Floating Glass Bottom Navigation */
-.floating-nav-container {
-  position: fixed;
-  bottom: max(16px, env(safe-area-inset-bottom, 0px));
-  left: 0;
-  right: 0;
+/* Top Segmented Navigation Bar */
+.top-nav-container {
+  position: sticky;
+  top: 66px;
+  z-index: 90;
+  padding: 8px 16px 6px 16px;
+  background: var(--bg-body);
   display: flex;
   justify-content: center;
-  z-index: 1000;
-  pointer-events: none;
-  padding: 0 16px;
 }
 
-.app-nav-floating {
-  pointer-events: auto;
+.app-nav-top {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
-  background: var(--glass-bg-floating);
-  backdrop-filter: var(--backdrop-filter-drawer);
-  -webkit-backdrop-filter: var(--backdrop-filter-drawer);
+  padding: 5px 6px;
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--backdrop-filter);
+  -webkit-backdrop-filter: var(--backdrop-filter);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-full);
-  box-shadow: var(--glass-shadow-float);
-  max-width: 480px;
+  box-shadow: var(--glass-shadow);
+  max-width: 520px;
   width: 100%;
 }
 
@@ -278,7 +275,7 @@ body {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 10px 6px;
+  padding: 8px 8px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -289,28 +286,28 @@ body {
   font-size: 0.85rem;
   cursor: pointer;
   position: relative;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-pill-tab .tab-icon {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   transition: transform 0.2s ease;
 }
 
 .nav-pill-tab.active {
   background: var(--primary);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.35);
 }
 
 .nav-pill-tab.active .tab-icon {
-  transform: scale(1.15);
+  transform: scale(1.1);
 }
 
 .nav-pill-tab .badge-count {
   position: absolute;
-  top: 4px;
-  right: 12px;
+  top: 2px;
+  right: 8px;
   background: var(--danger);
   color: #ffffff;
   font-size: 0.65rem;
@@ -322,7 +319,7 @@ body {
 
 /* Content Area */
 .app-content {
-  padding: 16px;
+  padding: 10px 16px 36px 16px;
   flex: 1;
 }
 
