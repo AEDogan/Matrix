@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Android 15 Ready](https://img.shields.io/badge/Android%2015-Target%20SDK%2035-brightgreen.svg)](https://developer.android.com)
+[![Android 16 Ready](https://img.shields.io/badge/Android%2016-Target%20SDK%2036-brightgreen.svg)](https://developer.android.com)
 [![Google AdMob](https://img.shields.io/badge/AdMob-Integrated-blue.svg)](https://admob.google.com)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-orange.svg)]()
 [![Language: TR / EN](https://img.shields.io/badge/Language-TR%20%7C%20EN-blueviolet.svg)]()
@@ -57,7 +57,7 @@ C:\Projeler\VetAssist_v0.8\
 │   └── assets                # Logo, ikonlar ve Play Store grafikleri
 │
 ├── android\                  # Android Native Wrapper & Derleme Katmanı
-│   ├── AndroidManifest.xml   # Target SDK 35 (Android 15), İzinler & Reklam ID'si
+│   ├── AndroidManifest.xml   # Target SDK 36 (Android 16), İzinler & Reklam ID'si
 │   ├── src\                  # MainActivity.java, AppFileProvider.java
 │   ├── res\                  # XML kaynakları, stiller, strings.xml
 │   ├── admob_libs\           # Google Play Services Ads SDK kütüphaneleri
@@ -81,7 +81,7 @@ powershell -ExecutionPolicy Bypass -File "C:\Projeler\VetAssist_v0.8\android\bui
 ```
 
 ### 🔑 Dijital İmza (Keystore) Bilgileri
-* **Alias:** `sahaveteriner` | **Şifre:** `sahaveteriner2026` | **Hedef SDK:** `35 (Android 15)`
+* **Alias:** `sahaveteriner` | **Şifre:** `sahaveteriner2026` | **Hedef SDK:** `36 (Android 16)`
 
 ---
 

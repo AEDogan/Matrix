@@ -137,24 +137,32 @@ public class MainActivity extends Activity {
                         Intent intent = new Intent(Intent.ACTION_SEND);
                         intent.setType("image/jpeg");
                         intent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                        intent.setClipData(android.content.ClipData.newRawUri("adisyon_slip", contentUri));
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                         if (caption != null && !caption.trim().isEmpty()) {
                             intent.putExtra(Intent.EXTRA_TEXT, caption);
                         }
-                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                        // Explicitly grant URI permission to target apps
+                        try {
+                            grantUriPermission("com.whatsapp", contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            grantUriPermission("com.whatsapp.w4b", contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        } catch (Exception ignored) {}
 
                         // Try standard WhatsApp first
                         intent.setPackage("com.whatsapp");
                         try {
                             startActivity(intent);
-                        } catch (ActivityNotFoundException e1) {
+                        } catch (Exception e1) {
                             // Try WhatsApp Business
                             try {
                                 intent.setPackage("com.whatsapp.w4b");
                                 startActivity(intent);
-                            } catch (ActivityNotFoundException e2) {
+                            } catch (Exception e2) {
                                 // Fallback to general sharing chooser
                                 intent.setPackage(null);
                                 Intent chooser = Intent.createChooser(intent, "Adisyon G\u00f6rselini Payla\u015f");
+                                chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                 startActivity(chooser);
                             }
                         }

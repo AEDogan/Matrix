@@ -81,38 +81,58 @@ class ReceiptGenerator {
 
     // Kalemler
     const container = document.getElementById('receiptItemsContainer');
-    container.innerHTML = '';
-
-    receiptData.allItems.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'receipt-item-row';
-      row.innerHTML = `
-        <div class="col-item">${item.name}</div>
-        <div class="col-qty">${item.qty}</div>
-        <div class="col-price text-mono">${parseFloat(item.total).toFixed(2)} TL</div>
-      `;
-      container.appendChild(row);
-    });
-
-    // Toplamlar
-    document.getElementById('receiptAraToplam').textContent = `${receiptData.subTotal.toFixed(2)} TL`;
-    
-    const kdvLine = document.getElementById('receiptKdvLine');
-    if (receiptData.isVatEnabled) {
-      kdvLine.style.display = 'flex';
-      document.getElementById('receiptKdvTitle').textContent = isEn ? `VAT (%${receiptData.vatRate}):` : `KDV (%${receiptData.vatRate}):`;
-      document.getElementById('receiptKdv').textContent = `${receiptData.vatAmount.toFixed(2)} TL`;
-    } else {
-      kdvLine.style.display = 'none';
+    if (container) {
+      container.innerHTML = '';
+      const items = (receiptData.allItems && Array.isArray(receiptData.allItems)) ? receiptData.allItems : [];
+      items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'receipt-item-row';
+        const itemTotal = parseFloat(item.total) || 0;
+        const itemQty = (item.qty !== undefined && item.qty !== null) ? item.qty : 1;
+        const itemName = item.name || '';
+        row.innerHTML = `
+          <div class="col-item">${itemName}</div>
+          <div class="col-qty">${itemQty}</div>
+          <div class="col-price text-mono">${itemTotal.toFixed(2)} TL</div>
+        `;
+        container.appendChild(row);
+      });
     }
 
-    document.getElementById('receiptGenelToplam').textContent = `${receiptData.grandTotal.toFixed(2)} TL`;
+    // Toplamlar
+    const subTotal = parseFloat(receiptData.subTotal) || 0;
+    const grandTotal = parseFloat(receiptData.grandTotal) || 0;
+    const vatAmount = parseFloat(receiptData.vatAmount) || 0;
+    const vatRate = parseFloat(receiptData.vatRate) || 18;
+
+    const subTotalEl = document.getElementById('receiptAraToplam');
+    if (subTotalEl) subTotalEl.textContent = `${subTotal.toFixed(2)} TL`;
+    
+    const kdvLine = document.getElementById('receiptKdvLine');
+    if (kdvLine) {
+      if (receiptData.isVatEnabled && vatAmount > 0) {
+        kdvLine.style.display = 'flex';
+        const kdvTitle = document.getElementById('receiptKdvTitle');
+        if (kdvTitle) kdvTitle.textContent = isEn ? `VAT (%${vatRate}):` : `KDV (%${vatRate}):`;
+        const kdvVal = document.getElementById('receiptKdv');
+        if (kdvVal) kdvVal.textContent = `${vatAmount.toFixed(2)} TL`;
+      } else {
+        kdvLine.style.display = 'none';
+      }
+    }
+
+    const grandTotalEl = document.getElementById('receiptGenelToplam');
+    if (grandTotalEl) grandTotalEl.textContent = `${grandTotal.toFixed(2)} TL`;
 
     // Alt Bilgiler
-    document.getElementById('receiptBank').textContent = info.bank;
-    document.getElementById('receiptIban').textContent = info.iban;
-    document.getElementById('receiptAddress').textContent = info.address;
-    document.getElementById('receiptPhone').textContent = info.phone;
+    const bankEl = document.getElementById('receiptBank');
+    if (bankEl) bankEl.textContent = info.bank || '';
+    const ibanEl = document.getElementById('receiptIban');
+    if (ibanEl) ibanEl.textContent = info.iban || '';
+    const addrEl = document.getElementById('receiptAddress');
+    if (addrEl) addrEl.textContent = info.address || '';
+    const phoneEl = document.getElementById('receiptPhone');
+    if (phoneEl) phoneEl.textContent = info.phone || '';
 
     // WhatsApp Metin Şablonunu Oluştur (varsa)
     const textOutputEl = document.getElementById('whatsappTextOutput');
@@ -251,25 +271,26 @@ class ReceiptGenerator {
     // Kalem Satırları
     ctx.fillStyle = '#0f172a';
 
-    if (receiptData.allItems) {
-      receiptData.allItems.forEach(item => {
-        ctx.textAlign = 'left';
-        ctx.font = '600 13px "Plus Jakarta Sans", -apple-system, sans-serif';
-        let displayName = item.name;
-        if (displayName.length > 27) displayName = displayName.slice(0, 26) + '…';
-        ctx.fillText(displayName, padding, y);
+    const items = (receiptData.allItems && Array.isArray(receiptData.allItems)) ? receiptData.allItems : [];
+    items.forEach(item => {
+      ctx.textAlign = 'left';
+      ctx.font = '600 13px "Plus Jakarta Sans", -apple-system, sans-serif';
+      let displayName = String(item.name || '');
+      if (displayName.length > 27) displayName = displayName.slice(0, 26) + '…';
+      ctx.fillText(displayName, padding, y);
 
-        ctx.textAlign = 'center';
-        ctx.font = '500 13px "Plus Jakarta Sans", -apple-system, sans-serif';
-        ctx.fillText(item.qty.toString(), width - padding - 130, y);
+      ctx.textAlign = 'center';
+      ctx.font = '500 13px "Plus Jakarta Sans", -apple-system, sans-serif';
+      const itemQty = (item.qty !== undefined && item.qty !== null) ? String(item.qty) : '1';
+      ctx.fillText(itemQty, width - padding - 130, y);
 
-        ctx.textAlign = 'right';
-        ctx.font = 'bold 13px "JetBrains Mono", monospace';
-        ctx.fillText(`${parseFloat(item.total).toFixed(2)} TL`, width - padding, y);
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 13px "JetBrains Mono", monospace';
+      const itemTotal = parseFloat(item.total) || 0;
+      ctx.fillText(`${itemTotal.toFixed(2)} TL`, width - padding, y);
 
-        y += 26;
-      });
-    }
+      y += 26;
+    });
 
     y += 4;
 
@@ -282,6 +303,11 @@ class ReceiptGenerator {
     ctx.stroke();
     y += 20;
 
+    const subTotal = parseFloat(receiptData.subTotal) || 0;
+    const grandTotal = parseFloat(receiptData.grandTotal) || 0;
+    const vatAmount = parseFloat(receiptData.vatAmount) || 0;
+    const vatRate = parseFloat(receiptData.vatRate) || 18;
+
     // Ara Toplam
     ctx.textAlign = 'left';
     ctx.font = '600 13px "Plus Jakarta Sans", -apple-system, sans-serif';
@@ -289,18 +315,18 @@ class ReceiptGenerator {
     ctx.fillText(isEn ? 'Subtotal:' : 'Ara Toplam:', padding, y);
     ctx.textAlign = 'right';
     ctx.font = 'bold 13px "JetBrains Mono", monospace';
-    ctx.fillText(`${receiptData.subTotal.toFixed(2)} TL`, width - padding, y);
+    ctx.fillText(`${subTotal.toFixed(2)} TL`, width - padding, y);
     y += 24;
 
     // KDV Satırı
-    if (receiptData.isVatEnabled) {
+    if (receiptData.isVatEnabled && vatAmount > 0) {
       ctx.textAlign = 'left';
       ctx.font = '600 13px "Plus Jakarta Sans", -apple-system, sans-serif';
       ctx.fillStyle = '#334155';
-      ctx.fillText(`${isEn ? 'VAT' : 'KDV'} (%${receiptData.vatRate}):`, padding, y);
+      ctx.fillText(`${isEn ? 'VAT' : 'KDV'} (%${vatRate}):`, padding, y);
       ctx.textAlign = 'right';
       ctx.font = 'bold 13px "JetBrains Mono", monospace';
-      ctx.fillText(`${receiptData.vatAmount.toFixed(2)} TL`, width - padding, y);
+      ctx.fillText(`${vatAmount.toFixed(2)} TL`, width - padding, y);
       y += 24;
     }
 
@@ -311,7 +337,7 @@ class ReceiptGenerator {
     ctx.fillText(isEn ? 'Total Due:' : 'Ödenecek Tutar:', padding, y);
     ctx.textAlign = 'right';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    ctx.fillText(`${receiptData.grandTotal.toFixed(2)} TL`, width - padding, y);
+    ctx.fillText(`${grandTotal.toFixed(2)} TL`, width - padding, y);
     y += 16;
 
     // Kalın Çizgi
@@ -328,18 +354,18 @@ class ReceiptGenerator {
     ctx.fillStyle = '#1e293b';
 
     ctx.font = 'bold 12px "Plus Jakarta Sans", -apple-system, sans-serif';
-    ctx.fillText(`${isEn ? 'Bank:' : 'Banka:'} ${info.bank}`, padding, y);
+    ctx.fillText(`${isEn ? 'Bank:' : 'Banka:'} ${info.bank || ''}`, padding, y);
     y += 18;
 
     ctx.font = 'bold 12px "JetBrains Mono", monospace';
-    ctx.fillText(`IBAN: ${info.iban}`, padding, y);
+    ctx.fillText(`IBAN: ${info.iban || ''}`, padding, y);
     y += 18;
 
     ctx.font = '500 11px "Plus Jakarta Sans", -apple-system, sans-serif';
-    ctx.fillText(`${isEn ? 'Address:' : 'Adres:'} ${info.address}`, padding, y);
+    ctx.fillText(`${isEn ? 'Address:' : 'Adres:'} ${info.address || ''}`, padding, y);
     y += 16;
 
-    ctx.fillText(`${isEn ? 'Phone:' : 'Tel:'} ${info.phone}`, padding, y);
+    ctx.fillText(`${isEn ? 'Phone:' : 'Tel:'} ${info.phone || ''}`, padding, y);
     y += 14;
 
     // İnce Çizgi
@@ -387,6 +413,10 @@ class ReceiptGenerator {
     const isQuote = receiptData.mode === 'quote';
     const info = this.getClinicInfo();
     const activeTitle = isQuote ? (isEn ? 'PRICE QUOTE / ESTIMATE' : 'FİYAT TEKLİFİ / BİLGİLENDİRME') : (info.title || (isEn ? 'VETERINARY SERVICE DETAILS' : 'VETERİNER HİZMET DETAYI'));
+    const now = new Date();
+    const dateStr = isEn 
+      ? now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
     let dataUrl = null;
     let jpgBlob = null;
@@ -398,13 +428,15 @@ class ReceiptGenerator {
       console.error('JPG canvas üretme hatası:', e);
     }
 
+    const caption = this.generateWhatsAppText(receiptData, info, dateStr, activeTitle);
+
     // 1. Android Native Bridge (Doğrudan WhatsApp'a JPG Görseli Ekler)
     if (window.AndroidBridge && typeof window.AndroidBridge.shareImageToWhatsApp === 'function' && dataUrl) {
-      window.AndroidBridge.shareImageToWhatsApp(dataUrl, "");
+      window.AndroidBridge.shareImageToWhatsApp(dataUrl, caption);
       return { success: true };
     }
 
-    // 2. Web Share API Level 2 (Dosya paylaşımı destekleyen mobil tarayıcılar)
+    // 2. Web Share API Level 2 (Mobil tarayıcılar / Web)
     if (jpgBlob) {
       const filename = `VetAssist_${isQuote ? 'Teklif' : 'Adisyon'}_${Date.now()}.jpg`;
       const file = new File([jpgBlob], filename, { type: 'image/jpeg' });
@@ -413,7 +445,8 @@ class ReceiptGenerator {
         try {
           await navigator.share({
             files: [file],
-            title: activeTitle
+            title: activeTitle,
+            text: caption
           });
           return { success: true };
         } catch (shareErr) {
@@ -421,8 +454,10 @@ class ReceiptGenerator {
         }
       }
 
-      // 3. Masaüstü / Tarayıcı Fallback: Görseli İndir
+      // 3. Masaüstü / Tarayıcı Fallback: Görseli İndir ve WhatsApp Web Aç
       this.downloadBlob(jpgBlob, filename);
+      const waUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(caption);
+      window.open(waUrl, '_blank');
     }
 
     return { success: true };

@@ -80,9 +80,16 @@ class AppController {
 
   registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(() => console.log('VetAssist v0.5 SW Aktif'))
-        .catch(err => console.log('SW Hatası:', err));
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      }).catch(() => {});
+      if ('caches' in window) {
+        caches.keys().then((keys) => {
+          keys.forEach((key) => caches.delete(key));
+        }).catch(() => {});
+      }
     }
   }
 
@@ -167,9 +174,23 @@ class AppController {
     let addedCount = 0;
 
     preset.items.forEach(pItem => {
-      const matched = allStock.find(s => s.name.toLowerCase() === pItem.name.toLowerCase() || s.id === pItem.id);
+      const matched = allStock.find(s => 
+        (s.id && pItem.id && s.id === pItem.id) || 
+        (s.name && pItem.name && s.name.trim().toLowerCase() === pItem.name.trim().toLowerCase())
+      );
       if (matched) {
         this.addToCart(matched, pItem.qty || 1, false);
+        addedCount++;
+      } else {
+        const fallbackItem = {
+          id: pItem.id || ('preset_item_' + Math.random().toString(36).substr(2, 7)),
+          name: pItem.name,
+          unitCost: parseFloat(pItem.unitCost || 50),
+          category: 'Genel',
+          currentStock: 99,
+          minStock: 5
+        };
+        this.addToCart(fallbackItem, pItem.qty || 1, false);
         addedCount++;
       }
     });
@@ -266,7 +287,7 @@ class AppController {
       row.innerHTML = `
         <div class="preset-item-info">
           <span class="preset-item-name">${item.name}</span>
-          <span class="preset-item-sub">${item.category || ''} • ${parseFloat(item.cost || 0).toFixed(2)} TL</span>
+          <span class="preset-item-sub">${item.category || ''} • ${parseFloat(item.unitCost !== undefined ? item.unitCost : (item.cost || 0)).toFixed(2)} TL</span>
         </div>
         <div class="preset-stepper">
           <button type="button" class="preset-step-btn btn-minus" data-id="${item.id}">−</button>
@@ -557,7 +578,8 @@ class AppController {
     const isEn = window.i18n && window.i18n.getLanguage() === 'en';
 
     this.cart.forEach(ci => {
-      const unitSellingPrice = ci.item.unitCost * (1 + profitMargin / 100);
+      const itemCost = parseFloat(ci.item.unitCost !== undefined ? ci.item.unitCost : (ci.item.cost !== undefined ? ci.item.cost : (ci.item.price || 0))) || 0;
+      const unitSellingPrice = itemCost * (1 + profitMargin / 100);
       const totalItemPrice = unitSellingPrice * ci.qty;
 
       const card = document.createElement('div');
@@ -568,7 +590,7 @@ class AppController {
             <div class="cart-item-title">${ci.item.name}</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
               ${isEn ? 'Unit:' : 'Birim:'} <span class="text-mono text-bold">${unitSellingPrice.toFixed(2)} TL</span>
-              <span style="font-size:0.7rem; opacity:0.8;">(${isEn ? 'Cost:' : 'Mal:'} ${ci.item.unitCost.toFixed(2)} TL)</span>
+              <span style="font-size:0.7rem; opacity:0.8;">(${isEn ? 'Cost:' : 'Mal:'} ${itemCost.toFixed(2)} TL)</span>
             </div>
           </div>
           <div class="cart-item-total">${totalItemPrice.toFixed(2)} TL</div>
@@ -635,9 +657,10 @@ class AppController {
     let cartItemsForReceipt = [];
 
     this.cart.forEach(ci => {
-      const itemRawCost = (parseFloat(ci.item.unitCost) || 0) * ci.qty;
+      const itemCost = parseFloat(ci.item.unitCost !== undefined ? ci.item.unitCost : (ci.item.cost !== undefined ? ci.item.cost : (ci.item.price || 0))) || 0;
+      const itemRawCost = itemCost * ci.qty;
       rawMedCostTotal += itemRawCost;
-      const unitSelling = (parseFloat(ci.item.unitCost) || 0) * (1 + profitMargin / 100);
+      const unitSelling = itemCost * (1 + profitMargin / 100);
       const totalSelling = unitSelling * ci.qty;
       itemsSellingTotal += totalSelling;
 
@@ -647,7 +670,7 @@ class AppController {
         qty: ci.qty,
         unitPrice: unitSelling,
         total: totalSelling,
-        rawCost: ci.item.unitCost
+        rawCost: itemCost
       });
     });
 
@@ -796,7 +819,7 @@ class AppController {
 
     document.getElementById('editProductIndex').value = item ? item.id : '-1';
     document.getElementById('editProdName').value = item ? item.name : '';
-    document.getElementById('editProdCost').value = item ? item.unitCost : '';
+    document.getElementById('editProdCost').value = item ? (item.unitCost !== undefined ? item.unitCost : (item.cost !== undefined ? item.cost : (item.price || ''))) : '';
     document.getElementById('editProdCategory').value = item ? item.category : '';
     document.getElementById('editProdStock').value = item ? item.currentStock : '';
     document.getElementById('editProdMinStock').value = item ? item.minStock : '';
@@ -1077,11 +1100,28 @@ class AppController {
     const waJpgBtn = document.getElementById('whatsappJpgOnlyBtn');
     if (waJpgBtn) {
       waJpgBtn.addEventListener('click', async () => {
+        if (!this.currentReceiptData) {
+          this.recalculate();
+        }
         if (!window.receiptGenerator || !this.currentReceiptData) return;
         
-        await window.receiptGenerator.shareJpgToWhatsApp(this.currentReceiptData);
-        this.finalizeTransaction();
-        if (receiptModal) receiptModal.style.display = 'none';
+        try {
+          waJpgBtn.style.opacity = '0.7';
+          waJpgBtn.style.pointerEvents = 'none';
+
+          const shareRes = await window.receiptGenerator.shareJpgToWhatsApp(this.currentReceiptData);
+          if (shareRes && shareRes.success) {
+            this.finalizeTransaction();
+            if (receiptModal) receiptModal.style.display = 'none';
+          }
+        } catch (err) {
+          console.error('WhatsApp paylasim hatasi:', err);
+          const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+          this.showToast(isEn ? 'Could not share to WhatsApp.' : 'WhatsApp paylaşımı başlatılamadı.');
+        } finally {
+          waJpgBtn.style.opacity = '1';
+          waJpgBtn.style.pointerEvents = 'auto';
+        }
       });
     }
 

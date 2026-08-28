@@ -1,4 +1,4 @@
-﻿const http = require('http');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
@@ -53,7 +53,33 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`🌐 VetAssist Web Server running at: http://localhost:${PORT}`);
-  console.log(`📂 Serving directory: ${PUBLIC_DIR}`);
+const os = require('os');
+
+function getLocalIpAddresses() {
+  const interfaces = os.networkInterfaces();
+  const addresses = [];
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        addresses.push(iface.address);
+      }
+    }
+  }
+  return addresses;
+}
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`====================================================`);
+  console.log(` VetAssist Test Yayini Aktif!                       `);
+  console.log(`====================================================`);
+  console.log(`💻 Bilgisayardan erisim : http://localhost:${PORT}`);
+  console.log(`                       : http://127.0.0.1:${PORT}`);
+  const ips = getLocalIpAddresses();
+  if (ips.length > 0) {
+    ips.forEach(ip => {
+      console.log(`📱 Telefondan / Agdan : http://${ip}:${PORT}`);
+    });
+  }
+  console.log(`📂 Dizin               : ${PUBLIC_DIR}`);
+  console.log(`====================================================`);
 });

@@ -34,7 +34,17 @@ class StockManager {
     try {
       const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('sahavet_inventory_v2');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(item => ({
+            id: item.id || ('prod_' + Math.random().toString(36).substr(2, 9)),
+            name: item.name || '',
+            unitCost: parseFloat(item.unitCost !== undefined ? item.unitCost : (item.cost !== undefined ? item.cost : (item.price !== undefined ? item.price : 0))) || 0,
+            currentStock: parseInt(item.currentStock) || 0,
+            minStock: parseInt(item.minStock) || 0,
+            category: item.category || 'Genel'
+          }));
+        }
       }
     } catch (e) {
       console.error('Envanter yüklenirken hata:', e);
@@ -77,8 +87,8 @@ class StockManager {
   addItem(itemData) {
     const newItem = {
       id: 'prod_' + Date.now(),
-      name: itemData.name.trim(),
-      unitCost: parseFloat(itemData.unitCost) || 0,
+      name: (itemData.name || '').trim(),
+      unitCost: parseFloat(itemData.unitCost !== undefined ? itemData.unitCost : (itemData.cost !== undefined ? itemData.cost : 0)) || 0,
       currentStock: parseInt(itemData.currentStock) || 0,
       minStock: parseInt(itemData.minStock) || 0,
       category: itemData.category ? itemData.category.trim() : (window.i18n && window.i18n.getLanguage() === 'en' ? 'General' : 'Genel')
@@ -92,10 +102,11 @@ class StockManager {
   updateItem(id, updates) {
     const index = this.inventory.findIndex(item => item.id === id);
     if (index !== -1) {
+      const resolvedCost = updates.unitCost !== undefined ? parseFloat(updates.unitCost) : (updates.cost !== undefined ? parseFloat(updates.cost) : this.inventory[index].unitCost);
       this.inventory[index] = {
         ...this.inventory[index],
         ...updates,
-        unitCost: updates.unitCost !== undefined ? parseFloat(updates.unitCost) : this.inventory[index].unitCost,
+        unitCost: isNaN(resolvedCost) ? 0 : resolvedCost,
         currentStock: updates.currentStock !== undefined ? parseInt(updates.currentStock) : this.inventory[index].currentStock,
         minStock: updates.minStock !== undefined ? parseInt(updates.minStock) : this.inventory[index].minStock
       };
@@ -345,25 +356,69 @@ class StockManager {
   }
 
   /**
-   * CSV Metnini Ayrıştırıp Envantere Ekler
+   * CSV Metnini Ayrıştırıp Envantere Ekler (Noktalı virgül, virgül, tab ve Türkçe sayı formatı desteği)
    */
   parseAndImportCsv(csvText) {
     const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-    const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
+    const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
     if (lines.length <= 1) {
       throw new Error(isEn ? 'No data rows found in CSV file.' : 'CSV dosyasında veri satırı bulunamadı.');
     }
 
+    // Delimiter tespiti
+    const header = lines[0];
+    let delimiter = ',';
+    if ((header.match(/;/g) || []).length > (header.match(/,/g) || []).length) {
+      delimiter = ';';
+    } else if ((header.match(/\t/g) || []).length > (header.match(/,/g) || []).length) {
+      delimiter = '\t';
+    }
+
+    const parseLine = (line, delim) => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"' || char === "'") {
+          inQuotes = !inQuotes;
+        } else if (char === delim && !inQuotes) {
+          result.push(current.trim().replace(/^["']|["']$/g, ''));
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim().replace(/^["']|["']$/g, ''));
+      return result;
+    };
+
+    const parseNumber = (val) => {
+      if (val === undefined || val === null || val === '') return 0;
+      let str = String(val).trim().replace(/[^\d.,\-]/g, '');
+      if (!str) return 0;
+      if (str.includes(',') && str.includes('.')) {
+        if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+          str = str.replace(/\./g, '').replace(',', '.');
+        } else {
+          str = str.replace(/,/g, '');
+        }
+      } else if (str.includes(',')) {
+        str = str.replace(',', '.');
+      }
+      return parseFloat(str) || 0;
+    };
+
     const newInventory = [];
     for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
+      const parts = parseLine(lines[i], delimiter);
       if (parts.length >= 2 && parts[0]) {
         newInventory.push({
-          id: 'item_' + (i) + '_' + Date.now(),
+          id: 'item_' + i + '_' + Date.now(),
           name: parts[0],
-          unitCost: parseFloat(parts[1].replace(',', '.')) || 0,
-          currentStock: parseInt(parts[2]) || 0,
-          minStock: parseInt(parts[3]) || 0,
+          unitCost: parseNumber(parts[1]),
+          currentStock: Math.max(0, parseInt(parseNumber(parts[2])) || 0),
+          minStock: Math.max(0, parseInt(parseNumber(parts[3])) || 0),
           category: parts[4] || (isEn ? 'General' : 'Genel')
         });
       }

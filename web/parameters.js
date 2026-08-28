@@ -71,7 +71,17 @@ class ParameterManager {
     try {
       const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('sahavet_parameters_v2');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = [...parsed];
+          DEFAULT_PARAMETERS.forEach(def => {
+            const exists = merged.some(p => p.id === def.id);
+            if (!exists) {
+              merged.push(JSON.parse(JSON.stringify(def)));
+            }
+          });
+          return merged;
+        }
       }
     } catch (e) {
       console.error('Parametreler yüklenirken hata:', e);
@@ -117,17 +127,20 @@ class ParameterManager {
 
   getProfitMargin() {
     const p = this.get('profit_margin');
-    return (p && p.enabled) ? parseFloat(p.value) || 0 : 0;
+    if (!p) return 25;
+    return p.enabled ? (parseFloat(p.value) || 0) : 0;
   }
 
   getKmRate() {
     const p = this.get('distance_rate');
-    return (p && p.enabled) ? parseFloat(p.value) || 0 : 0;
+    if (!p) return 25;
+    return p.enabled ? (parseFloat(p.value) || 0) : 0;
   }
 
   getFixedClinicFee() {
     const p = this.get('clinic_fixed_fee');
-    return (p && p.enabled) ? parseFloat(p.value) || 0 : 0;
+    if (!p) return 400;
+    return p.enabled ? (parseFloat(p.value) || 0) : 0;
   }
 
   addParameter(paramData) {
@@ -202,7 +215,9 @@ class ParameterManager {
 
       let amount = 0;
       if (param.id === 'distance_rate') {
-        amount = (parseFloat(distanceKm) || 0) * (parseFloat(param.value) || 0);
+        const km = parseFloat(distanceKm) || 0;
+        if (km <= 0) continue;
+        amount = km * (parseFloat(param.value) || 0);
       } else if (param.type === 'fixed') {
         amount = parseFloat(param.value) || 0;
       } else if (param.type === 'percent') {
@@ -211,7 +226,7 @@ class ParameterManager {
         amount = parseFloat(param.value) || 0;
       }
 
-      if (amount <= 0 && param.id !== 'distance_rate') continue;
+      if (amount <= 0) continue;
 
       totalAdditionalCost += amount;
 
