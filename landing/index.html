@@ -17,14 +17,14 @@
        VETASSIST MODERN MINIMALIST LIGHT DESIGN SYSTEM
        ========================================================================== */
     :root {
-      --bg-page: #f8fafc;
+      --bg-page: #f1f5f9; /* Belirgin Açık Gri / Kırık Beyaz */
       --bg-surface: #ffffff;
       --bg-surface-elevated: #ffffff;
-      --bg-surface-subtle: #f1f5f9;
+      --bg-surface-subtle: #f8fafc;
       --bg-surface-active: #e2e8f0;
       
       --text-main: #0f172a;
-      --text-secondary: #475569;
+      --text-secondary: #334155;
       --text-muted: #64748b;
       --text-light: #94a3b8;
       
@@ -40,15 +40,15 @@
       --warning: #f59e0b;
       --warning-subtle: #fef3c7;
       
-      --border-light: #e2e8f0;
-      --border-subtle: #f1f5f9;
+      --border-light: #cbd5e1;
+      --border-subtle: #e2e8f0;
       --border-focus: #38bdf8;
       
-      --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
-      --shadow-xl: 0 20px 35px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+      --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+      --shadow-xl: 0 20px 35px -5px rgba(15, 23, 42, 0.10), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 
       --radius-sm: 8px;
       --radius-md: 12px;
@@ -79,8 +79,8 @@
       line-height: 1.65;
       overflow-x: hidden;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(2, 132, 199, 0.04) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
+        radial-gradient(at 0% 0%, rgba(2, 132, 199, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
         radial-gradient(at 50% 100%, rgba(2, 132, 199, 0.03) 0px, transparent 50%);
       background-attachment: fixed;
     }
@@ -109,7 +109,7 @@
 
     .ad-slot-box {
       background: var(--bg-surface);
-      border: 1px dashed #cbd5e1;
+      border: 1px dashed #94a3b8;
       border-radius: var(--radius-md);
       padding: 12px 8px;
       text-align: center;
@@ -118,18 +118,35 @@
       align-items: center;
       justify-content: center;
       min-height: 280px;
-      box-shadow: var(--shadow-xs);
+      box-shadow: var(--shadow-sm);
       position: relative;
     }
 
     .ad-label {
-      font-size: 0.65rem;
-      font-weight: 700;
+      font-size: 0.68rem;
+      font-weight: 800;
       color: var(--text-muted);
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 8px;
       display: block;
+    }
+
+    /* In-feed Responsive Ad Banner (For mobile, tablet and small desktop) */
+    .infeed-ad-wrapper {
+      width: 100%;
+      max-width: 1000px;
+      margin: 32px auto;
+      background: #ffffff;
+      border: 1px dashed #94a3b8;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+      box-shadow: var(--shadow-xs);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     /* Main Container */
@@ -155,11 +172,11 @@
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-light);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     }
 
     .nav-inner {
@@ -277,7 +294,7 @@
 
     .lang-btn:hover {
       background: var(--bg-surface-subtle);
-      border-color: #cbd5e1;
+      border-color: #94a3b8;
     }
 
     .lang-menu {
@@ -370,7 +387,7 @@
     }
     .btn-outline:hover {
       background: var(--bg-surface-subtle);
-      border-color: #cbd5e1;
+      border-color: #94a3b8;
     }
 
     .btn-whatsapp {
@@ -760,7 +777,7 @@
     .feature-card:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-lg);
-      border-color: #cbd5e1;
+      border-color: #94a3b8;
     }
 
     .feature-icon-box {
@@ -1003,7 +1020,7 @@
       width: 310px;
       background: #ffffff;
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #cbd5e1;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       padding: 22px 18px;
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -1117,8 +1134,8 @@
     .bottom-ad-wrapper {
       position: sticky;
       bottom: 0;
-      z-index: 90;
-      background: rgba(255, 255, 255, 0.95);
+      z-index: 900;
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(10px);
       border-top: 1px solid var(--border-light);
       padding: 8px 16px;
@@ -1126,7 +1143,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
     }
 
     .bottom-ad-inner {
@@ -1134,7 +1151,7 @@
       max-width: 728px;
       min-height: 90px;
       background: var(--bg-surface-subtle);
-      border: 1px dashed #cbd5e1;
+      border: 1px dashed #94a3b8;
       border-radius: var(--radius-sm);
       display: flex;
       flex-direction: column;
@@ -1264,6 +1281,11 @@
     /* Responsive Queries */
     @media (max-width: 1360px) {
       .ad-rail { display: none; }
+      .infeed-ad-wrapper { display: flex; }
+    }
+
+    @media (min-width: 1361px) {
+      .infeed-ad-wrapper { display: none; }
     }
 
     @media (max-width: 1080px) {
@@ -1316,7 +1338,6 @@
     </symbol>
 
     <!-- 5. In-App Pet & Vet Custom SVGs (from web/icons.js) -->
-    <!-- Treatment Mode (Red Heart & Blue Syringe) -->
     <symbol id="icon-treatment-mode" viewBox="0 0 32 32">
       <path d="M16 28C16 28 4 20.5 4 11C4 6.5 7.5 3.5 12 3.5C14.5 3.5 16.8 5 18 7C19.2 5 21.5 3.5 24 3.5C28.5 3.5 32 6.5 32 11C32 20.5 20 28 20 28H16Z" fill="#ef4444" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
       <path d="M8 8C9.5 6 12 5.5 13.5 6.5" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
@@ -1326,7 +1347,6 @@
       <path d="M21 7.5L26.5 13" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Receipt Seal (Golden Scroll & Green Paw Seal) -->
     <symbol id="icon-receipt-seal" viewBox="0 0 36 36">
       <path d="M7 6C7 4.3 8.3 3 10 3H26C27.7 3 29 4.3 29 6V29C29 29 27.5 28 26 28C24.5 28 23 29 21.5 29C20 29 18.5 28 17 28C15.5 28 14 29 12.5 29C11 29 9.5 28 8 28C7.4 28 7 28.3 7 28.8V6Z" fill="#fef08a" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
       <path d="M7 6C7 4.3 8.3 3 10 3H26C27.7 3 29 4.3 29 6C29 7.7 27.7 9 26 9H10C8.3 9 7 7.7 7 6Z" fill="#fde047" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
@@ -1337,7 +1357,6 @@
       <ellipse cx="24" cy="25" rx="2.2" ry="1.6" fill="#fde047"/>
     </symbol>
 
-    <!-- Stock Bone Kit (First Aid Box with Bone Handle) -->
     <symbol id="icon-kit-bone" viewBox="0 0 32 32">
       <path d="M11 6.5C10.2 6.5 9.5 5.8 9.5 5C9.5 4.2 10.2 3.5 11 3.5C11.5 3.5 12 3.8 12.3 4.2H19.7C20 3.8 20.5 3.5 21 3.5C21.8 3.5 22.5 4.2 22.5 5C22.5 5.8 21.8 6.5 21 6.5" fill="#fde047" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
       <rect x="4.5" y="8.5" width="23" height="19" rx="4" fill="#a7f3d0" stroke="#0f172a" stroke-width="2"/>
@@ -1345,7 +1364,6 @@
       <rect x="11.5" y="16" width="9" height="4" rx="1" fill="#10b981"/>
     </symbol>
 
-    <!-- Dog Stethoscope -->
     <symbol id="icon-dog-stethoscope" viewBox="0 0 32 32">
       <path d="M7 19C7 25 11 28 16 28C21 28 25 25 25 19" stroke="#0284c7" stroke-width="2.4" stroke-linecap="round"/>
       <rect x="6.5" y="7" width="19" height="15" rx="7.5" fill="#fef08a" stroke="#0f172a" stroke-width="2"/>
@@ -1354,13 +1372,11 @@
       <ellipse cx="16" cy="15.8" rx="2.2" ry="1.5" fill="#0f172a"/>
     </symbol>
 
-    <!-- Gear Paw (Settings) -->
     <symbol id="icon-gear-paw" viewBox="0 0 32 32">
       <path d="M14 3H18V6.2C18.8 6.5 19.5 7 20.2 7.5L22.8 5.5L25.8 8.5L23.8 11.2C24.3 11.8 24.7 12.6 25 13.4H28.2V17.4H25C24.7 18.2 24.3 19 23.8 19.6L25.8 22.3L22.8 25.3L20.2 23.3C19.5 23.8 18.8 24.3 18 24.6V27.8H14V24.6C13.2 24.3 12.5 23.8 11.8 23.3L9.2 25.3L6.2 22.3L8.2 19.6C7.7 19 7.3 18.2 7 17.4H3.8V13.4H7C7.3 12.6 7.7 11.8 8.2 11.2L6.2 8.5L9.2 5.5L11.8 7.5C12.5 7 13.2 6.5 14 6.2V3Z" fill="#f1f5f9" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
       <ellipse cx="16" cy="16" rx="2.5" ry="2" fill="#0284c7"/>
     </symbol>
 
-    <!-- Vet Ambulance / Van -->
     <symbol id="icon-vet-van" viewBox="0 0 32 32">
       <path d="M4 11C4 9.5 5.5 8 7 8H18L24.5 13V23C24.5 24 23.5 25 22.5 25H5.5C4.5 25 4 24 4 23V11Z" fill="#e0f2fe" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
       <rect x="10.5" y="5.5" width="4" height="2.5" rx="1" fill="#ef4444"/>
@@ -1435,11 +1451,10 @@
   <!-- 3-Column Layout with Ad Rails -->
   <div class="app-layout-wrapper">
 
-    <!-- Left Ad Rail (2 Banner Ads) -->
+    <!-- Left Ad Rail (2 Banner Ads) - Visible on Wide Screens -->
     <aside class="ad-rail">
       <div class="ad-slot-box">
         <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #1</span>
-        <!-- Google AdSense Unit Left Top -->
         <ins class="adsbygoogle"
              style="display:inline-block;width:120px;height:240px"
              data-ad-client="ca-pub-5001028882463369"
@@ -1450,7 +1465,6 @@
 
       <div class="ad-slot-box">
         <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #2</span>
-        <!-- Google AdSense Unit Left Bottom -->
         <ins class="adsbygoogle"
              style="display:inline-block;width:120px;height:240px"
              data-ad-client="ca-pub-5001028882463369"
@@ -1570,6 +1584,19 @@
           </div>
         </div>
       </section>
+
+      <!-- In-feed Responsive Ad Banner #1 (Visible on Mobile & Laptops) -->
+      <div class="infeed-ad-wrapper">
+        <span class="ad-label" data-i18n="ad_label">SPONSORED ADVERTISEMENT</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-5001028882463369"
+             data-ad-slot="1234567895"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <span style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">Responsive Leaderboard / Banner Slot</span>
+      </div>
 
       <!-- Google Closed Testing & Download Step-by-Step Zone -->
       <section class="container" id="testing-zone">
@@ -1736,7 +1763,7 @@
 
                 <div class="slip-row">
                   <span style="color:#64748b;" data-i18n="slip_date">Date:</span>
-                  <strong id="preview-date">04.09.2026</strong>
+                  <strong id="preview-date">05.09.2026</strong>
                 </div>
                 <div class="slip-row">
                   <span style="color:#64748b;" data-i18n="slip_client">Client:</span>
@@ -1769,7 +1796,7 @@
                   <span id="preview-total">$118.50</span>
                 </div>
 
-                <div style="margin-top:12px; padding:10px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; font-size:0.68rem; color:#475569; word-break:break-all;">
+                <div style="margin-top:12px; padding:10px; background:#f8fafc; border-radius:8px; border:1px solid #cbd5e1; font-size:0.68rem; color:#475569; word-break:break-all;">
                   <strong style="color:#0f172a; display:block; margin-bottom:2px;" data-i18n="slip_bank_label">Payment Account:</strong>
                   <span id="preview-iban">TR12 0006 1005 1234 5678 9012 34</span>
                 </div>
@@ -1778,6 +1805,19 @@
           </div>
         </div>
       </section>
+
+      <!-- In-feed Responsive Ad Banner #2 -->
+      <div class="infeed-ad-wrapper">
+        <span class="ad-label" data-i18n="ad_label">SPONSORED ADVERTISEMENT</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-5001028882463369"
+             data-ad-slot="1234567896"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <span style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">Responsive Leaderboard / Banner Slot</span>
+      </div>
 
       <!-- Google Sheets Visual Workflow Section -->
       <section class="section-wrap" id="sheets-sync" style="background:#ffffff; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);">
@@ -2007,11 +2047,10 @@
       </footer>
     </main>
 
-    <!-- Right Ad Rail (2 Banner Ads) -->
+    <!-- Right Ad Rail (2 Banner Ads) - Visible on Wide Screens -->
     <aside class="ad-rail">
       <div class="ad-slot-box">
         <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #3</span>
-        <!-- Google AdSense Unit Right Top -->
         <ins class="adsbygoogle"
              style="display:inline-block;width:120px;height:240px"
              data-ad-client="ca-pub-5001028882463369"
@@ -2022,7 +2061,6 @@
 
       <div class="ad-slot-box">
         <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #4</span>
-        <!-- Google AdSense Unit Right Bottom -->
         <ins class="adsbygoogle"
              style="display:inline-block;width:120px;height:240px"
              data-ad-client="ca-pub-5001028882463369"
@@ -2034,12 +2072,11 @@
 
   </div>
 
-  <!-- Bottom Sticky Banner Ad (Ad #5) -->
+  <!-- Bottom Sticky Banner Ad (Ad #5) - Always Pinned on All Screens -->
   <div class="bottom-ad-wrapper" id="bottom-ad-container">
     <div class="bottom-ad-inner">
       <button class="close-ad-btn" onclick="document.getElementById('bottom-ad-container').style.display='none'">✕</button>
       <span class="ad-label" data-i18n="ad_label">SPONSORED ADVERTISEMENT</span>
-      <!-- Google AdSense Responsive Leaderboard Unit -->
       <ins class="adsbygoogle"
            style="display:inline-block;width:728px;height:90px"
            data-ad-client="ca-pub-5001028882463369"
