@@ -5,19 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VetAssist — Field Veterinary Assistant | Official Web & Live Demo</title>
   <meta name="description" content="Instant prescription cost calculation, dynamic profit/mileage pricing, clinic stock management and WhatsApp visual receipt slips for field veterinarians.">
-  <meta name="google-adsense-account" content="ca-pub-5001028882463369">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5001028882463369" crossorigin="anonymous"></script>
 
   <style>
     /* ==========================================================================
        VETASSIST MODERN MINIMALIST LIGHT DESIGN SYSTEM
        ========================================================================== */
     :root {
-      --bg-page: #f1f5f9; /* Belirgin Açık Gri / Kırık Beyaz */
+      --bg-page: #f1f5f9; /* Temiz Açık Gri / Kırık Beyaz Zemin */
       --bg-surface: #ffffff;
       --bg-surface-elevated: #ffffff;
       --bg-surface-subtle: #f8fafc;
@@ -86,70 +84,6 @@
     }
 
     /* Layout Structure */
-    .app-layout-wrapper {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      position: relative;
-    }
-
-    /* Sidebars for Ads */
-    .ad-rail {
-      width: 160px;
-      padding: 20px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 86px;
-      height: calc(100vh - 90px);
-      align-self: flex-start;
-    }
-
-    .ad-slot-box {
-      background: var(--bg-surface);
-      border: 1px dashed #94a3b8;
-      border-radius: var(--radius-md);
-      padding: 12px 8px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 280px;
-      box-shadow: var(--shadow-sm);
-      position: relative;
-    }
-
-    .ad-label {
-      font-size: 0.68rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    /* In-feed Responsive Ad Banner (For mobile, tablet and small desktop) */
-    .infeed-ad-wrapper {
-      width: 100%;
-      max-width: 1000px;
-      margin: 32px auto;
-      background: #ffffff;
-      border: 1px dashed #94a3b8;
-      border-radius: var(--radius-md);
-      padding: 14px;
-      text-align: center;
-      box-shadow: var(--shadow-xs);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Main Container */
     .main-site-content {
       width: 100%;
       max-width: 1200px;
@@ -1130,47 +1064,6 @@
       height: 14px;
     }
 
-    /* Bottom Sticky Ad Banner */
-    .bottom-ad-wrapper {
-      position: sticky;
-      bottom: 0;
-      z-index: 900;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid var(--border-light);
-      padding: 8px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
-    }
-
-    .bottom-ad-inner {
-      width: 100%;
-      max-width: 728px;
-      min-height: 90px;
-      background: var(--bg-surface-subtle);
-      border: 1px dashed #94a3b8;
-      border-radius: var(--radius-sm);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .close-ad-btn {
-      position: absolute;
-      top: 4px;
-      right: 8px;
-      background: transparent;
-      border: none;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-
     /* Clean Functional Footer */
     footer.site-footer {
       background: var(--bg-surface);
@@ -1279,15 +1172,6 @@
     }
 
     /* Responsive Queries */
-    @media (max-width: 1360px) {
-      .ad-rail { display: none; }
-      .infeed-ad-wrapper { display: flex; }
-    }
-
-    @media (min-width: 1361px) {
-      .infeed-ad-wrapper { display: none; }
-    }
-
     @media (max-width: 1080px) {
       nav.nav-menu { display: none; }
     }
@@ -1448,643 +1332,552 @@
     </div>
   </header>
 
-  <!-- 3-Column Layout with Ad Rails -->
-  <div class="app-layout-wrapper">
+  <!-- Main Content Container -->
+  <main class="main-site-content">
 
-    <!-- Left Ad Rail (2 Banner Ads) - Visible on Wide Screens -->
-    <aside class="ad-rail">
-      <div class="ad-slot-box">
-        <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #1</span>
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:120px;height:240px"
-             data-ad-client="ca-pub-5001028882463369"
-             data-ad-slot="1234567890"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        <span style="font-size:0.7rem; color:var(--text-light); margin-top:8px;">120x240 Ad Rail</span>
-      </div>
-
-      <div class="ad-slot-box">
-        <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #2</span>
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:120px;height:240px"
-             data-ad-client="ca-pub-5001028882463369"
-             data-ad-slot="1234567891"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        <span style="font-size:0.7rem; color:var(--text-light); margin-top:8px;">120x240 Ad Rail</span>
-      </div>
-    </aside>
-
-    <!-- Main Content Container -->
-    <main class="main-site-content">
-
-      <!-- Hero Section -->
-      <section class="hero-section">
-        <div class="container">
-          <div class="hero-grid">
-            <div class="hero-content">
-              <div class="pill-badge">
-                <span class="dot"></span>
-                <span data-i18n="hero_badge">Field Veterinarian Suite • Android 16 Ready</span>
-              </div>
-
-              <h1 class="hero-title" data-i18n="hero_title">
-                Prescription Costs, Stock & <span class="gradient-text">Visual Receipts</span> in One Tap.
-              </h1>
-
-              <p class="hero-desc" data-i18n="hero_desc">
-                Calculate medication purchase costs, custom profit margins, and travel mileage in rural barns in seconds; share branded visual JPG receipts with farm owners directly via WhatsApp.
-              </p>
-
-              <!-- Only Official Google Group & Play Store Testing Buttons -->
-              <div class="hero-buttons">
-                <a href="https://groups.google.com/g/vetassisttesters" target="_blank" class="btn btn-groups btn-lg">
-                  <svg><use href="#icon-groups"/></svg>
-                  <span data-i18n="btn_hero_group">1. Join Google Group</span>
-                </a>
-                <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" class="btn btn-primary btn-lg">
-                  <svg><use href="#icon-googleplay"/></svg>
-                  <span data-i18n="btn_hero_play">2. Play Store Opt-in</span>
-                </a>
-              </div>
-
-              <div class="hero-stats">
-                <div class="stat-item">
-                  <span class="stat-value">100%</span>
-                  <span class="stat-label" data-i18n="stat_offline">Offline Capable</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-value">&lt; 3s</span>
-                  <span class="stat-label" data-i18n="stat_speed">Fast Receipt Gen</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-value">1-Click</span>
-                  <span class="stat-label" data-i18n="stat_sync">Google Sheets Sync</span>
-                </div>
-              </div>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-content">
+            <div class="pill-badge">
+              <span class="dot"></span>
+              <span data-i18n="hero_badge">Field Veterinarian Suite • Android 16 Ready</span>
             </div>
 
-            <!-- Live Phone Simulator Widget -->
-            <div class="simulator-card" id="live-calculator">
-              <div class="sim-header">
-                <span class="sim-header-title">🐾 VetAssist Live Simulator</span>
-                <span class="sim-status" data-i18n="sim_status_badge">🟢 Live Pricing</span>
+            <h1 class="hero-title" data-i18n="hero_title">
+              Prescription Costs, Stock & <span class="gradient-text">Visual Receipts</span> in One Tap.
+            </h1>
+
+            <p class="hero-desc" data-i18n="hero_desc">
+              Calculate medication purchase costs, custom profit margins, and travel mileage in rural barns in seconds; share branded visual JPG receipts with farm owners directly via WhatsApp.
+            </p>
+
+            <!-- Only Official Google Group & Play Store Testing Buttons -->
+            <div class="hero-buttons">
+              <a href="https://groups.google.com/g/vetassisttesters" target="_blank" class="btn btn-groups btn-lg">
+                <svg><use href="#icon-groups"/></svg>
+                <span data-i18n="btn_hero_group">1. Join Google Group</span>
+              </a>
+              <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" class="btn btn-primary btn-lg">
+                <svg><use href="#icon-googleplay"/></svg>
+                <span data-i18n="btn_hero_play">2. Play Store Opt-in</span>
+              </a>
+            </div>
+
+            <div class="hero-stats">
+              <div class="stat-item">
+                <span class="stat-value">100%</span>
+                <span class="stat-label" data-i18n="stat_offline">Offline Capable</span>
               </div>
-              
-              <div class="sim-body">
-                <!-- Treatment Selector -->
-                <div class="sim-select-group">
-                  <span class="sim-label" data-i18n="sim_select_title">1. Select Procedure / Treatment</span>
-                  <div class="sim-chips">
-                    <div class="sim-chip active" onclick="selectSimTreatment('dogum', this)" data-i18n="sim_opt_calving">🐮 Calving & Calcium</div>
-                    <div class="sim-chip" onclick="selectSimTreatment('mastitis', this)" data-i18n="sim_opt_mastitis">💉 Mastitis Therapy</div>
-                    <div class="sim-chip" onclick="selectSimTreatment('operasyon', this)" data-i18n="sim_opt_surgery">🔪 Rumenotomy / Surgery</div>
-                  </div>
-                </div>
-
-                <!-- KM Distance Slider -->
-                <div class="sim-slider-box">
-                  <div class="sim-slider-header">
-                    <span data-i18n="sim_distance_label">🚗 Travel Distance (Round-trip):</span>
-                    <span id="km-display" style="color:var(--primary); font-family:var(--font-mono);">30 KM</span>
-                  </div>
-                  <input type="range" min="0" max="100" value="30" class="sim-range" id="km-slider" oninput="updateSimCalculations()">
-                  <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
-                    <span>0 KM</span>
-                    <span>50 KM</span>
-                    <span>100 KM</span>
-                  </div>
-                </div>
-
-                <!-- Margin Slider -->
-                <div class="sim-slider-box">
-                  <div class="sim-slider-header">
-                    <span data-i18n="sim_margin_label">📈 Target Margin:</span>
-                    <span id="margin-display" style="color:#10b981; font-family:var(--font-mono);">%35</span>
-                  </div>
-                  <input type="range" min="10" max="70" value="35" class="sim-range" id="margin-slider" oninput="updateSimCalculations()">
-                </div>
-
-                <!-- Calculated Total -->
-                <div class="sim-total-card">
-                  <div class="sim-total-title" data-i18n="sim_total_title">FINAL RECEIPT TOTAL</div>
-                  <div class="sim-total-amount" id="sim-grand-total">$118.50</div>
-                  <div class="sim-breakdown-mini">
-                    <span id="sim-med-cost">Med: $65.00</span>
-                    <span id="sim-km-cost">Mileage: $30.00</span>
-                    <span id="sim-margin-gain">Profit: $23.50</span>
-                  </div>
-                </div>
-
-                <button class="btn btn-whatsapp" style="width:100%;" onclick="openStudioFromSim()">
-                  <svg><use href="#icon-whatsapp"/></svg>
-                  <span data-i18n="btn_preview_wa">Preview WhatsApp Slip</span>
-                </button>
+              <div class="stat-item">
+                <span class="stat-value">&lt; 3s</span>
+                <span class="stat-label" data-i18n="stat_speed">Fast Receipt Gen</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">1-Click</span>
+                <span class="stat-label" data-i18n="stat_sync">Google Sheets Sync</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- In-feed Responsive Ad Banner #1 (Visible on Mobile & Laptops) -->
-      <div class="infeed-ad-wrapper">
-        <span class="ad-label" data-i18n="ad_label">SPONSORED ADVERTISEMENT</span>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-5001028882463369"
-             data-ad-slot="1234567895"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        <span style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">Responsive Leaderboard / Banner Slot</span>
-      </div>
-
-      <!-- Google Closed Testing & Download Step-by-Step Zone -->
-      <section class="container" id="testing-zone">
-        <div class="testing-banner-box">
-          <div class="testing-grid">
-            <div>
-              <span class="section-badge" data-i18n="test_badge">Google Play Closed Testing</span>
-              <h3 style="font-size:1.7rem; font-weight:800; margin:8px 0 14px; color:var(--text-main);" data-i18n="test_title">
-                Join the 14-Day Tester Community
-              </h3>
-              <p style="font-size:0.95rem; color:var(--text-secondary); line-height:1.6; margin-bottom:20px;" data-i18n="test_desc">
-                Follow these 3 quick steps to access the Android release, verify compliance, and experience VetAssist on your smartphone.
-              </p>
-              <div style="display:flex; flex-wrap:wrap; gap:12px;">
-                <a href="https://groups.google.com/g/vetassisttesters" target="_blank" class="btn btn-groups">
-                  <svg><use href="#icon-groups"/></svg>
-                  <span data-i18n="btn_step1_group">Step 1: Join Google Group</span>
-                </a>
-                <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" class="btn btn-primary">
-                  <svg><use href="#icon-googleplay"/></svg>
-                  <span data-i18n="btn_step2_optin">Step 2: Opt-in on Play Store</span>
-                </a>
-              </div>
+          <!-- Live Phone Simulator Widget -->
+          <div class="simulator-card" id="live-calculator">
+            <div class="sim-header">
+              <span class="sim-header-title">🐾 VetAssist Live Simulator</span>
+              <span class="sim-status" data-i18n="sim_status_badge">🟢 Live Pricing</span>
             </div>
-
-            <div class="testing-steps-list">
-              <div class="t-step">
-                <div class="t-num">1</div>
-                <div class="t-info">
-                  <h4 data-i18n="t_step1_title">Join Google Group</h4>
-                  <p data-i18n="t_step1_desc">Join our official Google Group with your Google Play email account.</p>
-                </div>
-              </div>
-
-              <div class="t-step">
-                <div class="t-num">2</div>
-                <div class="t-info">
-                  <h4 data-i18n="t_step2_title">Accept Testing Invitation</h4>
-                  <p data-i18n="t_step2_desc">Click 'Become a Tester' on the Google Play testing opt-in page.</p>
-                </div>
-              </div>
-
-              <div class="t-step">
-                <div class="t-num">3</div>
-                <div class="t-info">
-                  <h4 data-i18n="t_step3_title">Install & Open App</h4>
-                  <p data-i18n="t_step3_desc">Download VetAssist from Google Play Store and test in field conditions.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Features Section -->
-      <section class="section-wrap" id="features" style="background:#ffffff; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-badge" data-i18n="feat_badge">Key Capabilities</span>
-            <h2 class="section-title" data-i18n="feat_section_title">Designed Specifically for Field Practitioners</h2>
-            <p class="section-desc" data-i18n="feat_section_desc">Eliminate manual calculations in the barn and streamline client communication.</p>
-          </div>
-
-          <div class="feature-grid">
-            <div class="feature-card">
-              <div class="feature-icon-box">
-                <svg><use href="#icon-treatment-mode"/></svg>
-              </div>
-              <h3 data-i18n="feat1_title">Dynamic Pricing Engine</h3>
-              <p data-i18n="feat1_desc">Hide wholesale purchase costs, apply percentage margins, and add round-trip mileage automatically.</p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon-box">
-                <svg><use href="#icon-receipt-seal"/></svg>
-              </div>
-              <h3 data-i18n="feat2_title">WhatsApp Visual Receipt</h3>
-              <p data-i18n="feat2_desc">Generate high-res JPG slips with clinic headers, IBAN details, and itemized or clean lump-sum views.</p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon-box">
-                <svg><use href="#icon-sheets"/></svg>
-              </div>
-              <h3 data-i18n="feat3_title">Google Sheets Stock Sync</h3>
-              <p data-i18n="feat3_desc">Update inventory on your clinic desktop spreadsheet and sync with 1 tap onto your mobile bag.</p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon-box">
-                <svg><use href="#icon-dog-stethoscope"/></svg>
-              </div>
-              <h3 data-i18n="feat4_title">100% Offline Operations</h3>
-              <p data-i18n="feat4_desc">Works seamlessly in remote farms without cellular data or Wi-Fi signal. All data stays local.</p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon-box">
-                <svg><use href="#icon-gear-paw"/></svg>
-              </div>
-              <h3 data-i18n="feat5_title">Clinic Info Security Lock</h3>
-              <p data-i18n="feat5_desc">Lock your bank details, clinic logo, and default rates to prevent accidental modifications in the rush.</p>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon-box">
-                <svg><use href="#icon-vet-van"/></svg>
-              </div>
-              <h3 data-i18n="feat6_title">Sunlight & Night Themes</h3>
-              <p data-i18n="feat6_desc">High-contrast bright yellow/black mode for direct outdoor sunlight, plus an elegant dark mode for nighttime.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- WhatsApp Receipt Interactive Studio -->
-      <section class="section-wrap" id="receipt-studio">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-badge" data-i18n="studio_badge">Receipt Generator</span>
-            <h2 class="section-title" data-i18n="studio_title">WhatsApp Receipt Studio</h2>
-            <p class="section-desc" data-i18n="studio_desc">Customize clinic details and preview the exact receipt your client will receive.</p>
-          </div>
-
-          <div class="receipt-studio">
-            <div class="studio-controls">
-              <div>
-                <label class="sim-label" data-i18n="lbl_clinic_name">Clinic / Veterinarian Name</label>
-                <input type="text" id="slip-input-clinic" class="input-field" value="Valley Veterinary Clinic" oninput="updateReceiptSlip()">
-              </div>
-
-              <div>
-                <label class="sim-label" data-i18n="lbl_client_name">Client / Farm Name</label>
-                <input type="text" id="slip-input-client" class="input-field" value="John Doe (Farm #12)" oninput="updateReceiptSlip()">
-              </div>
-
-              <div>
-                <label class="sim-label" data-i18n="lbl_treatment_desc">Procedure Description</label>
-                <input type="text" id="slip-input-desc" class="input-field" value="Bovine Difficult Calving & Calcium Therapy" oninput="updateReceiptSlip()">
-              </div>
-
-              <div>
-                <label class="sim-label" data-i18n="lbl_iban">Bank / Payment Info (IBAN)</label>
-                <input type="text" id="slip-input-iban" class="input-field" value="TR12 0006 1005 1234 5678 9012 34" oninput="updateReceiptSlip()">
-              </div>
-
-              <div style="display:flex; gap:10px; margin-top:8px;">
-                <button class="btn btn-whatsapp" style="flex:1;" onclick="alert('Demo: On mobile, this sends a branded visual JPG slip directly to WhatsApp!')">
-                  <svg><use href="#icon-whatsapp"/></svg>
-                  <span data-i18n="btn_send_wa">Send WhatsApp</span>
-                </button>
-                <button class="btn btn-outline" onclick="copySlipText()">
-                  <span>📋</span> <span data-i18n="btn_copy_text">Copy Slip Text</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="studio-preview">
-              <div class="receipt-slip" id="live-receipt-slip">
-                <div class="slip-clinic-name" id="preview-clinic">Valley Veterinary Clinic</div>
-                <div class="slip-sub" data-i18n="slip_subtitle">🐾 Field Treatment Receipt Slip</div>
-                
-                <div class="slip-divider"></div>
-
-                <div class="slip-row">
-                  <span style="color:#64748b;" data-i18n="slip_date">Date:</span>
-                  <strong id="preview-date">05.09.2026</strong>
-                </div>
-                <div class="slip-row">
-                  <span style="color:#64748b;" data-i18n="slip_client">Client:</span>
-                  <strong id="preview-client">John Doe</strong>
-                </div>
-                <div class="slip-row">
-                  <span style="color:#64748b;" data-i18n="slip_procedure">Procedure:</span>
-                  <span id="preview-desc" style="font-weight:600; text-align:right; max-width:150px;">Calving Protocol</span>
-                </div>
-
-                <div class="slip-divider"></div>
-
-                <div class="slip-row">
-                  <span data-i18n="slip_medication">Medication & Supplies</span>
-                  <strong id="preview-med">$65.00</strong>
-                </div>
-                <div class="slip-row">
-                  <span data-i18n="slip_mileage">Travel / Mileage Fee</span>
-                  <strong id="preview-km">$30.00</strong>
-                </div>
-                <div class="slip-row">
-                  <span data-i18n="slip_service">Veterinary Service Fee</span>
-                  <strong id="preview-serv">$23.50</strong>
-                </div>
-
-                <div class="slip-divider"></div>
-
-                <div class="slip-row total-row">
-                  <span data-i18n="slip_total">GRAND TOTAL</span>
-                  <span id="preview-total">$118.50</span>
-                </div>
-
-                <div style="margin-top:12px; padding:10px; background:#f8fafc; border-radius:8px; border:1px solid #cbd5e1; font-size:0.68rem; color:#475569; word-break:break-all;">
-                  <strong style="color:#0f172a; display:block; margin-bottom:2px;" data-i18n="slip_bank_label">Payment Account:</strong>
-                  <span id="preview-iban">TR12 0006 1005 1234 5678 9012 34</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- In-feed Responsive Ad Banner #2 -->
-      <div class="infeed-ad-wrapper">
-        <span class="ad-label" data-i18n="ad_label">SPONSORED ADVERTISEMENT</span>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-5001028882463369"
-             data-ad-slot="1234567896"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        <span style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">Responsive Leaderboard / Banner Slot</span>
-      </div>
-
-      <!-- Google Sheets Visual Workflow Section -->
-      <section class="section-wrap" id="sheets-sync" style="background:#ffffff; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-badge" data-i18n="sheets_badge">Visual Cloud Workflow</span>
-            <h2 class="section-title" data-i18n="sheets_title">How Google Sheets Sync Works</h2>
-            <p class="section-desc" data-i18n="sheets_desc">Manage your master medication and price database on Google Sheets; synchronize onto phones in 1 tap.</p>
-          </div>
-
-          <!-- 3-Step Visual Infographic Mockup Grid -->
-          <div class="sheets-visual-grid">
             
-            <!-- Visual Step 1 -->
-            <div class="sheet-step-card">
-              <div class="sheet-step-header">
-                <div class="step-badge">1</div>
-                <div class="sheet-step-title" data-i18n="sh_vis1_title">Create Spreadsheet</div>
-              </div>
-              <div class="sheet-step-body">
-                <p style="font-size:0.84rem; color:var(--text-secondary);" data-i18n="sh_vis1_desc">
-                  Open Google Sheets on your PC. Define your standard medication columns:
-                </p>
-                <table class="mock-sheets-table">
-                  <thead>
-                    <tr>
-                      <th>A: Name</th>
-                      <th>B: Unit</th>
-                      <th>C: Cost</th>
-                      <th>D: Qty</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Oxytocin</td>
-                      <td>Vial</td>
-                      <td>$12.00</td>
-                      <td>14</td>
-                    </tr>
-                    <tr>
-                      <td>Calcium</td>
-                      <td>Bottle</td>
-                      <td>$19.00</td>
-                      <td>8</td>
-                    </tr>
-                    <tr>
-                      <td>Amoxicillin</td>
-                      <td>Box</td>
-                      <td>$31.00</td>
-                      <td>5</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Visual Step 2 -->
-            <div class="sheet-step-card">
-              <div class="sheet-step-header">
-                <div class="step-badge">2</div>
-                <div class="sheet-step-title" data-i18n="sh_vis2_title">Publish to Web (CSV)</div>
-              </div>
-              <div class="sheet-step-body">
-                <p style="font-size:0.84rem; color:var(--text-secondary);" data-i18n="sh_vis2_desc">
-                  In Google Sheets: Click <strong>File &gt; Share &gt; Publish to web</strong>:
-                </p>
-                <div class="mock-publish-dialog">
-                  <div class="mock-dialog-header">
-                    <span>🌐 Publish to the web</span>
-                    <span style="color:#0f9d58;">● Live</span>
-                  </div>
-                  <div style="font-size:0.7rem; color:#64748b;">Format:</div>
-                  <div class="mock-csv-select">
-                    <span>📄 Comma-separated values (.csv)</span>
-                    <span>✓</span>
-                  </div>
-                  <div style="font-size:0.68rem; color:#0284c7; background:#e0f2fe; padding:4px 6px; border-radius:4px; word-break:break-all; margin-top:6px;">
-                    https://docs.google.com/.../pub?output=csv
-                  </div>
+            <div class="sim-body">
+              <!-- Treatment Selector -->
+              <div class="sim-select-group">
+                <span class="sim-label" data-i18n="sim_select_title">1. Select Procedure / Treatment</span>
+                <div class="sim-chips">
+                  <div class="sim-chip active" onclick="selectSimTreatment('dogum', this)" data-i18n="sim_opt_calving">🐮 Calving & Calcium</div>
+                  <div class="sim-chip" onclick="selectSimTreatment('mastitis', this)" data-i18n="sim_opt_mastitis">💉 Mastitis Therapy</div>
+                  <div class="sim-chip" onclick="selectSimTreatment('operasyon', this)" data-i18n="sim_opt_surgery">🔪 Rumenotomy / Surgery</div>
                 </div>
               </div>
-            </div>
 
-            <!-- Visual Step 3 -->
-            <div class="sheet-step-card">
-              <div class="sheet-step-header">
-                <div class="step-badge">3</div>
-                <div class="sheet-step-title" data-i18n="sh_vis3_title">1-Tap Sync to App</div>
-              </div>
-              <div class="sheet-step-body">
-                <p style="font-size:0.84rem; color:var(--text-secondary);" data-i18n="sh_vis3_desc">
-                  Paste the CSV link into VetAssist Settings. Tap Sync before going to the field:
-                </p>
-                <div class="mock-app-sync-card">
-                  <div style="font-size:0.75rem; font-weight:700; color:#0f172a;">🐾 VetAssist Stock Sync</div>
-                  <div class="mock-sync-btn">
-                    <span>🔄</span> <span data-i18n="btn_sync_now">Sync Stock Now</span>
-                  </div>
-                  <span class="mock-success-tag" data-i18n="sync_success_tag">✓ 48 Items Synced • 100% Offline Ready</span>
+              <!-- KM Distance Slider -->
+              <div class="sim-slider-box">
+                <div class="sim-slider-header">
+                  <span data-i18n="sim_distance_label">🚗 Travel Distance (Round-trip):</span>
+                  <span id="km-display" style="color:var(--primary); font-family:var(--font-mono);">30 KM</span>
+                </div>
+                <input type="range" min="0" max="100" value="30" class="sim-range" id="km-slider" oninput="updateSimCalculations()">
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+                  <span>0 KM</span>
+                  <span>50 KM</span>
+                  <span>100 KM</span>
                 </div>
               </div>
-            </div>
 
+              <!-- Margin Slider -->
+              <div class="sim-slider-box">
+                <div class="sim-slider-header">
+                  <span data-i18n="sim_margin_label">📈 Target Margin:</span>
+                  <span id="margin-display" style="color:#10b981; font-family:var(--font-mono);">%35</span>
+                </div>
+                <input type="range" min="10" max="70" value="35" class="sim-range" id="margin-slider" oninput="updateSimCalculations()">
+              </div>
+
+              <!-- Calculated Total -->
+              <div class="sim-total-card">
+                <div class="sim-total-title" data-i18n="sim_total_title">FINAL RECEIPT TOTAL</div>
+                <div class="sim-total-amount" id="sim-grand-total">$118.50</div>
+                <div class="sim-breakdown-mini">
+                  <span id="sim-med-cost">Med: $65.00</span>
+                  <span id="sim-km-cost">Mileage: $30.00</span>
+                  <span id="sim-margin-gain">Profit: $23.50</span>
+                </div>
+              </div>
+
+              <button class="btn btn-whatsapp" style="width:100%;" onclick="openStudioFromSim()">
+                <svg><use href="#icon-whatsapp"/></svg>
+                <span data-i18n="btn_preview_wa">Preview WhatsApp Slip</span>
+              </button>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- FAQ Section with Clickable Action Links -->
-      <section class="section-wrap" id="faq" style="background:#ffffff; border-top:1px solid var(--border-light);">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-badge" data-i18n="faq_badge">Help & FAQ</span>
-            <h2 class="section-title" data-i18n="faq_title">Frequently Asked Questions</h2>
-            <p class="section-desc" data-i18n="faq_desc">Common questions about closed testing, offline support, and Google Sheets.</p>
+    <!-- Google Closed Testing & Download Step-by-Step Zone -->
+    <section class="container" id="testing-zone">
+      <div class="testing-banner-box">
+        <div class="testing-grid">
+          <div>
+            <span class="section-badge" data-i18n="test_badge">Google Play Closed Testing</span>
+            <h3 style="font-size:1.7rem; font-weight:800; margin:8px 0 14px; color:var(--text-main);" data-i18n="test_title">
+              Join the 14-Day Tester Community
+            </h3>
+            <p style="font-size:0.95rem; color:var(--text-secondary); line-height:1.6; margin-bottom:20px;" data-i18n="test_desc">
+              Follow these 3 quick steps to access the Android release, verify compliance, and experience VetAssist on your smartphone.
+            </p>
+            <div style="display:flex; flex-wrap:wrap; gap:12px;">
+              <a href="https://groups.google.com/g/vetassisttesters" target="_blank" class="btn btn-groups">
+                <svg><use href="#icon-groups"/></svg>
+                <span data-i18n="btn_step1_group">Step 1: Join Google Group</span>
+              </a>
+              <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" class="btn btn-primary">
+                <svg><use href="#icon-googleplay"/></svg>
+                <span data-i18n="btn_step2_optin">Step 2: Opt-in on Play Store</span>
+              </a>
+            </div>
           </div>
 
-          <div class="faq-list">
-            <div class="faq-item open">
-              <div class="faq-question" onclick="toggleFaq(this)">
-                <span data-i18n="faq1_q">Does VetAssist work without internet in remote villages?</span>
-                <span class="faq-icon">+</span>
-              </div>
-              <div class="faq-answer" data-i18n="faq1_a">
-                Yes, absolutely! VetAssist is built with an offline-first architecture. All calculation engines, custom medication formulas, and visual receipt generation work completely offline.
+          <div class="testing-steps-list">
+            <div class="t-step">
+              <div class="t-num">1</div>
+              <div class="t-info">
+                <h4 data-i18n="t_step1_title">Join Google Group</h4>
+                <p data-i18n="t_step1_desc">Join our official Google Group with your Google Play email account.</p>
               </div>
             </div>
 
-            <!-- FAQ Question 2 with Clickable Links -->
-            <div class="faq-item open">
-              <div class="faq-question" onclick="toggleFaq(this)">
-                <span data-i18n="faq2_q">How do I join the Google Play closed testing track?</span>
-                <span class="faq-icon">+</span>
-              </div>
-              <div class="faq-answer" data-i18n="faq2_a">
-                1. Join our official <a href="https://groups.google.com/g/vetassisttesters" target="_blank" class="faq-link-badge"><svg><use href="#icon-groups"/></svg> Google Group (vetassisttesters)</a> with your Google Play account.<br>
-                2. Click the <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" class="faq-link-badge"><svg><use href="#icon-googleplay"/></svg> Google Play Opt-in Link</a> and click 'Become a Tester'.<br>
-                3. Download VetAssist directly from Google Play Store!
+            <div class="t-step">
+              <div class="t-num">2</div>
+              <div class="t-info">
+                <h4 data-i18n="t_step2_title">Accept Testing Invitation</h4>
+                <p data-i18n="t_step2_desc">Click 'Become a Tester' on the Google Play testing opt-in page.</p>
               </div>
             </div>
 
-            <div class="faq-item">
-              <div class="faq-question" onclick="toggleFaq(this)">
-                <span data-i18n="faq3_q">How does Google Sheets synchronization work?</span>
-                <span class="faq-icon">+</span>
-              </div>
-              <div class="faq-answer" data-i18n="faq3_a">
-                Publish your Google Sheet as a public CSV link and paste it into the VetAssist Settings. Tapping 'Sync Stock' instantly refreshes all prices and stock counts.
-              </div>
-            </div>
-
-            <div class="faq-item">
-              <div class="faq-question" onclick="toggleFaq(this)">
-                <span data-i18n="faq4_q">Are my patient and client data stored on external servers?</span>
-                <span class="faq-icon">+</span>
-              </div>
-              <div class="faq-answer" data-i18n="faq4_a">
-                No. All records, treatment logs, and prices reside exclusively inside your device's local storage for complete medical privacy.
+            <div class="t-step">
+              <div class="t-num">3</div>
+              <div class="t-info">
+                <h4 data-i18n="t_step3_title">Install & Open App</h4>
+                <p data-i18n="t_step3_desc">Download VetAssist from Google Play Store and test in field conditions.</p>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Clean, Functional Footer -->
-      <footer class="site-footer">
-        <div class="container">
-          <div class="footer-grid-clean">
-            <!-- Col 1: Brand Info -->
-            <div class="footer-col">
-              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                <img src="icon-192.png" alt="Logo" style="width:32px; height:32px; border-radius:8px;">
-                <strong style="font-size:1.1rem; color:var(--text-main);">VetAssist</strong>
+    <!-- Features Section -->
+    <section class="section-wrap" id="features" style="background:#ffffff; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge" data-i18n="feat_badge">Key Capabilities</span>
+          <h2 class="section-title" data-i18n="feat_section_title">Designed Specifically for Field Practitioners</h2>
+          <p class="section-desc" data-i18n="feat_section_desc">Eliminate manual calculations in the barn and streamline client communication.</p>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg><use href="#icon-treatment-mode"/></svg>
+            </div>
+            <h3 data-i18n="feat1_title">Dynamic Pricing Engine</h3>
+            <p data-i18n="feat1_desc">Hide wholesale purchase costs, apply percentage margins, and add round-trip mileage automatically.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg><use href="#icon-receipt-seal"/></svg>
+            </div>
+            <h3 data-i18n="feat2_title">WhatsApp Visual Receipt</h3>
+            <p data-i18n="feat2_desc">Generate high-res JPG slips with clinic headers, IBAN details, and itemized or clean lump-sum views.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg><use href="#icon-sheets"/></svg>
+            </div>
+            <h3 data-i18n="feat3_title">Google Sheets Stock Sync</h3>
+            <p data-i18n="feat3_desc">Update inventory on your clinic desktop spreadsheet and sync with 1 tap onto your mobile bag.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg><use href="#icon-dog-stethoscope"/></svg>
+            </div>
+            <h3 data-i18n="feat4_title">100% Offline Operations</h3>
+            <p data-i18n="feat4_desc">Works seamlessly in remote farms without cellular data or Wi-Fi signal. All data stays local.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg><use href="#icon-gear-paw"/></svg>
+            </div>
+            <h3 data-i18n="feat5_title">Clinic Info Security Lock</h3>
+            <p data-i18n="feat5_desc">Lock your bank details, clinic logo, and default rates to prevent accidental modifications in the rush.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg><use href="#icon-vet-van"/></svg>
+            </div>
+            <h3 data-i18n="feat6_title">Sunlight & Night Themes</h3>
+            <p data-i18n="feat6_desc">High-contrast bright yellow/black mode for direct outdoor sunlight, plus an elegant dark mode for nighttime.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WhatsApp Receipt Interactive Studio -->
+    <section class="section-wrap" id="receipt-studio">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge" data-i18n="studio_badge">Receipt Generator</span>
+          <h2 class="section-title" data-i18n="studio_title">WhatsApp Receipt Studio</h2>
+          <p class="section-desc" data-i18n="studio_desc">Customize clinic details and preview the exact receipt your client will receive.</p>
+        </div>
+
+        <div class="receipt-studio">
+          <div class="studio-controls">
+            <div>
+              <label class="sim-label" data-i18n="lbl_clinic_name">Clinic / Veterinarian Name</label>
+              <input type="text" id="slip-input-clinic" class="input-field" value="Valley Veterinary Clinic" oninput="updateReceiptSlip()">
+            </div>
+
+            <div>
+              <label class="sim-label" data-i18n="lbl_client_name">Client / Farm Name</label>
+              <input type="text" id="slip-input-client" class="input-field" value="John Doe (Farm #12)" oninput="updateReceiptSlip()">
+            </div>
+
+            <div>
+              <label class="sim-label" data-i18n="lbl_treatment_desc">Procedure Description</label>
+              <input type="text" id="slip-input-desc" class="input-field" value="Bovine Difficult Calving & Calcium Therapy" oninput="updateReceiptSlip()">
+            </div>
+
+            <div>
+              <label class="sim-label" data-i18n="lbl_iban">Bank / Payment Info (IBAN)</label>
+              <input type="text" id="slip-input-iban" class="input-field" value="TR12 0006 1005 1234 5678 9012 34" oninput="updateReceiptSlip()">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <button class="btn btn-whatsapp" style="flex:1;" onclick="alert('Demo: On mobile, this sends a branded visual JPG slip directly to WhatsApp!')">
+                <svg><use href="#icon-whatsapp"/></svg>
+                <span data-i18n="btn_send_wa">Send WhatsApp</span>
+              </button>
+              <button class="btn btn-outline" onclick="copySlipText()">
+                <span>📋</span> <span data-i18n="btn_copy_text">Copy Slip Text</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="studio-preview">
+            <div class="receipt-slip" id="live-receipt-slip">
+              <div class="slip-clinic-name" id="preview-clinic">Valley Veterinary Clinic</div>
+              <div class="slip-sub" data-i18n="slip_subtitle">🐾 Field Treatment Receipt Slip</div>
+              
+              <div class="slip-divider"></div>
+
+              <div class="slip-row">
+                <span style="color:#64748b;" data-i18n="slip_date">Date:</span>
+                <strong id="preview-date">05.09.2026</strong>
               </div>
-              <p style="font-size:0.86rem; color:var(--text-muted); line-height:1.6; margin-bottom:14px;" data-i18n="footer_bio">
-                Modern mobile assistant engineered specifically for field veterinarians.
+              <div class="slip-row">
+                <span style="color:#64748b;" data-i18n="slip_client">Client:</span>
+                <strong id="preview-client">John Doe</strong>
+              </div>
+              <div class="slip-row">
+                <span style="color:#64748b;" data-i18n="slip_procedure">Procedure:</span>
+                <span id="preview-desc" style="font-weight:600; text-align:right; max-width:150px;">Calving Protocol</span>
+              </div>
+
+              <div class="slip-divider"></div>
+
+              <div class="slip-row">
+                <span data-i18n="slip_medication">Medication & Supplies</span>
+                <strong id="preview-med">$65.00</strong>
+              </div>
+              <div class="slip-row">
+                <span data-i18n="slip_mileage">Travel / Mileage Fee</span>
+                <strong id="preview-km">$30.00</strong>
+              </div>
+              <div class="slip-row">
+                <span data-i18n="slip_service">Veterinary Service Fee</span>
+                <strong id="preview-serv">$23.50</strong>
+              </div>
+
+              <div class="slip-divider"></div>
+
+              <div class="slip-row total-row">
+                <span data-i18n="slip_total">GRAND TOTAL</span>
+                <span id="preview-total">$118.50</span>
+              </div>
+
+              <div style="margin-top:12px; padding:10px; background:#f8fafc; border-radius:8px; border:1px solid #cbd5e1; font-size:0.68rem; color:#475569; word-break:break-all;">
+                <strong style="color:#0f172a; display:block; margin-bottom:2px;" data-i18n="slip_bank_label">Payment Account:</strong>
+                <span id="preview-iban">TR12 0006 1005 1234 5678 9012 34</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Google Sheets Visual Workflow Section -->
+    <section class="section-wrap" id="sheets-sync" style="background:#ffffff; border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge" data-i18n="sheets_badge">Visual Cloud Workflow</span>
+          <h2 class="section-title" data-i18n="sheets_title">How Google Sheets Sync Works</h2>
+          <p class="section-desc" data-i18n="sheets_desc">Manage your master medication and price database on Google Sheets; synchronize onto phones in 1 tap.</p>
+        </div>
+
+        <!-- 3-Step Visual Infographic Mockup Grid -->
+        <div class="sheets-visual-grid">
+          
+          <!-- Visual Step 1 -->
+          <div class="sheet-step-card">
+            <div class="sheet-step-header">
+              <div class="step-badge">1</div>
+              <div class="sheet-step-title" data-i18n="sh_vis1_title">Create Spreadsheet</div>
+            </div>
+            <div class="sheet-step-body">
+              <p style="font-size:0.84rem; color:var(--text-secondary);" data-i18n="sh_vis1_desc">
+                Open Google Sheets on your PC. Define your standard medication columns:
               </p>
-              <span style="font-size:0.75rem; color:var(--primary); font-weight:700;">Android 16 • Target SDK 36 Ready</span>
-            </div>
-
-            <!-- Col 2: Navigation -->
-            <div class="footer-col">
-              <h4 data-i18n="foot_nav">Navigation</h4>
-              <ul class="footer-links">
-                <li><a href="#features" data-i18n="nav_features">Features</a></li>
-                <li><a href="#live-calculator" data-i18n="nav_simulator">Simulator</a></li>
-                <li><a href="#testing-zone" data-i18n="nav_join_test">Tester Group</a></li>
-                <li><a href="#receipt-studio" data-i18n="nav_receipt">Receipts</a></li>
-                <li><a href="#sheets-sync" data-i18n="nav_sheets">Sheets Sync</a></li>
-              </ul>
-            </div>
-
-            <!-- Col 3: Testing & Official Google Sites Privacy Links -->
-            <div class="footer-col">
-              <h4 data-i18n="foot_legal">Access & Policies</h4>
-              <ul class="footer-links">
-                <li>
-                  <a href="https://sites.google.com/d/17dYGaGlT2j_FXkCMffl7jOLWJkx5dJpY/p/1_l2H7LDnRSEo8GApEAaIWjhrmNAns9P_/edit" target="_blank" rel="noopener noreferrer">
-                    <span>🛡️</span> <span data-i18n="priv_policy">Google Sites Privacy Policy</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="https://groups.google.com/g/vetassisttesters" target="_blank" rel="noopener noreferrer">
-                    <svg style="width:16px;height:16px;"><use href="#icon-groups"/></svg>
-                    <span>Google Groups</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" rel="noopener noreferrer">
-                    <svg style="width:16px;height:16px;"><use href="#icon-googleplay"/></svg>
-                    <span>Google Play Testing</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:void(0)" onclick="openPolicyModal('disclaimer')">
-                    <span>⚠️</span> <span data-i18n="med_disclaimer">Medical Disclaimer</span>
-                  </a>
-                </li>
-              </ul>
+              <table class="mock-sheets-table">
+                <thead>
+                  <tr>
+                    <th>A: Name</th>
+                    <th>B: Unit</th>
+                    <th>C: Cost</th>
+                    <th>D: Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Oxytocin</td>
+                    <td>Vial</td>
+                    <td>$12.00</td>
+                    <td>14</td>
+                  </tr>
+                  <tr>
+                    <td>Calcium</td>
+                    <td>Bottle</td>
+                    <td>$19.00</td>
+                    <td>8</td>
+                  </tr>
+                  <tr>
+                    <td>Amoxicillin</td>
+                    <td>Box</td>
+                    <td>$31.00</td>
+                    <td>5</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div class="footer-bottom">
-            <span>© 2026 VetAssist. All rights reserved. • Publisher: ca-pub-5001028882463369</span>
-            <span>Minimalist Light Front-End System</span>
+          <!-- Visual Step 2 -->
+          <div class="sheet-step-card">
+            <div class="sheet-step-header">
+              <div class="step-badge">2</div>
+              <div class="sheet-step-title" data-i18n="sh_vis2_title">Publish to Web (CSV)</div>
+            </div>
+            <div class="sheet-step-body">
+              <p style="font-size:0.84rem; color:var(--text-secondary);" data-i18n="sh_vis2_desc">
+                In Google Sheets: Click <strong>File &gt; Share &gt; Publish to web</strong>:
+              </p>
+              <div class="mock-publish-dialog">
+                <div class="mock-dialog-header">
+                  <span>🌐 Publish to the web</span>
+                  <span style="color:#0f9d58;">● Live</span>
+                </div>
+                <div style="font-size:0.7rem; color:#64748b;">Format:</div>
+                <div class="mock-csv-select">
+                  <span>📄 Comma-separated values (.csv)</span>
+                  <span>✓</span>
+                </div>
+                <div style="font-size:0.68rem; color:#0284c7; background:#e0f2fe; padding:4px 6px; border-radius:4px; word-break:break-all; margin-top:6px;">
+                  https://docs.google.com/.../pub?output=csv
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Step 3 -->
+          <div class="sheet-step-card">
+            <div class="sheet-step-header">
+              <div class="step-badge">3</div>
+              <div class="sheet-step-title" data-i18n="sh_vis3_title">1-Tap Sync to App</div>
+            </div>
+            <div class="sheet-step-body">
+              <p style="font-size:0.84rem; color:var(--text-secondary);" data-i18n="sh_vis3_desc">
+                Paste the CSV link into VetAssist Settings. Tap Sync before going to the field:
+              </p>
+              <div class="mock-app-sync-card">
+                <div style="font-size:0.75rem; font-weight:700; color:#0f172a;">🐾 VetAssist Stock Sync</div>
+                <div class="mock-sync-btn">
+                  <span>🔄</span> <span data-i18n="btn_sync_now">Sync Stock Now</span>
+                </div>
+                <span class="mock-success-tag" data-i18n="sync_success_tag">✓ 48 Items Synced • 100% Offline Ready</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section with Clickable Action Links -->
+    <section class="section-wrap" id="faq" style="background:#ffffff; border-top:1px solid var(--border-light);">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge" data-i18n="faq_badge">Help & FAQ</span>
+          <h2 class="section-title" data-i18n="faq_title">Frequently Asked Questions</h2>
+          <p class="section-desc" data-i18n="faq_desc">Common questions about closed testing, offline support, and Google Sheets.</p>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item open">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span data-i18n="faq1_q">Does VetAssist work without internet in remote villages?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer" data-i18n="faq1_a">
+              Yes, absolutely! VetAssist is built with an offline-first architecture. All calculation engines, custom medication formulas, and visual receipt generation work completely offline.
+            </div>
+          </div>
+
+          <!-- FAQ Question 2 with Clickable Links -->
+          <div class="faq-item open">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span data-i18n="faq2_q">How do I join the Google Play closed testing track?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer" data-i18n="faq2_a">
+              1. Join our official <a href="https://groups.google.com/g/vetassisttesters" target="_blank" class="faq-link-badge"><svg><use href="#icon-groups"/></svg> Google Group (vetassisttesters)</a> with your Google Play account.<br>
+              2. Click the <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" class="faq-link-badge"><svg><use href="#icon-googleplay"/></svg> Google Play Opt-in Link</a> and click 'Become a Tester'.<br>
+              3. Download VetAssist directly from Google Play Store!
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span data-i18n="faq3_q">How does Google Sheets synchronization work?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer" data-i18n="faq3_a">
+              Publish your Google Sheet as a public CSV link and paste it into the VetAssist Settings. Tapping 'Sync Stock' instantly refreshes all prices and stock counts.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span data-i18n="faq4_q">Are my patient and client data stored on external servers?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer" data-i18n="faq4_a">
+              No. All records, treatment logs, and prices reside exclusively inside your device's local storage for complete medical privacy.
+            </div>
           </div>
         </div>
-      </footer>
-    </main>
-
-    <!-- Right Ad Rail (2 Banner Ads) - Visible on Wide Screens -->
-    <aside class="ad-rail">
-      <div class="ad-slot-box">
-        <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #3</span>
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:120px;height:240px"
-             data-ad-client="ca-pub-5001028882463369"
-             data-ad-slot="1234567892"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        <span style="font-size:0.7rem; color:var(--text-light); margin-top:8px;">120x240 Ad Rail</span>
       </div>
+    </section>
 
-      <div class="ad-slot-box">
-        <span class="ad-label" data-i18n="ad_label">SPONSORED / AD #4</span>
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:120px;height:240px"
-             data-ad-client="ca-pub-5001028882463369"
-             data-ad-slot="1234567893"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        <span style="font-size:0.7rem; color:var(--text-light); margin-top:8px;">120x240 Ad Rail</span>
+    <!-- Clean, Functional Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid-clean">
+          <!-- Col 1: Brand Info -->
+          <div class="footer-col">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+              <img src="icon-192.png" alt="Logo" style="width:32px; height:32px; border-radius:8px;">
+              <strong style="font-size:1.1rem; color:var(--text-main);">VetAssist</strong>
+            </div>
+            <p style="font-size:0.86rem; color:var(--text-muted); line-height:1.6; margin-bottom:14px;" data-i18n="footer_bio">
+              Modern mobile assistant engineered specifically for field veterinarians.
+            </p>
+            <span style="font-size:0.75rem; color:var(--primary); font-weight:700;">Android 16 • Target SDK 36 Ready</span>
+          </div>
+
+          <!-- Col 2: Navigation -->
+          <div class="footer-col">
+            <h4 data-i18n="foot_nav">Navigation</h4>
+            <ul class="footer-links">
+              <li><a href="#features" data-i18n="nav_features">Features</a></li>
+              <li><a href="#live-calculator" data-i18n="nav_simulator">Simulator</a></li>
+              <li><a href="#testing-zone" data-i18n="nav_join_test">Tester Group</a></li>
+              <li><a href="#receipt-studio" data-i18n="nav_receipt">Receipts</a></li>
+              <li><a href="#sheets-sync" data-i18n="nav_sheets">Sheets Sync</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Testing & Official Google Sites Privacy Links -->
+          <div class="footer-col">
+            <h4 data-i18n="foot_legal">Access & Policies</h4>
+            <ul class="footer-links">
+              <li>
+                <a href="https://sites.google.com/d/17dYGaGlT2j_FXkCMffl7jOLWJkx5dJpY/p/1_l2H7LDnRSEo8GApEAaIWjhrmNAns9P_/edit" target="_blank" rel="noopener noreferrer">
+                  <span>🛡️</span> <span data-i18n="priv_policy">Google Sites Privacy Policy</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://groups.google.com/g/vetassisttesters" target="_blank" rel="noopener noreferrer">
+                  <svg style="width:16px;height:16px;"><use href="#icon-groups"/></svg>
+                  <span>Google Groups</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://play.google.com/apps/testing/com.VetAssistv1" target="_blank" rel="noopener noreferrer">
+                  <svg style="width:16px;height:16px;"><use href="#icon-googleplay"/></svg>
+                  <span>Google Play Testing</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0)" onclick="openPolicyModal('disclaimer')">
+                  <span>⚠️</span> <span data-i18n="med_disclaimer">Medical Disclaimer</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© 2026 VetAssist. All rights reserved.</span>
+          <span>Minimalist Light Front-End System</span>
+        </div>
       </div>
-    </aside>
-
-  </div>
-
-  <!-- Bottom Sticky Banner Ad (Ad #5) - Always Pinned on All Screens -->
-  <div class="bottom-ad-wrapper" id="bottom-ad-container">
-    <div class="bottom-ad-inner">
-      <button class="close-ad-btn" onclick="document.getElementById('bottom-ad-container').style.display='none'">✕</button>
-      <span class="ad-label" data-i18n="ad_label">SPONSORED ADVERTISEMENT</span>
-      <ins class="adsbygoogle"
-           style="display:inline-block;width:728px;height:90px"
-           data-ad-client="ca-pub-5001028882463369"
-           data-ad-slot="1234567894"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      <span style="font-size:0.7rem; color:var(--text-light);">728x90 Sticky Leaderboard Slot</span>
-    </div>
-  </div>
+    </footer>
+  </main>
 
   <!-- Modal for Medical Disclaimer -->
   <div class="modal-overlay" id="policyModal">
@@ -2194,8 +1987,7 @@
         footer_bio: "Modern mobile assistant engineered specifically for field veterinarians.",
         foot_nav: "Navigation",
         foot_legal: "Access & Policies",
-        med_disclaimer: "Medical Disclaimer",
-        ad_label: "SPONSORED / ADVERTISEMENT"
+        med_disclaimer: "Medical Disclaimer"
       },
       tr: {
         app_tagline: "Saha Veteriner Hekim Asistanı",
@@ -2294,8 +2086,7 @@
         footer_bio: "Saha veteriner hekimleri için geliştirilmiş modern mobil asistan.",
         foot_nav: "Menü",
         foot_legal: "Erişim & Politikalar",
-        med_disclaimer: "Tıbbi Sorumluluk Reddi",
-        ad_label: "SPONSORLU REKLAM ALANI"
+        med_disclaimer: "Tıbbi Sorumluluk Reddi"
       },
       de: {
         app_tagline: "Assistent für Großtier- und Nutztierpraxis",
@@ -2394,8 +2185,7 @@
         footer_bio: "Moderner Praxisassistent für Großtier- und Feld-Tierärzte.",
         foot_nav: "Navigation",
         foot_legal: "Richtlinien",
-        med_disclaimer: "Medizinischer Haftungsausschluss",
-        ad_label: "WERBUNG / ANZEIGE"
+        med_disclaimer: "Medizinischer Haftungsausschluss"
       },
       es: {
         app_tagline: "Asistente Veterinario de Campo",
@@ -2494,8 +2284,7 @@
         footer_bio: "Asistente móvil moderno para veterinarios de campo.",
         foot_nav: "Navegación",
         foot_legal: "Políticas y Enlaces",
-        med_disclaimer: "Descargo de Responsabilidad Médica",
-        ad_label: "ANUNCIO PATROCINADO"
+        med_disclaimer: "Descargo de Responsabilidad Médica"
       },
       pt: {
         app_tagline: "Assistente Veterinário de Campo",
@@ -2594,8 +2383,7 @@
         footer_bio: "Assistente veterinário moderno projetado para o campo.",
         foot_nav: "Navegação",
         foot_legal: "Acesso e Políticas",
-        med_disclaimer: "Aviso Médico Legal",
-        ad_label: "PUBLICIDADE PATROCINADA"
+        med_disclaimer: "Aviso Médico Legal"
       },
       ja: {
         app_tagline: "産業動物・往診獣医師アシスタント",
@@ -2694,8 +2482,7 @@
         footer_bio: "産業動物・往診獣医師のためのモダンアシスタント。",
         foot_nav: "ナビゲーション",
         foot_legal: "アクセスと規約",
-        med_disclaimer: "医療に関する免責事項",
-        ad_label: "スポンサー広告"
+        med_disclaimer: "医療に関する免責事項"
       },
       ko: {
         app_tagline: "현장 대동물 수의사 어시스턴트",
@@ -2794,8 +2581,7 @@
         footer_bio: "현장 대동물 수의사를 위한 모바일 어시스턴트.",
         foot_nav: "메뉴",
         foot_legal: "접근 및 정책",
-        med_disclaimer: "의료적 면책 조항",
-        ad_label: "스폰서 광고"
+        med_disclaimer: "의료적 면책 조항"
       },
       hi: {
         app_tagline: "फील्ड पशु चिकित्सक सहायक",
@@ -2894,8 +2680,7 @@
         footer_bio: "फील्ड पशु चिकित्सकों के लिए आधुनिक मोबाइल सहायक।",
         foot_nav: "नेविगेशन",
         foot_legal: "नीतियां एवं लिंक",
-        med_disclaimer: "चिकित्सा अस्वीकरण",
-        ad_label: "प्रायोजित विज्ञापन"
+        med_disclaimer: "चिकित्सा अस्वीकरण"
       },
       zh: {
         app_tagline: "现代现场兽医师助手",
@@ -2994,8 +2779,7 @@
         footer_bio: "专为现场兽医师打造的现代化移动助手。",
         foot_nav: "导航",
         foot_legal: "访问与政策",
-        med_disclaimer: "医疗责任声明",
-        ad_label: "赞助商广告"
+        med_disclaimer: "医疗责任声明"
       }
     };
 
