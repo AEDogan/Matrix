@@ -287,7 +287,7 @@ class AppController {
       row.innerHTML = `
         <div class="preset-item-info">
           <span class="preset-item-name">${item.name}</span>
-          <span class="preset-item-sub">${item.category || ''} • ${parseFloat(item.unitCost !== undefined ? item.unitCost : (item.cost || 0)).toFixed(2)} TL</span>
+          <span class="preset-item-sub">${item.category || ''} • ${window.i18n ? window.i18n.formatMoney(item.unitCost !== undefined ? item.unitCost : (item.cost || 0)) : parseFloat(item.unitCost !== undefined ? item.unitCost : (item.cost || 0)).toFixed(2) + ' TL'}</span>
         </div>
         <div class="preset-stepper">
           <button type="button" class="preset-step-btn btn-minus" data-id="${item.id}">−</button>
@@ -584,16 +584,22 @@ class AppController {
 
       const card = document.createElement('div');
       card.className = 'cart-item-card';
+      const formattedUnit = window.i18n ? window.i18n.formatMoney(unitSellingPrice) : `${unitSellingPrice.toFixed(2)} TL`;
+      const formattedCost = window.i18n ? window.i18n.formatMoney(itemCost) : `${itemCost.toFixed(2)} TL`;
+      const formattedTotal = window.i18n ? window.i18n.formatMoney(totalItemPrice) : `${totalItemPrice.toFixed(2)} TL`;
+      const unitLabel = window.i18n ? (isEn ? 'Unit:' : 'Birim:') : 'Birim:';
+      const costLabel = window.i18n ? (isEn ? 'Cost:' : 'Mal:') : 'Mal:';
+
       card.innerHTML = `
         <div class="cart-item-header">
           <div>
             <div class="cart-item-title">${ci.item.name}</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
-              ${isEn ? 'Unit:' : 'Birim:'} <span class="text-mono text-bold">${unitSellingPrice.toFixed(2)} TL</span>
-              <span style="font-size:0.7rem; opacity:0.8;">(${isEn ? 'Cost:' : 'Mal:'} ${itemCost.toFixed(2)} TL)</span>
+              ${unitLabel} <span class="text-mono text-bold">${formattedUnit}</span>
+              <span style="font-size:0.7rem; opacity:0.8;">(${costLabel} ${formattedCost})</span>
             </div>
           </div>
-          <div class="cart-item-total">${totalItemPrice.toFixed(2)} TL</div>
+          <div class="cart-item-total">${formattedTotal}</div>
         </div>
 
         <div class="cart-item-controls">
@@ -687,10 +693,11 @@ class AppController {
       if (distNotice) {
         distNotice.style.display = 'flex';
         const distContent = document.getElementById('distNoticeContent');
+        const formattedFixedFee = window.i18n ? window.i18n.formatMoney(fixedFee) : `${fixedFee.toFixed(2)} TL`;
         if (distContent) {
-          distContent.innerHTML = isEn 
-            ? `💡 <strong>Fixed Clinic Overhead (${fixedFee.toFixed(2)} TL)</strong> is distributed into items without extra markup.`
-            : `💡 <strong>Sabit Klinik Bedeli (${fixedFee.toFixed(2)} TL)</strong> ilaç kalemlerine kârsız olarak orantılı dağıtıldı.`;
+          distContent.innerHTML = window.i18n 
+            ? `💡 <strong>${window.i18n.t('distribute_notice_text', { amount: formattedFixedFee })}</strong>`
+            : `💡 <strong>Sabit Klinik Bedeli (${formattedFixedFee})</strong> ilaç kalemlerine kârsız olarak orantılı dağıtıldı.`;
         }
       }
 
@@ -730,18 +737,18 @@ class AppController {
     const sumGrandEl = document.getElementById('summaryGrandTotal');
     const distDisplay = document.getElementById('distanceTotalDisplay');
 
-    if (sumItemsEl) sumItemsEl.textContent = `${itemsSellingTotal.toFixed(2)} TL`;
-    if (distDisplay) distDisplay.textContent = `${distanceTotal.toFixed(2)} TL`;
+    if (sumItemsEl) sumItemsEl.textContent = window.i18n ? window.i18n.formatMoney(itemsSellingTotal) : `${itemsSellingTotal.toFixed(2)} TL`;
+    if (distDisplay) distDisplay.textContent = window.i18n ? window.i18n.formatMoney(distanceTotal) : `${distanceTotal.toFixed(2)} TL`;
 
     if (this.distanceKm > 0 && sumDistRow && sumDistEl) {
       sumDistRow.style.display = 'flex';
-      sumDistEl.textContent = `${distanceTotal.toFixed(2)} TL`;
+      sumDistEl.textContent = window.i18n ? window.i18n.formatMoney(distanceTotal) : `${distanceTotal.toFixed(2)} TL`;
     } else if (sumDistRow) {
       sumDistRow.style.display = 'none';
     }
 
-    if (sumSubEl) sumSubEl.textContent = `${subTotal.toFixed(2)} TL`;
-    if (sumGrandEl) sumGrandEl.textContent = `${grandTotal.toFixed(2)} TL`;
+    if (sumSubEl) sumSubEl.textContent = window.i18n ? window.i18n.formatMoney(subTotal) : `${subTotal.toFixed(2)} TL`;
+    if (sumGrandEl) sumGrandEl.textContent = window.i18n ? window.i18n.formatMoney(grandTotal) : `${grandTotal.toFixed(2)} TL`;
 
     this.currentReceiptData = {
       mode: this.mode,
@@ -772,13 +779,15 @@ class AppController {
     const sheetsUrlInput = document.getElementById('settingSheetsUrl');
     const stockSheetsInput = document.getElementById('stockTabSheetsUrlInput');
     const distToggle = document.getElementById('globalDistributeExpenseToggle');
+    const langSelect = document.getElementById('settingLanguage');
+    const currSelect = document.getElementById('settingCurrency');
 
-    if (nameInput) nameInput.value = info.title;
-    if (bankInput) bankInput.value = info.bank;
-    if (ibanInput) ibanInput.value = info.iban;
-    if (addrInput) addrInput.value = info.address;
-    if (phoneInput) phoneInput.value = info.phone;
-    if (vatInput) vatInput.value = info.vatRate;
+    if (nameInput) nameInput.value = info.title || '';
+    if (bankInput) bankInput.value = info.bank || '';
+    if (ibanInput) ibanInput.value = info.iban || '';
+    if (addrInput) addrInput.value = info.address || '';
+    if (phoneInput) phoneInput.value = info.phone || '';
+    if (vatInput) vatInput.value = info.vatRate !== undefined ? info.vatRate : 18;
 
     const savedUrl = localStorage.getItem('vetassist_sheets_url_v2') || '';
     if (sheetsUrlInput) sheetsUrlInput.value = savedUrl;
@@ -786,6 +795,75 @@ class AppController {
 
     if (distToggle && window.paramManager) {
       distToggle.checked = window.paramManager.distributeFixedExpense;
+    }
+
+    if (langSelect && window.i18n) {
+      langSelect.value = window.i18n.getLanguage();
+    }
+    if (currSelect && window.i18n) {
+      currSelect.value = window.i18n.getCurrency();
+    }
+
+    this.updateClinicLockUI();
+  }
+
+  updateClinicLockUI() {
+    const isLocked = localStorage.getItem('vetassist_clinic_locked') === 'true';
+    const clinicInputs = [
+      document.getElementById('settingClinicName'),
+      document.getElementById('settingBankName'),
+      document.getElementById('settingIban'),
+      document.getElementById('settingAddress'),
+      document.getElementById('settingPhone')
+    ];
+
+    clinicInputs.forEach(input => {
+      if (input) {
+        input.readOnly = isLocked;
+        if (isLocked) {
+          input.classList.add('is-locked');
+        } else {
+          input.classList.remove('is-locked');
+        }
+      }
+    });
+
+    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+    const lockIcon = document.getElementById('clinicLockIcon');
+    const lockText = document.getElementById('clinicLockText');
+    const toggleBtn = document.getElementById('toggleClinicLockBtn');
+    const saveFormBtn = document.getElementById('saveClinicFormBtn');
+
+    if (lockIcon) lockIcon.textContent = isLocked ? '🔒' : '🔓';
+    if (lockText) {
+      lockText.textContent = isLocked
+        ? (isEn ? '🔒 Bilgiler kilitli ve güvendedir.' : '🔒 Bilgileriniz kilitli ve güvendedir.')
+        : (isEn ? '🔓 Bilgilerinizi girip kilitleyin.' : '🔓 Bilgilerinizi girip kilitleyin.');
+    }
+
+    if (toggleBtn) {
+      toggleBtn.className = isLocked ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm';
+      toggleBtn.innerHTML = isLocked
+        ? `<span>🔓</span> <span>${isEn ? 'Kilidi Aç & Düzenle' : 'Kilidi Aç & Düzenle'}</span>`
+        : `<span>🔒</span> <span>${isEn ? 'Bilgileri Kaydet ve Kilitle' : 'Bilgileri Kaydet ve Kilitle'}</span>`;
+    }
+
+    if (saveFormBtn) {
+      saveFormBtn.style.display = isLocked ? 'none' : 'block';
+    }
+  }
+
+  toggleClinicLock(shouldLock) {
+    if (shouldLock) {
+      this.saveClinicSettingsFromInputs();
+      localStorage.setItem('vetassist_clinic_locked', 'true');
+      this.updateClinicLockUI();
+      this.showToast(window.i18n ? window.i18n.t('toast_clinic_locked') : '🔒 Bilgiler kaydedildi ve kilitlendi.');
+    } else {
+      localStorage.setItem('vetassist_clinic_locked', 'false');
+      this.updateClinicLockUI();
+      this.showToast(window.i18n ? window.i18n.t('toast_clinic_unlocked') : '🔓 Düzenleme moduna alındı.');
+      document.getElementById('settingClinicName')?.focus();
     }
   }
 
@@ -804,11 +882,12 @@ class AppController {
     window.receiptGenerator.saveClinicInfo(info);
 
     const sheetsUrl = (document.getElementById('settingSheetsUrl')?.value || '').trim();
-    localStorage.setItem('vetassist_sheets_url_v2', sheetsUrl);
-    const stockSheetsInput = document.getElementById('stockTabSheetsUrlInput');
-    if (stockSheetsInput) stockSheetsInput.value = sheetsUrl;
+    if (sheetsUrl) {
+      localStorage.setItem('vetassist_sheets_url_v2', sheetsUrl);
+      const stockSheetsInput = document.getElementById('stockTabSheetsUrlInput');
+      if (stockSheetsInput) stockSheetsInput.value = sheetsUrl;
+    }
 
-    this.showToast(window.i18n ? window.i18n.t('toast_settings_saved') : 'Ayarlar kaydedildi.');
     this.recalculate();
   }
 
@@ -849,6 +928,19 @@ class AppController {
     this.renderDrawerPresetsList();
     this.renderCart();
     this.recalculate();
+    if (window.stockManager) window.stockManager.renderUI();
+    if (window.paramManager) window.paramManager.renderUI();
+    if (window.logManager) window.logManager.renderUI();
+  }
+
+  onCurrencyChanged() {
+    this.renderPresets();
+    this.renderDrawerPresetsList();
+    this.renderCart();
+    this.recalculate();
+    if (window.stockManager) window.stockManager.renderUI();
+    if (window.paramManager) window.paramManager.renderUI();
+    if (window.logManager) window.logManager.renderUI();
   }
 
   bindEvents() {
@@ -982,9 +1074,9 @@ class AppController {
           div.innerHTML = `
             <div>
               <div class="autocomplete-item-name">${prod.name}</div>
-              <div class="autocomplete-item-sub">Stok: ${prod.currentStock} • Kat: ${prod.category}</div>
+              <div class="autocomplete-item-sub">${window.i18n ? window.i18n.t('stock_card_stock') : 'Stok:'} ${prod.currentStock} • ${prod.category || ''}</div>
             </div>
-            <div class="autocomplete-item-price">${sellPrice.toFixed(2)} TL</div>
+            <div class="autocomplete-item-price">${window.i18n ? window.i18n.formatMoney(sellPrice) : sellPrice.toFixed(2) + ' TL'}</div>
           `;
           div.addEventListener('click', () => {
             this.addToCart(prod, 1);
@@ -1140,19 +1232,57 @@ class AppController {
     // 16. Stock & Logs Actions (CSV, Clear, etc.)
     this.bindStockAndLogEvents();
 
-    // 17. Clinic Settings Form Submit
+    // 17. Clinic Settings Form & Lock Actions
     const clinicForm = document.getElementById('clinicSettingsForm');
     if (clinicForm) {
       clinicForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        this.saveClinicSettingsFromInputs();
+        this.toggleClinicLock(true);
+      });
+    }
+
+    const toggleLockBtn = document.getElementById('toggleClinicLockBtn');
+    if (toggleLockBtn) {
+      toggleLockBtn.addEventListener('click', () => {
+        const isLocked = localStorage.getItem('vetassist_clinic_locked') === 'true';
+        this.toggleClinicLock(!isLocked);
+      });
+    }
+
+    // 18. VAT Rate & Sheets URL in Parameters / Other Tabs
+    const vatRateInput = document.getElementById('settingVatRate');
+    if (vatRateInput) {
+      vatRateInput.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        localStorage.setItem('vetassist_vat_rate', val);
+        this.recalculate();
+      });
+    }
+
+    const saveSheetsBtn = document.getElementById('saveSheetsUrlBtn');
+    if (saveSheetsBtn) {
+      saveSheetsBtn.addEventListener('click', () => {
+        const url = (document.getElementById('settingSheetsUrl')?.value || '').trim();
+        localStorage.setItem('vetassist_sheets_url_v2', url);
+        const stockSheetsInput = document.getElementById('stockTabSheetsUrlInput');
+        if (stockSheetsInput) stockSheetsInput.value = url;
+        this.showToast('✅ Google Sheets linki başarıyla kaydedildi.');
       });
     }
 
     const langSelect = document.getElementById('settingLanguage');
     if (langSelect && window.i18n) {
       langSelect.addEventListener('change', (e) => {
-        window.i18n.setLanguage(e.target.value);
+        window.i18n.setLanguage(e.target.value, true);
+        const currSelect = document.getElementById('settingCurrency');
+        if (currSelect) currSelect.value = window.i18n.getCurrency();
+      });
+    }
+
+    const currSelect = document.getElementById('settingCurrency');
+    if (currSelect && window.i18n) {
+      currSelect.addEventListener('change', (e) => {
+        window.i18n.setCurrency(e.target.value);
       });
     }
 
@@ -1167,17 +1297,20 @@ class AppController {
       });
     }
 
-    // Rewarded Ad - Developer Support Button
+    // Rewarded Ad - Developer Support Buttons (Ana Sayfa & Ayarlar)
+    const triggerSupportAd = () => {
+      if (window.AndroidBridge && typeof window.AndroidBridge.showRewardedAd === 'function') {
+        window.AndroidBridge.showRewardedAd('support_developer');
+      } else {
+        this.showToast('🌟 VetAssist\'e desteğiniz için teşekkürler! Sponsorlu reklam mobil uygulamada aktiftir.');
+      }
+    };
+
     const watchAdBtn = document.getElementById('btnWatchRewardedAd');
-    if (watchAdBtn) {
-      watchAdBtn.addEventListener('click', () => {
-        if (window.AndroidBridge && typeof window.AndroidBridge.showRewardedAd === 'function') {
-          window.AndroidBridge.showRewardedAd('support_developer');
-        } else {
-          this.showToast('🌟 VetAssist\'e desteğiniz için teşekkürler! Reklam mobil uygulamada aktiftir.');
-        }
-      });
-    }
+    if (watchAdBtn) watchAdBtn.addEventListener('click', triggerSupportAd);
+
+    const watchAdBtnMain = document.getElementById('btnWatchRewardedAdMain');
+    if (watchAdBtnMain) watchAdBtnMain.addEventListener('click', triggerSupportAd);
 
     // Guide Modal Events
     const openGuideBtn = document.getElementById('openGuideModalBtn');
@@ -1191,6 +1324,17 @@ class AppController {
     if (closeGuideBtn && guideModal) {
       closeGuideBtn.addEventListener('click', () => {
         guideModal.style.display = 'none';
+      });
+    }
+
+    const checkUpdateBtn = document.getElementById('manualCheckUpdateBtn');
+    if (checkUpdateBtn) {
+      checkUpdateBtn.addEventListener('click', () => {
+        if (window.AndroidBridge && typeof window.AndroidBridge.checkForUpdates === 'function') {
+          window.AndroidBridge.checkForUpdates();
+        } else {
+          this.showToast('🔍 Güncellemeler denetleniyor... VetAssist v0.9.01 en güncel sürümdür.');
+        }
       });
     }
 
@@ -1511,7 +1655,7 @@ class AppController {
           <div style="display:flex; align-items:center; justify-content:space-between;">
             <div>
               <strong style="font-size:0.88rem;">${item.name}</strong>
-              <div style="font-size:0.72rem; color:var(--text-muted);">Maliyet: ${item.unitCost.toFixed(2)} TL • Stok: ${item.currentStock}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${window.i18n ? window.i18n.t('stock_card_cost') : 'Maliyet:'} ${window.i18n ? window.i18n.formatMoney(item.unitCost) : item.unitCost.toFixed(2) + ' TL'} • ${window.i18n ? window.i18n.t('stock_card_stock') : 'Stok:'} ${item.currentStock}</div>
             </div>
             <div class="qty-control-glass">
               <button type="button" class="btn-qty btn-batch-minus" data-id="${item.id}">−</button>

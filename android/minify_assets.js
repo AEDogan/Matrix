@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 const srcDir = process.argv[2] || path.join(__dirname, '..', 'web');
@@ -66,12 +66,14 @@ function minifyHtml(code) {
 const allowedWebFiles = [
   'index.html',
   'styles.css',
+  'icons.js',
   'i18n.js',
   'app.js',
   'stock.js',
   'parameters.js',
   'receipt.js',
   'logs.js',
+  'tester-tracker-client.js',
   'manifest.json',
   'service-worker.js',
   'sample_data.csv',

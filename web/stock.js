@@ -233,12 +233,12 @@ class StockManager {
 
         <div class="stock-card-details">
           <div>
-            <span style="font-size:0.72rem; color:var(--text-muted);">${isEn ? 'Unit Cost:' : 'Birim Maliyet:'}</span>
-            <strong class="text-mono" style="display:block;">${parseFloat(item.unitCost).toFixed(2)} TL</strong>
+            <span style="font-size:0.72rem; color:var(--text-muted);">${window.i18n ? window.i18n.t('stock_card_cost') : 'Birim Maliyet:'}</span>
+            <strong class="text-mono" style="display:block;">${window.i18n ? window.i18n.formatMoney(item.unitCost) : parseFloat(item.unitCost).toFixed(2) + ' TL'}</strong>
           </div>
           <div>
-            <span style="font-size:0.72rem; color:var(--text-muted);">${isEn ? `Sale Price (+%${profitMargin}):` : `Satış Fiyatı (+%${profitMargin}):`}</span>
-            <strong class="text-mono" style="display:block; color:var(--primary);">${salePrice.toFixed(2)} TL</strong>
+            <span style="font-size:0.72rem; color:var(--text-muted);">${window.i18n ? `${window.i18n.t('stock_card_price')} (+%${profitMargin}):` : `Satış (+%${profitMargin}):`}</span>
+            <strong class="text-mono" style="display:block; color:var(--primary);">${window.i18n ? window.i18n.formatMoney(salePrice) : salePrice.toFixed(2) + ' TL'}</strong>
           </div>
         </div>
 

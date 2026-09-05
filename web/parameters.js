@@ -287,9 +287,10 @@ class ParameterManager {
       card.style.marginBottom = '10px';
       card.id = `param-card-${param.id}`;
 
-      let suffix = 'TL';
+      const currSym = window.i18n ? window.i18n.getCurrencySymbol() : '₺';
+      let suffix = currSym;
       if (param.type === 'percent') suffix = '%';
-      if (param.type === 'multiplier') suffix = 'TL/km';
+      if (param.type === 'multiplier') suffix = `${currSym}/km`;
 
       const isProfitMargin = param.id === 'profit_margin';
       const isClinicFee = param.id === 'clinic_fixed_fee';

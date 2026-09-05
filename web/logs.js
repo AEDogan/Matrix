@@ -129,9 +129,8 @@ class LogManager {
     const kpiTotalLogsEl = document.getElementById('kpiTotalLogsCount');
     const logsCountBadge = document.getElementById('logsCountBadge');
 
-    const locale = isEn ? 'en-US' : 'tr-TR';
-    if (kpiTreatmentEl) kpiTreatmentEl.textContent = `${treatmentTotal.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
-    if (kpiQuoteEl) kpiQuoteEl.textContent = `${quoteTotal.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+    if (kpiTreatmentEl) kpiTreatmentEl.textContent = window.i18n ? window.i18n.formatMoney(treatmentTotal) : `${treatmentTotal.toFixed(2)} TL`;
+    if (kpiQuoteEl) kpiQuoteEl.textContent = window.i18n ? window.i18n.formatMoney(quoteTotal) : `${quoteTotal.toFixed(2)} TL`;
     
     if (kpiTotalLogsEl) {
       if (window.i18n) {
@@ -219,7 +218,7 @@ class LogManager {
           </div>
           <div class="log-total-info">
             ${log.isVatEnabled ? `<small class="text-muted">(${isEn ? 'Incl. VAT' : 'KDV Dahil'}) </small>` : ''}
-            <strong class="log-grand-amount text-mono">${parseFloat(log.grandTotal).toFixed(2)} TL</strong>
+            <strong class="log-grand-amount text-mono">${window.i18n ? window.i18n.formatMoney(log.grandTotal) : parseFloat(log.grandTotal).toFixed(2) + ' TL'}</strong>
           </div>
         </div>
       `;

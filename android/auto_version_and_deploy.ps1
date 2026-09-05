@@ -1,6 +1,6 @@
 param(
     [string]$Track = "VetAssist Test Group,internal",
-    [string]$ReleaseNotes = "Adisyon ve tutar hesaplamalari, WhatsApp slip paylasimi, geriye donuk veri uyumlulugu ve genel stabilite guncellemeleri.",
+    [string]$ReleaseNotes = "Gunluk giris ve takip hatirlatma bildirimleri (12:00), adisyon ve slip paylasimi, geriye donuk veri uyumlulugu ve genel stabilite guncellemeleri.",
     [switch]$SkipBump = $false
 )
 
@@ -41,6 +41,25 @@ if (-not $SkipBump) {
     $manifestContent = $manifestContent -replace "android:versionCode=""\d+""", "android:versionCode=""$nextVersionCode"""
     $manifestContent = $manifestContent -replace "android:versionName=""[^""]+""", "android:versionName=""$nextVersionName"""
     $manifestContent | Set-Content -Path $manifestPath -Encoding UTF8
+
+    # Web & Landing page versiyon rozetlerini otomatik güncelle
+    $landingFiles = @("$projectDir\web\landing.html", "$projectDir\landing\index.html", "$projectDir\docs\index.html")
+    foreach ($lPath in $landingFiles) {
+        if (Test-Path $lPath) {
+            $landingContent = Get-Content $lPath -Raw
+            $landingContent = $landingContent -replace 'class="badge-version">v[^<]+<', "class=`"badge-version`">v$nextVersionName<"
+            $landingContent | Set-Content -Path $lPath -Encoding UTF8
+        }
+    }
+    Write-Host "[+] Landing page surum rozetleri guncellendi (v$nextVersionName)." -ForegroundColor Green
+    
+    $i18nPath = "$projectDir\web\i18n.js"
+    if (Test-Path $i18nPath) {
+        $i18nContent = Get-Content $i18nPath -Raw
+        $i18nContent = $i18nContent -replace "version_text:\s*'v[^']+'", "version_text: 'v$nextVersionName'"
+        $i18nContent | Set-Content -Path $i18nPath -Encoding UTF8
+        Write-Host "[+] web/i18n.js surum rozeti guncellendi (v$nextVersionName)." -ForegroundColor Green
+    }
 
     Write-Host "[+] AndroidManifest.xml basariyla guncellendi (v$nextVersionCode - $nextVersionName)." -ForegroundColor Green
 } else {

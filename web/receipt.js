@@ -10,14 +10,12 @@ class ReceiptGenerator {
   }
 
   getClinicInfo() {
-    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-    const defaultTitle = isEn ? 'VETERINARY SERVICE DETAILS' : 'VETERİNER HİZMET DETAYI';
     return {
-      title: localStorage.getItem('vetassist_clinic_title') || localStorage.getItem('sahavet_clinic_title') || defaultTitle,
-      bank: localStorage.getItem('vetassist_bank_name') || localStorage.getItem('sahavet_bank_name') || 'Ziraat Bankası',
-      iban: localStorage.getItem('vetassist_iban') || localStorage.getItem('sahavet_iban') || 'TR12 0001 0002 0003 0004 0005 06',
-      address: localStorage.getItem('vetassist_address') || localStorage.getItem('sahavet_address') || 'Kamçıllı, Mandıra Sokak No 12, 10085 Karesi/Balıkesir',
-      phone: localStorage.getItem('vetassist_phone') || localStorage.getItem('sahavet_phone') || '0552 185 03 08',
+      title: localStorage.getItem('vetassist_clinic_title') || localStorage.getItem('sahavet_clinic_title') || '',
+      bank: localStorage.getItem('vetassist_bank_name') || localStorage.getItem('sahavet_bank_name') || '',
+      iban: localStorage.getItem('vetassist_iban') || localStorage.getItem('sahavet_iban') || '',
+      address: localStorage.getItem('vetassist_address') || localStorage.getItem('sahavet_address') || '',
+      phone: localStorage.getItem('vetassist_phone') || localStorage.getItem('sahavet_phone') || '',
       vatRate: parseFloat(localStorage.getItem('vetassist_vat_rate') || localStorage.getItem('sahavet_vat_rate')) || 18
     };
   }
@@ -93,7 +91,7 @@ class ReceiptGenerator {
         row.innerHTML = `
           <div class="col-item">${itemName}</div>
           <div class="col-qty">${itemQty}</div>
-          <div class="col-price text-mono">${itemTotal.toFixed(2)} TL</div>
+          <div class="col-price text-mono">${window.i18n ? window.i18n.formatMoney(itemTotal) : itemTotal.toFixed(2) + ' TL'}</div>
         `;
         container.appendChild(row);
       });
@@ -106,7 +104,7 @@ class ReceiptGenerator {
     const vatRate = parseFloat(receiptData.vatRate) || 18;
 
     const subTotalEl = document.getElementById('receiptAraToplam');
-    if (subTotalEl) subTotalEl.textContent = `${subTotal.toFixed(2)} TL`;
+    if (subTotalEl) subTotalEl.textContent = window.i18n ? window.i18n.formatMoney(subTotal) : `${subTotal.toFixed(2)} TL`;
     
     const kdvLine = document.getElementById('receiptKdvLine');
     if (kdvLine) {
@@ -115,24 +113,59 @@ class ReceiptGenerator {
         const kdvTitle = document.getElementById('receiptKdvTitle');
         if (kdvTitle) kdvTitle.textContent = isEn ? `VAT (%${vatRate}):` : `KDV (%${vatRate}):`;
         const kdvVal = document.getElementById('receiptKdv');
-        if (kdvVal) kdvVal.textContent = `${vatAmount.toFixed(2)} TL`;
+        if (kdvVal) kdvVal.textContent = window.i18n ? window.i18n.formatMoney(vatAmount) : `${vatAmount.toFixed(2)} TL`;
       } else {
         kdvLine.style.display = 'none';
       }
     }
 
     const grandTotalEl = document.getElementById('receiptGenelToplam');
-    if (grandTotalEl) grandTotalEl.textContent = `${grandTotal.toFixed(2)} TL`;
+    if (grandTotalEl) grandTotalEl.textContent = window.i18n ? window.i18n.formatMoney(grandTotal) : `${grandTotal.toFixed(2)} TL`;
 
-    // Alt Bilgiler
+    // Alt Bilgiler (Sadece tanımlı olanlar gösterilir)
+    const bankRow = document.getElementById('receiptBankRow');
     const bankEl = document.getElementById('receiptBank');
-    if (bankEl) bankEl.textContent = info.bank || '';
+    if (bankRow && bankEl) {
+      if (info.bank && info.bank.trim() !== '') {
+        bankRow.style.display = 'block';
+        bankEl.textContent = info.bank;
+      } else {
+        bankRow.style.display = 'none';
+      }
+    }
+
+    const ibanRow = document.getElementById('receiptIbanRow');
     const ibanEl = document.getElementById('receiptIban');
-    if (ibanEl) ibanEl.textContent = info.iban || '';
+    if (ibanRow && ibanEl) {
+      if (info.iban && info.iban.trim() !== '') {
+        ibanRow.style.display = 'block';
+        ibanEl.textContent = info.iban;
+      } else {
+        ibanRow.style.display = 'none';
+      }
+    }
+
+    const addrRow = document.getElementById('receiptAddrRow');
     const addrEl = document.getElementById('receiptAddress');
-    if (addrEl) addrEl.textContent = info.address || '';
+    if (addrRow && addrEl) {
+      if (info.address && info.address.trim() !== '') {
+        addrRow.style.display = 'block';
+        addrEl.textContent = info.address;
+      } else {
+        addrRow.style.display = 'none';
+      }
+    }
+
+    const phoneRow = document.getElementById('receiptPhoneRow');
     const phoneEl = document.getElementById('receiptPhone');
-    if (phoneEl) phoneEl.textContent = info.phone || '';
+    if (phoneRow && phoneEl) {
+      if (info.phone && info.phone.trim() !== '') {
+        phoneRow.style.display = 'block';
+        phoneEl.textContent = info.phone;
+      } else {
+        phoneRow.style.display = 'none';
+      }
+    }
 
     // WhatsApp Metin Şablonunu Oluştur (varsa)
     const textOutputEl = document.getElementById('whatsappTextOutput');
@@ -158,23 +191,44 @@ class ReceiptGenerator {
     text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
 
     receiptData.allItems.forEach(item => {
-      text += `• ${item.name} (${item.qty}): *${parseFloat(item.total).toFixed(2)} TL*\n`;
+      const formattedTotal = window.i18n ? window.i18n.formatMoney(item.total) : `${parseFloat(item.total).toFixed(2)} TL`;
+      text += `• ${item.name} (${item.qty}): *${formattedTotal}*\n`;
     });
 
     text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `*${isEn ? 'Subtotal:' : 'Ara Toplam:'}* ${receiptData.subTotal.toFixed(2)} TL\n`;
+    const formattedSub = window.i18n ? window.i18n.formatMoney(receiptData.subTotal) : `${receiptData.subTotal.toFixed(2)} TL`;
+    text += `*${isEn ? 'Subtotal:' : 'Ara Toplam:'}* ${formattedSub}\n`;
 
     if (receiptData.isVatEnabled) {
-      text += `*${isEn ? 'VAT' : 'KDV'} (%${receiptData.vatRate}):* ${receiptData.vatAmount.toFixed(2)} TL\n`;
+      const formattedVat = window.i18n ? window.i18n.formatMoney(receiptData.vatAmount) : `${receiptData.vatAmount.toFixed(2)} TL`;
+      text += `*${isEn ? 'VAT' : 'KDV'} (%${receiptData.vatRate}):* ${formattedVat}\n`;
     }
 
-    text += `*${isEn ? 'Total Due:' : 'Ödenecek Tutar:'}* *${receiptData.grandTotal.toFixed(2)} TL*\n`;
+    const formattedGrand = window.i18n ? window.i18n.formatMoney(receiptData.grandTotal) : `${receiptData.grandTotal.toFixed(2)} TL`;
+    text += `*${isEn ? 'Total Due:' : 'Ödenecek Tutar:'}* *${formattedGrand}*\n`;
     text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `🏦 *${isEn ? 'Bank:' : 'Banka:'}* ${info.bank}\n`;
-    text += `💳 *IBAN:* ${info.iban}\n`;
-    text += `📍 *${isEn ? 'Address:' : 'Adres:'}* ${info.address}\n`;
-    text += `📞 *${isEn ? 'Phone:' : 'İletişim:'}* ${info.phone}\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    
+    let hasFooter = false;
+    if (info.bank && info.bank.trim() !== '') {
+      text += `🏦 *${isEn ? 'Bank:' : 'Banka:'}* ${info.bank}\n`;
+      hasFooter = true;
+    }
+    if (info.iban && info.iban.trim() !== '') {
+      text += `💳 *IBAN:* ${info.iban}\n`;
+      hasFooter = true;
+    }
+    if (info.address && info.address.trim() !== '') {
+      text += `📍 *${isEn ? 'Address:' : 'Adres:'}* ${info.address}\n`;
+      hasFooter = true;
+    }
+    if (info.phone && info.phone.trim() !== '') {
+      text += `📞 *${isEn ? 'Phone:' : 'İletişim:'}* ${info.phone}\n`;
+      hasFooter = true;
+    }
+    if (hasFooter) {
+      text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    }
+
     text += `⚠️ _(${isEn ? 'NOT A FINANCIAL INVOICE' : 'MALİ BELGE DEĞİLDİR'})_\n\n`;
     text += isEn ? `Thank you for choosing our veterinary services.` : `Bizi tercih ettiğiniz için teşekkür ederiz.`;
 
@@ -287,7 +341,8 @@ class ReceiptGenerator {
       ctx.textAlign = 'right';
       ctx.font = 'bold 13px "JetBrains Mono", monospace';
       const itemTotal = parseFloat(item.total) || 0;
-      ctx.fillText(`${itemTotal.toFixed(2)} TL`, width - padding, y);
+      const formattedItemTotal = window.i18n ? window.i18n.formatMoney(itemTotal) : `${itemTotal.toFixed(2)} TL`;
+      ctx.fillText(formattedItemTotal, width - padding, y);
 
       y += 26;
     });
@@ -312,10 +367,10 @@ class ReceiptGenerator {
     ctx.textAlign = 'left';
     ctx.font = '600 13px "Plus Jakarta Sans", -apple-system, sans-serif';
     ctx.fillStyle = '#334155';
-    ctx.fillText(isEn ? 'Subtotal:' : 'Ara Toplam:', padding, y);
+    ctx.fillText(window.i18n ? window.i18n.t('receipt_subtotal') : (isEn ? 'Subtotal:' : 'Ara Toplam:'), padding, y);
     ctx.textAlign = 'right';
     ctx.font = 'bold 13px "JetBrains Mono", monospace';
-    ctx.fillText(`${subTotal.toFixed(2)} TL`, width - padding, y);
+    ctx.fillText(window.i18n ? window.i18n.formatMoney(subTotal) : `${subTotal.toFixed(2)} TL`, width - padding, y);
     y += 24;
 
     // KDV Satırı
@@ -323,10 +378,10 @@ class ReceiptGenerator {
       ctx.textAlign = 'left';
       ctx.font = '600 13px "Plus Jakarta Sans", -apple-system, sans-serif';
       ctx.fillStyle = '#334155';
-      ctx.fillText(`${isEn ? 'VAT' : 'KDV'} (%${vatRate}):`, padding, y);
+      ctx.fillText(window.i18n ? window.i18n.t('receipt_vat', { rate: vatRate }) : `${isEn ? 'VAT' : 'KDV'} (%${vatRate}):`, padding, y);
       ctx.textAlign = 'right';
       ctx.font = 'bold 13px "JetBrains Mono", monospace';
-      ctx.fillText(`${vatAmount.toFixed(2)} TL`, width - padding, y);
+      ctx.fillText(window.i18n ? window.i18n.formatMoney(vatAmount) : `${vatAmount.toFixed(2)} TL`, width - padding, y);
       y += 24;
     }
 
@@ -334,10 +389,10 @@ class ReceiptGenerator {
     ctx.textAlign = 'left';
     ctx.font = 'bold 16px "Plus Jakarta Sans", -apple-system, sans-serif';
     ctx.fillStyle = '#0f172a';
-    ctx.fillText(isEn ? 'Total Due:' : 'Ödenecek Tutar:', padding, y);
+    ctx.fillText(window.i18n ? window.i18n.t('receipt_grand_total') : (isEn ? 'Total Due:' : 'Ödenecek Tutar:'), padding, y);
     ctx.textAlign = 'right';
     ctx.font = 'bold 18px "JetBrains Mono", monospace';
-    ctx.fillText(`${grandTotal.toFixed(2)} TL`, width - padding, y);
+    ctx.fillText(window.i18n ? window.i18n.formatMoney(grandTotal) : `${grandTotal.toFixed(2)} TL`, width - padding, y);
     y += 16;
 
     // Kalın Çizgi
@@ -349,24 +404,42 @@ class ReceiptGenerator {
     ctx.stroke();
     y += 20;
 
-    // Banka & Adres Detayları
+    // Banka & Adres Detayları (Sadece dolu olanlar çizilir)
     ctx.textAlign = 'left';
     ctx.fillStyle = '#1e293b';
 
-    ctx.font = 'bold 12px "Plus Jakarta Sans", -apple-system, sans-serif';
-    ctx.fillText(`${isEn ? 'Bank:' : 'Banka:'} ${info.bank || ''}`, padding, y);
-    y += 18;
+    let hasDrawnFooter = false;
+    if (info.bank && info.bank.trim() !== '') {
+      ctx.font = 'bold 12px "Plus Jakarta Sans", -apple-system, sans-serif';
+      ctx.fillText(`${isEn ? 'Bank:' : 'Banka:'} ${info.bank}`, padding, y);
+      y += 18;
+      hasDrawnFooter = true;
+    }
 
-    ctx.font = 'bold 12px "JetBrains Mono", monospace';
-    ctx.fillText(`IBAN: ${info.iban || ''}`, padding, y);
-    y += 18;
+    if (info.iban && info.iban.trim() !== '') {
+      ctx.font = 'bold 12px "JetBrains Mono", monospace';
+      ctx.fillText(`IBAN: ${info.iban}`, padding, y);
+      y += 18;
+      hasDrawnFooter = true;
+    }
 
-    ctx.font = '500 11px "Plus Jakarta Sans", -apple-system, sans-serif';
-    ctx.fillText(`${isEn ? 'Address:' : 'Adres:'} ${info.address || ''}`, padding, y);
-    y += 16;
+    if (info.address && info.address.trim() !== '') {
+      ctx.font = '500 11px "Plus Jakarta Sans", -apple-system, sans-serif';
+      ctx.fillText(`${isEn ? 'Address:' : 'Adres:'} ${info.address}`, padding, y);
+      y += 16;
+      hasDrawnFooter = true;
+    }
 
-    ctx.fillText(`${isEn ? 'Phone:' : 'Tel:'} ${info.phone || ''}`, padding, y);
-    y += 14;
+    if (info.phone && info.phone.trim() !== '') {
+      ctx.font = '500 11px "Plus Jakarta Sans", -apple-system, sans-serif';
+      ctx.fillText(`${isEn ? 'Phone:' : 'Tel:'} ${info.phone}`, padding, y);
+      y += 16;
+      hasDrawnFooter = true;
+    }
+
+    if (hasDrawnFooter) {
+      y += 4;
+    }
 
     // İnce Çizgi
     ctx.strokeStyle = '#cbd5e1';

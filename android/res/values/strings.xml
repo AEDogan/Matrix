@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">VetAssist</string>
-    <string name="admob_app_id">ca-app-pub-5230008726928578~8135974410</string>
-    <string name="banner_ad_unit_id">ca-app-pub-5230008726928578/5973729983</string>
-    <string name="banner_3_ad_unit_id">ca-app-pub-5230008726928578/1083677026</string>
-    <string name="rewarded_ad_unit_id">ca-app-pub-5230008726928578/6663306766</string>
+    <string name="admob_app_id">ca-app-pub-5001028882463369~9463515876</string>
+    <string name="banner_ad_unit_id">ca-app-pub-5001028882463369/4512290722</string>
+    <string name="banner_2_ad_unit_id">ca-app-pub-5001028882463369/5209305043</string>
+    <string name="banner_3_ad_unit_id">ca-app-pub-5001028882463369/6316326988</string>
+    <string name="rewarded_ad_unit_id">ca-app-pub-5001028882463369/2077699074</string>
     <string name="test_banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="test_rewarded_ad_unit_id">ca-app-pub-3940256099942544/5224354917</string>
 </resources>
