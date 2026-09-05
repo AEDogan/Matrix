@@ -1,6 +1,6 @@
 param(
     [string]$Track = "VetAssist Test Group,internal",
-    [string]$ReleaseNotes = "Gunluk giris ve takip hatirlatma bildirimleri (12:00), adisyon ve slip paylasimi, geriye donuk veri uyumlulugu ve genel stabilite guncellemeleri.",
+    [string]$ReleaseNotes = "9 dil desteği (TR, EN, DE, FR, ES, IT, PT, RU, AR), çoklu para birimi seçimi, WhatsApp adisyon motoru, modern landing page ve genel kararlılık güncellemeleri.",
     [switch]$SkipBump = $false
 )
 

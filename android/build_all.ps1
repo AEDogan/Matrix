@@ -45,7 +45,8 @@ $realDesktop = [Environment]::GetFolderPath('Desktop')
 $desktopOutputs = @(
     "$realDesktop\VetAssist_PlayStore_GUNCEL_Surum$versionCode",
     "C:\Users\ahmet\Desktop\VetAssist_PlayStore_GUNCEL_Surum$versionCode",
-    "C:\Users\ahmet\OneDrive\Masaüstü\VetAssist_PlayStore_GUNCEL_Surum$versionCode"
+    "C:\Users\ahmet\OneDrive\Masaüstü\VetAssist_PlayStore_GUNCEL_Surum$versionCode",
+    "C:\Projeler\VetAssist_PlayStore_GUNCEL_Surum$versionCode"
 )
 
 Write-Host "==========================================================" -ForegroundColor Cyan
