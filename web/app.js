@@ -1333,7 +1333,8 @@ class AppController {
         if (window.AndroidBridge && typeof window.AndroidBridge.checkForUpdates === 'function') {
           window.AndroidBridge.checkForUpdates();
         } else {
-          this.showToast('🔍 Güncellemeler denetleniyor... VetAssist v0.9.01 en güncel sürümdür.');
+          const ver = (window.i18n && window.i18n.t('version_text')) || 'v1.0.13';
+          this.showToast(`🔍 Güncellemeler denetleniyor... VetAssist ${ver} en güncel sürümdür.`);
         }
       });
     }
