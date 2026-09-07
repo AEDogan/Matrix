@@ -465,16 +465,14 @@ body {
 }
 
 .mode-hint-compact {
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--glass-bg-alt);
   margin-bottom: 12px;
-  line-height: 1.35;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  line-height: 1.45;
+  display: block;
 }
 
 /* Quick Protocols / Presets Bar */
