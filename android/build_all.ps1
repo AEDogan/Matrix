@@ -32,7 +32,7 @@ if (!(Test-Path $manifest)) {
 }
 
 # Parse Version dynamically
-[xml]$manifestXml = Get-Content $manifest
+[xml]$manifestXml = [System.IO.File]::ReadAllText($manifest, [System.Text.Encoding]::UTF8)
 $versionCode = $manifestXml.manifest.versionCode
 $versionName = $manifestXml.manifest.versionName
 $appVersion = "Surum $versionCode (v$versionName)"

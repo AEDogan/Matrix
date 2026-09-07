@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.VetAssistv1"
     android:versionCode="25"
@@ -83,7 +83,7 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent" />
 
-        <!-- GÃ¼nlÃ¼k Saat 12:00 GiriÅŸ HatÄ±rlatÄ±cÄ±sÄ± & Test Receiver -->
+        <!-- Günlük Saat 12:00 Giriş Hatırlatıcısı & Test Receiver -->
         <receiver
             android:name="com.VetAssistv1.NightlyUpdateReceiver"
             android:enabled="true"

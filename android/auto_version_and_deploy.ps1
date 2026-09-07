@@ -16,7 +16,9 @@ $distDir = "$projectDir\dist"
 $manifestPath = "$androidDir\AndroidManifest.xml"
 
 # 1. Otomatik Versiyon Artırma (Version Bumping)
-[xml]$manifestXml = Get-Content $manifestPath
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$manifestContent = [System.IO.File]::ReadAllText($manifestPath, [System.Text.Encoding]::UTF8)
+[xml]$manifestXml = $manifestContent
 $currentVersionCode = [int]$manifestXml.manifest.versionCode
 $currentVersionName = $manifestXml.manifest.versionName
 
@@ -37,28 +39,35 @@ if (-not $SkipBump) {
     Write-Host "YENI SURUM   : Kod: $nextVersionCode, Ad: $nextVersionName" -ForegroundColor Green
 
     # AndroidManifest.xml güncelle
-    $manifestContent = Get-Content $manifestPath -Raw
     $manifestContent = $manifestContent -replace "android:versionCode=""\d+""", "android:versionCode=""$nextVersionCode"""
     $manifestContent = $manifestContent -replace "android:versionName=""[^""]+""", "android:versionName=""$nextVersionName"""
-    $manifestContent | Set-Content -Path $manifestPath -Encoding UTF8
+    [System.IO.File]::WriteAllText($manifestPath, $manifestContent, $utf8NoBom)
 
     # Web & Landing page versiyon rozetlerini otomatik güncelle
-    $landingFiles = @("$projectDir\web\landing.html", "$projectDir\landing\index.html", "$projectDir\docs\index.html")
+    $landingFiles = @("$projectDir\web\landing.html", "$projectDir\landing\index.html", "$projectDir\docs\index.html", "$projectDir\web\google_sites_embed.html")
     foreach ($lPath in $landingFiles) {
         if (Test-Path $lPath) {
-            $landingContent = Get-Content $lPath -Raw
+            $landingContent = [System.IO.File]::ReadAllText($lPath, [System.Text.Encoding]::UTF8)
             $landingContent = $landingContent -replace 'class="badge-version">v[^<]+<', "class=`"badge-version`">v$nextVersionName<"
-            $landingContent | Set-Content -Path $lPath -Encoding UTF8
+            [System.IO.File]::WriteAllText($lPath, $landingContent, $utf8NoBom)
         }
     }
     Write-Host "[+] Landing page surum rozetleri guncellendi (v$nextVersionName)." -ForegroundColor Green
     
     $i18nPath = "$projectDir\web\i18n.js"
     if (Test-Path $i18nPath) {
-        $i18nContent = Get-Content $i18nPath -Raw
+        $i18nContent = [System.IO.File]::ReadAllText($i18nPath, [System.Text.Encoding]::UTF8)
         $i18nContent = $i18nContent -replace "version_text:\s*'v[^']+'", "version_text: 'v$nextVersionName'"
-        $i18nContent | Set-Content -Path $i18nPath -Encoding UTF8
+        [System.IO.File]::WriteAllText($i18nPath, $i18nContent, $utf8NoBom)
         Write-Host "[+] web/i18n.js surum rozeti guncellendi (v$nextVersionName)." -ForegroundColor Green
+    }
+
+    $indexHtmlPath = "$projectDir\web\index.html"
+    if (Test-Path $indexHtmlPath) {
+        $indexContent = [System.IO.File]::ReadAllText($indexHtmlPath, [System.Text.Encoding]::UTF8)
+        $indexContent = $indexContent -replace 'id="appVersionBadge"><span data-i18n="version_text">v[^<]+<', "id=`"appVersionBadge`"><span data-i18n=`"version_text`">v$nextVersionName<"
+        [System.IO.File]::WriteAllText($indexHtmlPath, $indexContent, $utf8NoBom)
+        Write-Host "[+] web/index.html surum rozeti guncellendi (v$nextVersionName)." -ForegroundColor Green
     }
 
     Write-Host "[+] AndroidManifest.xml basariyla guncellendi (v$nextVersionCode - $nextVersionName)." -ForegroundColor Green
