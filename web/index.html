@@ -1955,6 +1955,29 @@ function doPost(e) {
     </div>
   </div>
 
+  <!-- MODAL: RESMİ E-REÇETE BASKI / PDF ÖNİZLEME & GERİ DÖNÜŞ -->
+  <div id="itsPrescriptionPreviewModal" class="modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.88); z-index:9999; align-items:center; justify-content:center; padding:12px; overflow-y:auto;">
+    <div class="glass-card" style="width:100%; max-width:680px; background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.35); border:1px solid #cbd5e1; max-height:94vh; display:flex; flex-direction:column;">
+      
+      <!-- Sticky Top Bar (Geri Dön, Yazdır, Kapat) -->
+      <div style="padding:10px 14px; background:#0f172a; color:#ffffff; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <button type="button" id="closeItsPreviewBtn" class="btn" style="background:rgba(255,255,255,0.18); color:#ffffff; font-size:0.78rem; font-weight:700; padding:7px 12px; border-radius:8px; border:none; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+          <span>⬅</span> <span>Reçeteye Dön</span>
+        </button>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button type="button" id="btnItsPrintExecute" class="btn" style="background:#0284c7; color:#ffffff; font-size:0.78rem; font-weight:700; padding:7px 14px; border-radius:8px; border:none; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+            <span>🖨️</span> <span>Yazdır / PDF</span>
+          </button>
+          <button type="button" id="closeItsPreviewX" style="background:none; border:none; color:#ffffff; font-size:1.3rem; cursor:pointer; padding:2px 8px; line-height:1;">✕</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Preview Area -->
+      <div id="itsPrescriptionPreviewContent" style="padding:18px 16px; overflow-y:auto; flex:1; background:#ffffff; color:#0f172a;">
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="html5-qrcode.min.js"></script>
   <script src="i18n.js"></script>

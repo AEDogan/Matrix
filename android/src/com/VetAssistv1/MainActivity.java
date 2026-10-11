@@ -445,9 +445,44 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack();
-            return true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (webView != null) {
+                webView.evaluateJavascript(
+                    "(function() {" +
+                    "  const pModal = document.getElementById('itsPrescriptionPreviewModal');" +
+                    "  if (pModal && pModal.style.display !== 'none') { pModal.style.display = 'none'; return true; }" +
+                    "  const scanner = document.getElementById('itsBarcodeScannerModal');" +
+                    "  if (scanner && scanner.style.display !== 'none') { scanner.style.display = 'none'; if (window.itsManager) window.itsManager.stopBarcodeScanner(); return true; }" +
+                    "  const qrModal = document.getElementById('syncraQrScanModal');" +
+                    "  if (qrModal && qrModal.style.display !== 'none') { qrModal.style.display = 'none'; return true; }" +
+                    "  const itsModal = document.getElementById('itsPrescriptionModal');" +
+                    "  if (itsModal && itsModal.style.display !== 'none') { itsModal.style.display = 'none'; return true; }" +
+                    "  const rModal = document.getElementById('receiptPreviewModal');" +
+                    "  if (rModal && rModal.style.display !== 'none') { rModal.style.display = 'none'; return true; }" +
+                    "  const drawer = document.getElementById('settingsDrawer');" +
+                    "  if (drawer && drawer.classList.contains('open')) { drawer.classList.remove('open'); return true; }" +
+                    "  return false;" +
+                    "})()",
+                    new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String value) {
+                            if (!"true".equals(value)) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (webView.canGoBack()) {
+                                            webView.goBack();
+                                        } else {
+                                            finish();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                );
+                return true;
+            }
         }
         return super.onKeyDown(keyCode, event);
     }

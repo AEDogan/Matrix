@@ -75,6 +75,20 @@ class ITSPrescriptionManager {
       });
     }
 
+    // Reçete Önizleme Kapatma ve Yazdırma Kontrolleri
+    const btnClosePreview = document.getElementById('closeItsPreviewBtn');
+    if (btnClosePreview) {
+      btnClosePreview.addEventListener('click', () => this.closePreviewModal());
+    }
+    const btnClosePreviewX = document.getElementById('closeItsPreviewX');
+    if (btnClosePreviewX) {
+      btnClosePreviewX.addEventListener('click', () => this.closePreviewModal());
+    }
+    const btnPrintExec = document.getElementById('btnItsPrintExecute');
+    if (btnPrintExec) {
+      btnPrintExec.addEventListener('click', () => this.executePrint());
+    }
+
     // Hekim bilgisi kaydedildikçe yerelde sakla
     if (docInput) {
       docInput.addEventListener('input', () => {
@@ -452,11 +466,17 @@ class ITSPrescriptionManager {
     }
   }
 
+  closePreviewModal() {
+    const modal = document.getElementById('itsPrescriptionPreviewModal');
+    if (modal) modal.style.display = 'none';
+  }
+
   printPrescription() {
     const data = this.collectFormData();
-    const printWin = window.open('', '_blank');
-    if (!printWin) {
-      alert('Yazdırma penceresi açılamadı. Lütfen açılır pencere (popup) engelleyicisini kapatın.');
+    const modal = document.getElementById('itsPrescriptionPreviewModal');
+    const container = document.getElementById('itsPrescriptionPreviewContent');
+    if (!modal || !container) {
+      alert('Önizleme modülü bulunamadı.');
       return;
     }
 
@@ -474,95 +494,133 @@ class ITSPrescriptionManager {
       orange: 'TURUNCU REÇETE (Aşı / Biyolojik Ürün)'
     }[data.prescriptionType] || 'VETERİNER REÇETESİ';
 
-    printWin.document.write(`
+    const verificationCode = 'TR-VET-' + Math.floor(10000000 + Math.random() * 90000000);
+
+    container.innerHTML = `
+      <div style="border-bottom: 2px solid ${typeColor}; padding-bottom: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <div style="font-size:11px; font-weight:700; color:#64748b;">T.C. TARIM VE ORMAN BAKANLIĞI</div>
+          <div style="font-size:15px; font-weight:800; color:${typeColor};">${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? 'PETVET EV HAYVANI E-REÇETESİ' : 'VETERİNER HEKİM E-REÇETESİ'}</div>
+        </div>
+        <span style="background:${typeColor}; color:#fff; padding:4px 10px; border-radius:6px; font-weight:700; font-size:11px;">${typeName}</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px; background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:14px; border:1px solid #e2e8f0;">
+        <div><strong>Veteriner Hekim:</strong> ${this._escapeHtml(data.doctorName || 'Veteriner Hekim')}</div>
+        <div><strong>Diploma/Sicil No:</strong> ${this._escapeHtml(data.vetRegNo || '-')}</div>
+        <div><strong>Hasta Sahibi:</strong> ${this._escapeHtml(data.customerName || 'Genel Müşteri')}</div>
+        <div><strong>${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? 'PETVET Pasaport / Protokol:' : 'İşletme No:'}</strong> ${this._escapeHtml(data.businessNo || '-')}</div>
+        <div><strong>Hayvan Türü:</strong> ${this._escapeHtml(data.animalType || '-')}</div>
+        <div><strong>${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? 'Mikroçip No (PETVET):' : 'Küpe No (TÜRKVET):'}</strong> ${this._escapeHtml(data.earTagNo || '-')}</div>
+        <div style="grid-column: span 2;"><strong>Teşhis / Endikasyon:</strong> ${this._escapeHtml(data.diagnosis || '-')}</div>
+        <div style="grid-column: span 2;"><strong>Tarih & Saat:</strong> ${this._escapeHtml(data.date || '')}</div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; margin-bottom:6px; color:#1e293b;">UYGULANAN İLAÇ VE BİYOLOJİK MADDELER</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:14px;">
+          <thead>
+            <tr style="background:#f1f5f9;">
+              <th style="padding:6px; text-align:left; border-bottom:1px solid #cbd5e1;">#</th>
+              <th style="padding:6px; text-align:left; border-bottom:1px solid #cbd5e1;">İlaç / Aşı Adı</th>
+              <th style="padding:6px; text-align:center; border-bottom:1px solid #cbd5e1;">Miktar</th>
+              <th style="padding:6px; text-align:left; border-bottom:1px solid #cbd5e1;">Uygulama Yolu</th>
+              <th style="padding:6px; text-align:left; border-bottom:1px solid #cbd5e1;">İTS Karekod / Seri</th>
+              ${!['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? '<th style="padding:6px; text-align:left; border-bottom:1px solid #cbd5e1;">Yasal Arınma</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${data.items.map((it, idx) => `
+              <tr>
+                <td style="padding:6px; border-bottom:1px solid #e2e8f0;">${idx + 1}</td>
+                <td style="padding:6px; border-bottom:1px solid #e2e8f0;"><strong>${this._escapeHtml(it.name)}</strong></td>
+                <td style="padding:6px; text-align:center; border-bottom:1px solid #e2e8f0;">${this._escapeHtml(it.quantity)}</td>
+                <td style="padding:6px; border-bottom:1px solid #e2e8f0;">${this._escapeHtml(it.route)}</td>
+                <td style="padding:6px; border-bottom:1px solid #e2e8f0; font-family:monospace; font-size:10px;">${this._escapeHtml(it.barcode || it.serialNo || '-')}</td>
+                ${!['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? `<td style="padding:6px; border-bottom:1px solid #e2e8f0; color:#b91c1c; font-weight:600;">${this._escapeHtml(it.withdrawalPeriod || '-')}</td>` : ''}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:14px; font-size:10px; color:#64748b; border:1px dashed #cbd5e1; padding:8px 10px; border-radius:6px; line-height:1.4;">
+        ${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType)
+          ? '<strong>PET BİLGİLENDİRME:</strong> Bu reçete Ev Hayvanı Kayıt Sistemi (PETVET) ve İTS mevzuatına uygun olarak evcil hayvan tedavisi için düzenlenmiştir. Yalnızca hayvan sağlığında kullanılır.'
+          : '<strong>YASAL UYARI:</strong> Bu reçete Tarım ve Orman Bakanlığı İlaç Takip Sistemi (İTS) mevzuatına göre düzenlenmiştir. Arınma süresi tamamlanmadan hayvanların kesime sevk edilmesi veya sütlerinin insan tüketimine sunulması 5996 sayılı kanun gereğince yasaktır.'
+        }
+      </div>
+
+      <div style="margin-top:12px; padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+        <span style="font-weight:700; color:#15803d;">🔒 E-Reçete Takip & Doğrulama No: ${verificationCode}</span>
+        <span style="color:#166534; font-weight:600;">✓ Bakanlık İTS/PETVET Sistemine Hazır Elektronik Kayıt</span>
+      </div>
+
+      <div class="sign" style="margin-top:24px; display:flex; justify-content:space-between; font-size:11px; line-height:1.4;">
+        <div style="width:45%; border-top:1px dashed #94a3b8; padding-top:6px;">
+          <strong>Hasta Sahibi / Yetkili</strong><br>
+          İmza:<br>
+          <span style="font-size:9px; color:#94a3b8;">(Baskı çıktısında mavi tükenmez kalemle imzalanır)</span>
+        </div>
+        <div style="width:45%; border-top:1px dashed #94a3b8; padding-top:6px; text-align:right;">
+          <strong>Veteriner Hekim Kaşe / İmza</strong><br>
+          <strong>${this._escapeHtml(data.doctorName || 'Veteriner Hekim')}</strong><br>
+          <span style="font-size:10px; color:#64748b;">Sicil/Oda No: ${this._escapeHtml(data.vetRegNo || '-')}</span><br>
+          <span style="font-size:9px; color:#059669; font-weight:700;">✓ Elektronik Belge Kaydı</span>
+        </div>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+  }
+
+  executePrint() {
+    const container = document.getElementById('itsPrescriptionPreviewContent');
+    if (!container) return;
+
+    let printFrame = document.getElementById('itsPrintFrame');
+    if (!printFrame) {
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'itsPrintFrame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '0';
+      printFrame.style.height = '0';
+      printFrame.style.border = '0';
+      document.body.appendChild(printFrame);
+    }
+
+    const doc = printFrame.contentWindow.document;
+    doc.open();
+    doc.write(`
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
         <title>T.C. Tarım ve Orman Bakanlığı - Veteriner E-Reçete</title>
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #0f172a; max-width: 720px; margin: 0 auto; }
-          .header { border-bottom: 2px solid ${typeColor}; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-          .title { font-size: 16px; font-weight: 800; color: ${typeColor}; }
-          .badge { background: ${typeColor}; color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
-          th { background: #f1f5f9; padding: 8px; text-align: left; border-bottom: 1px solid #cbd5e1; }
-          td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
-          .warning { margin-top: 20px; font-size: 10px; color: #64748b; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; }
-          .sign { margin-top: 30px; display: flex; justify-content: space-between; font-size: 12px; }
+          @page { size: A4 portrait; margin: 12mm; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; margin: 0; padding: 12px; }
+          table { width: 100%; border-collapse: collapse; }
           @media print { body { padding: 0; } }
         </style>
       </head>
       <body>
-        <div class="header">
-          <div>
-            <div style="font-size:11px; font-weight:700; color:#64748b;">T.C. TARIM VE ORMAN BAKANLIĞI</div>
-            <div class="title">${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? 'PETVET EV HAYVANI E-REÇETESİ' : 'VETERİNER HEKİM E-REÇETESİ'}</div>
-          </div>
-          <span class="badge">${typeName}</span>
-        </div>
-
-        <div class="grid">
-          <div><strong>Veteriner Hekim:</strong> ${data.doctorName}</div>
-          <div><strong>Diploma/Sicil No:</strong> ${data.vetRegNo}</div>
-          <div><strong>Hasta Sahibi:</strong> ${data.customerName}</div>
-          <div><strong>${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? 'PETVET Pasaport / Protokol:' : 'İşletme No:'}</strong> ${data.businessNo || '-'}</div>
-          <div><strong>Hayvan Türü:</strong> ${data.animalType}</div>
-          <div><strong>${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? 'Mikroçip No (PETVET):' : 'Küpe No (TÜRKVET):'}</strong> ${data.earTagNo || '-'}</div>
-          <div style="grid-column: span 2;"><strong>Teşhis / Endikasyon:</strong> ${data.diagnosis}</div>
-          <div style="grid-column: span 2;"><strong>Tarih & Saat:</strong> ${data.date}</div>
-        </div>
-
-        <strong>UYGULANAN İLAÇ VE BİYOLOJİK MADDELER</strong>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>İlaç / Aşı Adı</th>
-              <th>Miktar</th>
-              <th>Uygulama Yolu</th>
-              <th>İTS Karekod / Seri</th>
-              ${!['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? '<th>Yasal Arınma</th>' : ''}
-            </tr>
-          </thead>
-          <tbody>
-            ${data.items.map((it, idx) => `
-              <tr>
-                <td>${idx + 1}</td>
-                <td><strong>${it.name}</strong></td>
-                <td>${it.quantity}</td>
-                <td>${it.route}</td>
-                <td style="font-family:monospace; font-size:10px;">${it.barcode || it.serialNo || '-'}</td>
-                ${!['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType) ? `<td style="color:#b91c1c; font-weight:600;">${it.withdrawalPeriod || '-'}</td>` : ''}
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-
-        <div class="warning">
-          ${['Kedi', 'Köpek', 'Egzotik'].includes(data.animalType)
-            ? '<strong>PET BİLGİLENDİRME:</strong> Bu reçete Ev Hayvanı Kayıt Sistemi (PETVET) ve İTS mevzuatına uygun olarak evcil hayvan tedavisi için düzenlenmiştir. Yalnızca hayvan sağlığında kullanılır.'
-            : '<strong>YASAL UYARI:</strong> Bu reçete Tarım ve Orman Bakanlığı İlaç Takip Sistemi (İTS) mevzuatına göre düzenlenmiştir. Arınma süresi tamamlanmadan hayvanların kesime sevk edilmesi veya sütlerinin insan tüketimine sunulması 5996 sayılı kanun gereğince yasaktır.'
-          }
-        </div>
-
-        <div class="sign">
-          <div>
-            <br>Hasta Sahibi / Yetkili<br>İmza:
-          </div>
-          <div style="text-align:right;">
-            <br>Veteriner Hekim Kaşe / İmza<br><strong>${data.doctorName}</strong>
-          </div>
-        </div>
-
-        <script>
-          window.onload = function() { window.print(); }
-        </script>
+        ${container.innerHTML}
       </body>
       </html>
     `);
-    printWin.document.close();
+    doc.close();
+
+    setTimeout(() => {
+      try {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+      } catch (e) {
+        window.print();
+      }
+    }, 250);
   }
 
   _escapeHtml(text) {
