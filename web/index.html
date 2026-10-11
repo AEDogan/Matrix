@@ -793,8 +793,8 @@
 
                 <!-- QR Kod ile Hızlı Bağlan Butonu -->
                 <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:12px; margin-bottom:12px; text-align:center;">
-                  <button type="button" id="btnScanSyncraQr" class="btn btn-primary" style="width:100%; min-height:46px; font-size:0.88rem; font-weight:700; background:#059669; border-color:#059669; display:flex; align-items:center; justify-content:center; gap:8px;">
-                    <span style="font-size:1.2rem;">📷</span> <span>QR Kod ile Kliniğe Bağlan (Hızlı Kurulum)</span>
+                  <button type="button" id="btnScanSyncraQr" class="btn btn-primary" style="width:100%; min-height:46px; font-size:0.86rem; font-weight:700; background:#059669; border-color:#059669; display:flex; align-items:center; justify-content:center; gap:8px; white-space:normal; line-height:1.2; text-align:center; padding:10px 12px;">
+                    <span style="font-size:1.2rem; flex-shrink:0;">📷</span> <span>QR Kod ile Syncra'ya Bağlan</span>
                   </button>
                   <small style="color:var(--text-muted); font-size:0.72rem; display:block; margin-top:6px;">
                     Syncra ERP ekranında açılan QR kodu telefon kameranıza okutun. API anahtarı ve sunucu yazmanıza gerek kalmaz.
@@ -1807,11 +1807,11 @@ function doPost(e) {
   <!-- Toast Notification -->
   <div id="toastNotification" class="toast" style="display:none;"></div>
 
-  <!-- QR Kod Tarama Modalı (Kamera ile Kliniğe Bağlan) -->
+  <!-- QR Kod Tarama Modalı (Kamera ile Syncra'ya Bağlan) -->
   <div id="syncraQrScanModal" class="modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); z-index:9999; align-items:center; justify-content:center; padding:16px;">
     <div class="glass-card" style="width:100%; max-width:400px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.3); border:1px solid #cbd5e1;">
       <div style="padding:14px 16px; background:#0f172a; color:#ffffff; display:flex; justify-content:space-between; align-items:center;">
-        <strong style="font-size:0.9rem;">📷 Syncra Klinik QR Kodunu Tara</strong>
+        <strong style="font-size:0.9rem;">📷 Syncra QR Kodunu Tara</strong>
         <button type="button" id="btnCloseSyncraQrModal" style="background:none; border:none; color:#ffffff; font-size:1.2rem; cursor:pointer;">✕</button>
       </div>
       <div style="padding:16px; text-align:center;">
@@ -1918,21 +1918,21 @@ function doPost(e) {
       </div>
 
       <!-- Modal Footer (Aksiyon Butonları) -->
-      <div style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button type="button" id="btnItsCopyText" class="btn" style="background:#0284c7; color:#fff; font-weight:700; font-size:0.8rem; padding:9px; border-radius:10px; border:none; display:flex; align-items:center; justify-content:center; gap:6px;">
-            <span>📋</span> <span>Bakanlık Formatında Kopyala</span>
+      <div style="padding:12px 14px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; width:100%;">
+          <button type="button" id="btnItsCopyText" class="btn" style="background:#0284c7; color:#fff; font-weight:700; font-size:0.75rem; padding:8px 6px; border-radius:10px; border:none; display:flex; align-items:center; justify-content:center; gap:6px; white-space:normal; line-height:1.2; text-align:center;">
+            <span style="font-size:1.05rem; flex-shrink:0;">📋</span> <span>Bakanlık Formatında Kopyala</span>
           </button>
-          <button type="button" id="btnItsPrint" class="btn" style="background:#059669; color:#fff; font-weight:700; font-size:0.8rem; padding:9px; border-radius:10px; border:none; display:flex; align-items:center; justify-content:center; gap:6px;">
-            <span>📄</span> <span>Resmi E-Reçete Yazdır / PDF</span>
+          <button type="button" id="btnItsPrint" class="btn" style="background:#059669; color:#fff; font-weight:700; font-size:0.75rem; padding:8px 6px; border-radius:10px; border:none; display:flex; align-items:center; justify-content:center; gap:6px; white-space:normal; line-height:1.2; text-align:center;">
+            <span style="font-size:1.05rem; flex-shrink:0;">📄</span> <span>Resmi E-Reçete Yazdır / PDF</span>
           </button>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button type="button" id="btnItsDownloadJson" class="btn btn-secondary" style="font-weight:700; font-size:0.76rem; padding:8px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px;">
-            <span>💾</span> <span>İTS Bildirim İndir (JSON)</span>
+        <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; width:100%;">
+          <button type="button" id="btnItsDownloadJson" class="btn btn-secondary" style="font-weight:700; font-size:0.74rem; padding:8px 6px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; white-space:normal; line-height:1.2; text-align:center;">
+            <span style="font-size:1.05rem; flex-shrink:0;">💾</span> <span>İTS Bildirim İndir (JSON)</span>
           </button>
-          <button type="button" id="btnItsOpenPortal" class="btn btn-secondary" style="font-weight:700; font-size:0.76rem; padding:8px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px;">
-            <span>🔗</span> <span>Bakanlık Portalını Aç</span>
+          <button type="button" id="btnItsOpenPortal" class="btn btn-secondary" style="font-weight:700; font-size:0.74rem; padding:8px 6px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; white-space:normal; line-height:1.2; text-align:center;">
+            <span style="font-size:1.05rem; flex-shrink:0;">🔗</span> <span>Bakanlık Portalını Aç</span>
           </button>
         </div>
       </div>

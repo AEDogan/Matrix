@@ -604,7 +604,7 @@ class StockManager {
     const mergeLocal = options.mergeLocal !== false;
 
     if (!apiKey && !deviceToken) {
-      throw new Error('Syncra Klinik bağlantısı bulunamadı. Lütfen QR kod okutarak veya API anahtarınızı girerek kliniğe bağlanın.');
+      throw new Error('Syncra bağlantısı bulunamadı. Lütfen QR kod okutarak veya API anahtarınızı girerek Syncra\'ya bağlanın.');
     }
 
     const unsyncedLogs = (window.logManager && typeof window.logManager.getUnsyncedLogs === 'function')
