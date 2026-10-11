@@ -74,6 +74,7 @@ class AppController {
     if (window.paramManager) window.paramManager.renderUI();
     if (window.logManager) window.logManager.renderUI();
     if (window.inseminationManager) window.inseminationManager.updateVisibility();
+    if (window.itsManager) window.itsManager.updateVisibility();
 
     this.renderPresets();
     this.bindEvents();
@@ -1365,6 +1366,7 @@ class AppController {
     if (window.paramManager) window.paramManager.renderUI();
     if (window.logManager) window.logManager.renderUI();
     if (window.inseminationManager) window.inseminationManager.updateVisibility();
+    if (window.itsManager) window.itsManager.updateVisibility();
   }
 
   onCurrencyChanged() {

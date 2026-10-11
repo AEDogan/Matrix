@@ -2436,15 +2436,22 @@ class I18nManager {
       el.setAttribute('title', this.t(key));
     });
 
-    // Türkiye'ye özel Resmi E-Reçete & İTS butonları yalnızca Türkçe (tr) dilinde gösterilir
-    const isTr = this.currentLang === 'tr';
-    const mainItsWrapper = document.getElementById('wrapperMainItsBtn') || document.getElementById('btnMainOpenItsModal');
-    const receiptItsBtn = document.getElementById('btnReceiptOpenItsModal');
-    if (mainItsWrapper) {
-      mainItsWrapper.style.display = isTr ? 'block' : 'none';
+    // Türkiye'ye özel Resmi E-Reçete & İTS ve Tohumlama modüllerinin görünürlüklerini güncelle
+    if (window.itsManager && typeof window.itsManager.updateVisibility === 'function') {
+      window.itsManager.updateVisibility();
+    } else {
+      const isTr = this.currentLang === 'tr';
+      const mainItsWrapper = document.getElementById('wrapperMainItsBtn') || document.getElementById('btnMainOpenItsModal');
+      const receiptItsBtn = document.getElementById('btnReceiptOpenItsModal');
+      if (mainItsWrapper) {
+        mainItsWrapper.style.display = isTr ? 'block' : 'none';
+      }
+      if (receiptItsBtn) {
+        receiptItsBtn.style.display = isTr ? 'flex' : 'none';
+      }
     }
-    if (receiptItsBtn) {
-      receiptItsBtn.style.display = isTr ? 'flex' : 'none';
+    if (window.inseminationManager && typeof window.inseminationManager.updateVisibility === 'function') {
+      window.inseminationManager.updateVisibility();
     }
   }
 }

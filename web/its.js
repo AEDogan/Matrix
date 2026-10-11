@@ -21,6 +21,37 @@ class ITSPrescriptionManager {
     };
     this.html5QrScanner = null;
     this.scanningItemIndex = -1;
+    this.storageModuleKey = 'vetassist_its_module_status';
+  }
+
+  isModuleEnabled() {
+    const isTr = (window.i18n && window.i18n.getLanguage() === 'tr') || (localStorage.getItem('vetassist_lang') || 'tr') === 'tr';
+    if (!isTr) return false;
+    return localStorage.getItem(this.storageModuleKey) !== 'disabled';
+  }
+
+  updateVisibility() {
+    const enabled = this.isModuleEnabled();
+    const isTr = (window.i18n && window.i18n.getLanguage() === 'tr') || (localStorage.getItem('vetassist_lang') || 'tr') === 'tr';
+
+    const toggleWrap = document.getElementById('wrapperSettingItsModule');
+    const toggle = document.getElementById('settingItsModuleToggle');
+    const mainItsWrapper = document.getElementById('wrapperMainItsBtn') || document.getElementById('btnMainOpenItsModal');
+    const receiptItsBtn = document.getElementById('btnReceiptOpenItsModal');
+
+    if (toggleWrap) {
+      toggleWrap.style.display = isTr ? 'block' : 'none';
+    }
+    if (toggle) {
+      toggle.checked = localStorage.getItem(this.storageModuleKey) !== 'disabled';
+    }
+
+    if (mainItsWrapper) {
+      mainItsWrapper.style.display = enabled ? 'block' : 'none';
+    }
+    if (receiptItsBtn) {
+      receiptItsBtn.style.display = enabled ? 'flex' : 'none';
+    }
   }
 
   init() {
@@ -105,6 +136,20 @@ class ITSPrescriptionManager {
     if (animalTypeSelect) {
       animalTypeSelect.addEventListener('change', () => this.updateAnimalTypeUI());
     }
+
+    // E-Reçete & İTS modülü aç/kapat toggle dinleyicisi
+    const itsToggle = document.getElementById('settingItsModuleToggle');
+    if (itsToggle) {
+      itsToggle.addEventListener('change', (e) => {
+        localStorage.setItem(this.storageModuleKey, e.target.checked ? 'enabled' : 'disabled');
+        this.updateVisibility();
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast(e.target.checked ? '📋 E-Reçete & İTS bildirim butonları aktif edildi.' : '📋 E-Reçete & İTS bildirim butonları gizlendi.');
+        }
+      });
+    }
+
+    this.updateVisibility();
   }
 
   updateAnimalTypeUI() {
