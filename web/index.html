@@ -756,7 +756,7 @@
               <p class="section-desc" id="kpiTotalLogsCount">0 İşlem Kayıtlı</p>
             </div>
             <div class="logs-toolbar-actions">
-              <button id="btnOpenCarilerFromLogs" class="btn btn-outline-primary btn-sm" title="Cari Hesaplar & Bakiyeler" style="font-weight:700;">
+              <button id="btnOpenCarilerFromLogs" class="btn btn-outline-primary btn-sm" title="Cari Hesaplar & Bakiyeler" style="display:none; font-weight:700;">
                 <span>👥</span> <span>Cariler</span>
               </button>
               <button id="btnOpenArchiveLogs" class="btn btn-outline-secondary btn-sm" title="Eski Arşiv Kayıtları">
@@ -828,8 +828,8 @@
         <button class="btn-modal-close" id="closeSettingsDrawerBtn">✕</button>
       </div>
 
-      <!-- Cari Hesaplar & Bakiye Yönetimi ve Eşik Ayarı -->
-      <div class="drawer-cariler-action-box glass-card" style="margin: 10px 14px 12px; padding: 12px; border: 1px solid var(--glass-border); border-radius: 12px; background: var(--glass-bg-card);">
+      <!-- Cari Hesaplar & Bakiye Yönetimi ve Eşik Ayarı (Sadece Syncra Bağlıyken Aktif) -->
+      <div id="drawerCarilerActionBox" class="drawer-cariler-action-box glass-card" style="display:none; margin: 10px 14px 12px; padding: 12px; border: 1px solid var(--glass-border); border-radius: 12px; background: var(--glass-bg-card);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <div>
             <strong style="font-size:0.92rem; color:var(--text-main); display:flex; align-items:center; gap:6px;">

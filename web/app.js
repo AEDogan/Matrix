@@ -181,6 +181,9 @@ class AppController {
     const headerBtnLabel = document.querySelector('#syncSheetsBtn [data-i18n="btn_sync_sheets"]');
     if (headerBtnLabel) headerBtnLabel.textContent = isSyncra ? 'Syncra' : 'Sheets';
     this.updateSyncraQueueInfo();
+    if (window.carilerManager && typeof window.carilerManager.updateVisibility === 'function') {
+      window.carilerManager.updateVisibility();
+    }
   }
 
   updateSyncraQueueInfo(extraText) {

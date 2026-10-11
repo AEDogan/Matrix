@@ -20,7 +20,46 @@ class CarilerManager {
   init() {
     this.bindDrawerElements();
     this.bindModalElements();
-    this.checkThreshold();
+    this.updateVisibility();
+
+    // Syncra bağlantı ve veri değişikliklerini dinle
+    window.addEventListener('storage', (e) => {
+      if (!e.key || e.key.includes('syncra') || e.key.includes('partner')) {
+        this.updateVisibility();
+      }
+    });
+
+    // Düzenli aralıkla ve UI güncellemelerinde kontrol et
+    setInterval(() => this.updateVisibility(), 2500);
+  }
+
+  // Syncra ile eşleşme durumunu kontrol et
+  isSyncraConnected() {
+    const key = (localStorage.getItem('vetassist_syncra_key_v2') || '').trim();
+    const token = (localStorage.getItem('vetassist_syncra_device_token_v2') || '').trim();
+    const partners = JSON.parse(localStorage.getItem('vetassist_partners_v2') || '[]');
+    // Sadece Syncra API anahtarı, cihaz token'ı veya Syncra'dan aktarılmış ortaklar varsa aktiftir
+    return !!(key || token || (Array.isArray(partners) && partners.length > 0));
+  }
+
+  // Butonların ve menünün görünürlüğünü güncelle (Syncra yoksa tamamen gizle)
+  updateVisibility() {
+    const isConnected = this.isSyncraConnected();
+    const drawerBox = document.getElementById('drawerCarilerActionBox') || document.querySelector('.drawer-cariler-action-box');
+    const logsBtn = document.getElementById('btnOpenCarilerFromLogs');
+
+    if (drawerBox) {
+      drawerBox.style.display = isConnected ? 'block' : 'none';
+    }
+    if (logsBtn) {
+      logsBtn.style.display = isConnected ? 'inline-flex' : 'none';
+    }
+
+    if (isConnected) {
+      this.checkThreshold();
+    } else {
+      this.closeModal();
+    }
   }
 
   // 1. Menü Çekmecesi (Settings Drawer) Bileşenleri
@@ -98,6 +137,10 @@ class CarilerManager {
   }
 
   openModal() {
+    if (!this.isSyncraConnected()) {
+      alert('Cari Hesaplar modülü yalnızca Syncra ERP bağlantısı kurulduğunda aktiftir.');
+      return;
+    }
     const modal = document.getElementById('carilerModal');
     if (!modal) return;
     modal.style.display = 'flex';
