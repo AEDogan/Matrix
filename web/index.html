@@ -756,6 +756,9 @@
               <p class="section-desc" id="kpiTotalLogsCount">0 İşlem Kayıtlı</p>
             </div>
             <div class="logs-toolbar-actions">
+              <button id="btnOpenCarilerFromLogs" class="btn btn-outline-primary btn-sm" title="Cari Hesaplar & Bakiyeler" style="font-weight:700;">
+                <span>👥</span> <span>Cariler</span>
+              </button>
               <button id="btnOpenArchiveLogs" class="btn btn-outline-secondary btn-sm" title="Eski Arşiv Kayıtları">
                 <span>📦</span> <span data-i18n="btn_open_archive">Arşiv</span>
               </button>
@@ -823,6 +826,37 @@
       <div class="drawer-header">
         <h3 class="drawer-title" data-i18n="settings_drawer_title">⚙️ Ayarlar & Parametreler</h3>
         <button class="btn-modal-close" id="closeSettingsDrawerBtn">✕</button>
+      </div>
+
+      <!-- Cari Hesaplar & Bakiye Yönetimi ve Eşik Ayarı -->
+      <div class="drawer-cariler-action-box glass-card" style="margin: 10px 14px 12px; padding: 12px; border: 1px solid var(--glass-border); border-radius: 12px; background: var(--glass-bg-card);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div>
+            <strong style="font-size:0.92rem; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+              <span>👥</span> <span>Cari Hesaplar & Bakiyeler</span>
+            </strong>
+            <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:2px;">
+              Müşteri & tedarikçi alacak-verecek kartları
+            </span>
+          </div>
+          <button type="button" id="btnOpenCarilerModal" class="btn btn-primary btn-sm" style="padding:6px 14px; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:4px;">
+            <span>Görüntüle</span> <span>↗</span>
+          </button>
+        </div>
+
+        <!-- Alacak Uyarı Eşiği (Set Değeri) -->
+        <div style="background:var(--glass-bg-alt); border-radius:8px; padding:8px 10px; border:1px solid var(--glass-border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <label for="settingReceivableThreshold" style="font-size:0.78rem; font-weight:600; color:var(--text-main); margin:0;">
+              ⚠️ Alacak Uyarı Eşiği (TL):
+            </label>
+            <input type="number" id="settingReceivableThreshold" class="form-input text-mono text-bold" value="50000" min="0" step="1000" style="width:115px; text-align:right; padding:5px 8px; font-size:0.85rem; border-radius:6px;">
+          </div>
+          <div id="drawerThresholdWarningBanner" style="display:none; margin-top:8px; padding:6px 10px; background:rgba(239,68,68,0.15); border:1px solid #ef4444; border-radius:6px; color:#dc2626; font-size:0.75rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+            <span>⚠️</span>
+            <span id="drawerThresholdWarningText">Toplam alacak belirlenen eşiği aştı!</span>
+          </div>
+        </div>
       </div>
 
       <div class="horizontal-scroll-container">
@@ -2223,6 +2257,69 @@ function doPost(e) {
     </div>
   </div>
 
+  <!-- ============================================== -->
+  <!-- MODAL: CARİ HESAPLAR & BAKİYELER (ALACAK / VERECEK) -->
+  <!-- ============================================== -->
+  <div id="carilerModal" class="modal-backdrop" style="display:none; position:fixed; inset:0; z-index:2150; align-items:center; justify-content:center; padding:12px;">
+    <div class="modal-container" style="max-width:540px; height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+      
+      <!-- Modal Header -->
+      <div class="modal-header" style="padding:12px 16px; border-bottom:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center; background:var(--glass-bg-card);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.3rem;">👥</span>
+          <div>
+            <h3 class="modal-title" style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text-main);">Cari Hesaplar & Bakiyeler</h3>
+            <span id="carilerCountSubtitle" style="font-size:0.75rem; color:var(--text-muted);">0 Kayıtlı Cari</span>
+          </div>
+        </div>
+        <button type="button" class="btn-modal-close" id="closeCarilerModalBtn" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--text-main);">✕</button>
+      </div>
+
+      <!-- Quick Filter & Search Bar -->
+      <div style="padding:10px 14px; background:var(--glass-bg-alt); border-bottom:1px solid var(--glass-border-subtle); display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="carilerSearchInput" class="form-input" placeholder="İsim veya firma ara..." style="flex:1; padding:7px 10px; font-size:0.85rem;">
+          <button type="button" id="carilerSortToggleBtn" class="btn btn-outline-secondary btn-sm" title="Sıralama Değiştir" style="white-space:nowrap; font-size:0.78rem;">
+            <span>↕️</span> <span id="carilerSortLabel">Açık Tutara Göre (Azalan)</span>
+          </button>
+        </div>
+        <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;">
+          <button type="button" class="cari-filter-chip active" data-filter="all">Tümü</button>
+          <button type="button" class="cari-filter-chip" data-filter="debtors">🔴 Alacaklarımız (&gt;0)</button>
+          <button type="button" class="cari-filter-chip" data-filter="creditors">🔵 Vereceklerimiz</button>
+          <button type="button" class="cari-filter-chip" data-filter="zero">🟢 Sıfır Bakiye</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Card List: SADECE KARTLAR -->
+      <div id="carilerCardsList" style="flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <!-- Javascript renders minimal cards here -->
+      </div>
+
+      <!-- Sticky Footer: En Altta Totalleri Görme -->
+      <div class="cariler-sticky-footer">
+        <div id="carilerFooterThresholdWarning" class="cariler-threshold-alert" style="display:none;">
+          <span>⚠️</span> <span id="carilerFooterThresholdText">Toplam alacak belirlenen eşiği aştı!</span>
+        </div>
+        <div class="cariler-totals-grid">
+          <div class="cariler-total-item receivable">
+            <span class="total-label">Toplam Alacak</span>
+            <span class="total-val" id="carilerTotalReceivable">0,00 ₺</span>
+          </div>
+          <div class="cariler-total-item payable">
+            <span class="total-label">Toplam Verecek</span>
+            <span class="total-val" id="carilerTotalPayable">0,00 ₺</span>
+          </div>
+          <div class="cariler-total-item net">
+            <span class="total-label">Net Bakiye</span>
+            <span class="total-val" id="carilerTotalNet">0,00 ₺</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="html5-qrcode.min.js"></script>
   <script src="i18n.js"></script>
@@ -2233,6 +2330,7 @@ function doPost(e) {
   <script src="receipt.js"></script>
   <script src="its.js"></script>
   <script src="insemination.js"></script>
+  <script src="cariler.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
