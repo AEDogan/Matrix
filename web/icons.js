@@ -188,6 +188,31 @@
         <circle cx="16" cy="11.5" r="0.9" fill="#0284c7"/>
         <circle cx="18.5" cy="12.5" r="0.9" fill="#0284c7"/>
       </svg>
+    `,
+
+    // 11. Tohumlama & E-Islah Sekmesi: Küpeli Simental / Holstein İnek Başı (Özgün Pet Tasarımı)
+    'cow-insemination': `
+      <svg class="pet-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 10C7.5 7 8 4.5 9.5 4C11 4.5 11.5 7 11 10" fill="#fef08a" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M23 10C24.5 7 24 4.5 22.5 4C21 4.5 20.5 7 21 10" fill="#fef08a" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M7 13C4 12 3 14 4 16.5C5 18 7.5 17 8.5 16" fill="#fde047" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M25 13C28 12 29 14 28 16.5C27 18 24.5 17 23.5 16" fill="#fde047" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+        <polygon points="5,15 3,18 6,19 7,16" fill="#f59e0b" stroke="#0f172a" stroke-width="1.2"/>
+        <circle cx="5" cy="17" r="0.6" fill="#0f172a"/>
+        <ellipse cx="16" cy="15" rx="8.5" ry="7.5" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+        <path d="M11 9C13 11 14 13 13 15C10 16 8 13 8.5 11" fill="#f59e0b"/>
+        <path d="M22 9C20.5 11 20 13 21 14.5C23 15 24 13 23.5 11" fill="#f59e0b"/>
+        <circle cx="12.5" cy="14" r="1.4" fill="#0f172a"/>
+        <circle cx="12.9" cy="13.6" r="0.5" fill="#ffffff"/>
+        <circle cx="19.5" cy="14" r="1.4" fill="#0f172a"/>
+        <circle cx="19.9" cy="13.6" r="0.5" fill="#ffffff"/>
+        <ellipse cx="16" cy="19.5" rx="5.5" ry="3.5" fill="#fbcfe8" stroke="#0f172a" stroke-width="1.8"/>
+        <circle cx="14" cy="19.5" r="0.9" fill="#0f172a"/>
+        <circle cx="18" cy="19.5" r="0.9" fill="#0f172a"/>
+        <rect x="14.5" y="23" width="3" height="7" rx="1" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2"/>
+        <circle cx="16" cy="24.5" r="0.8" fill="#ffffff"/>
+        <circle cx="16" cy="28.5" r="0.8" fill="#ffffff"/>
+      </svg>
     `
   };
 

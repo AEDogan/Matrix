@@ -732,14 +732,14 @@ class LogManager {
       const card = document.createElement('div');
       card.className = `log-item-card ${isInsemination ? 'log-insemination' : (isTreatment ? 'log-treatment' : 'log-quote')}`;
       if (isInsemination) {
-        card.style.borderLeft = '4.5px solid #059669';
+        card.style.borderLeft = '4.5px solid var(--primary)';
       }
       
       let badgeText = isTreatment 
         ? (window.i18n ? window.i18n.t('log_treatment_badge') : (isEn ? 'Treatment' : 'Tedavi')) 
         : (window.i18n ? window.i18n.t('log_quote_badge') : (isEn ? 'Quote' : 'Teklif'));
       if (isInsemination) {
-        badgeText = '🌾 Tohumlama';
+        badgeText = 'Tohumlama';
       }
 
       let stockStatusText = isTreatment
@@ -755,10 +755,10 @@ class LogManager {
 
       const inseminationActions = (isInsemination && log.inseminationData) ? `
         <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
-          <button type="button" class="btn btn-outline-success btn-xs view-ins-doc-btn" data-id="${log.id}" style="border-color:#059669; color:#059669; font-weight:700; display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:6px; font-size:0.75rem;">
+          <button type="button" class="btn btn-outline-primary btn-xs view-ins-doc-btn" data-id="${log.id}" style="font-weight:700; display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:6px; font-size:0.75rem;">
             <span>📄</span> <span>Tohumlama Belgesi & PDF</span>
           </button>
-          <button type="button" class="btn btn-outline-primary btn-xs share-ins-wa-btn" data-id="${log.id}" style="font-weight:700; display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:6px; font-size:0.75rem;">
+          <button type="button" class="btn btn-outline-success btn-xs share-ins-wa-btn" data-id="${log.id}" style="font-weight:700; display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:6px; font-size:0.75rem;">
             <span>📱</span> <span>WhatsApp Bildir</span>
           </button>
         </div>
@@ -767,9 +767,9 @@ class LogManager {
       card.innerHTML = `
         <div class="log-header-row">
           <div class="log-header-left">
-            <span class="log-type-badge ${isTreatment ? 'badge-treatment' : 'badge-quote'}" style="${isInsemination ? 'background:rgba(5,150,105,0.15); color:#059669;' : ''}">
+            <span class="log-type-badge ${isTreatment ? 'badge-treatment' : 'badge-quote'}" style="${isInsemination ? 'background:var(--primary-bg); color:var(--primary);' : ''}">
               ${isInsemination
-                ? `<span style="font-size:0.85rem; line-height:1;">🌾</span>`
+                ? (typeof window.getPetIcon === 'function' ? window.getPetIcon('cow-insemination', 'pet-svg-xs') : `<span style="font-size:0.85rem;">🐄</span>`)
                 : (isTreatment 
                     ? `<svg class="pet-svg pet-svg-xs" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="2.2"/><path d="M12 7H20V12H25V20H20V25H12V20H7V12H12V7Z" fill="currentColor" fill-opacity="0.4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 13L16 19L19 13" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
                     : `<svg class="pet-svg pet-svg-xs" viewBox="0 0 32 32" fill="none"><rect x="7" y="5" width="18" height="22" rx="2" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="2.2"/><line x1="11" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="11" y1="16" x2="17" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`)

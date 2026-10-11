@@ -85,6 +85,22 @@ class InseminationManager {
       });
     }
 
+    const custInput = document.getElementById('insCustomerName');
+    if (custInput) {
+      custInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (window.stockManager && typeof window.stockManager.findPartnerByName === 'function') {
+          const pt = window.stockManager.findPartnerByName(val);
+          if (pt && (pt.taxNumber || pt.notes)) {
+            const busInput = document.getElementById('insBusinessNo');
+            if (busInput && (!busInput.value || busInput.value.startsWith('TR-'))) {
+              busInput.value = pt.taxNumber || pt.notes;
+            }
+          }
+        }
+      });
+    }
+
     const vetNameInput = document.getElementById('insVetName');
     if (vetNameInput) {
       vetNameInput.addEventListener('input', (e) => {
@@ -220,13 +236,33 @@ class InseminationManager {
       return;
     }
 
+    // Syncra ERP Uyumlu Hizmet Kalemi (Service Line Item)
+    const inseminationServiceItem = {
+      id: `service_ins_${Date.now()}`,
+      name: `Suni Tohumlama - ${data.motherEarTag} (${data.bullName} - Payet: ${data.spermBatch})`,
+      qty: 1,
+      unitPrice: data.price,
+      total: data.price,
+      isService: true,
+      isFee: true
+    };
+
+    let partnerId = null;
+    if (window.stockManager && typeof window.stockManager.findPartnerByName === 'function') {
+      const pt = window.stockManager.findPartnerByName(data.customerName);
+      if (pt) partnerId = pt.id;
+    }
+
     if (window.logManager) {
       window.logManager.addLog({
         mode: 'insemination',
         customer: data.customerName,
+        partnerId: partnerId,
         itemsSummary: `🌾 ${data.motherEarTag} İnek Tohumlama (${data.bullName} - Payet: ${data.spermBatch})`,
         grandTotal: data.price,
         subTotal: data.price,
+        items: [inseminationServiceItem],
+        allItems: [inseminationServiceItem],
         inseminationData: data
       });
     }
