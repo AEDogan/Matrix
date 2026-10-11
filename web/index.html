@@ -14,6 +14,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    try {
+      if (localStorage.getItem('vetassist_theme') === 'dark') document.documentElement.classList.add('theme-dark');
+      if (localStorage.getItem('vetassist_theme_style') === 'ios') document.documentElement.classList.add('theme-style-ios');
+    } catch(e) {}
+  </script>
 </head>
 <body class="theme-sunlight">
   
@@ -1316,6 +1322,15 @@
                 <input type="checkbox" id="settingItsModuleToggle" checked style="width:22px; height:22px; accent-color:#0284c7; cursor:pointer;">
               </label>
             </div>
+          </div>
+
+          <!-- Görünüm Teması / App Theme -->
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label" for="settingThemeStyle" data-i18n="settings_theme_style_label">🎨 Görünüm Teması / App Theme</label>
+            <select id="settingThemeStyle" class="form-select text-bold">
+              <option value="classic">💎 Klasik VetAssist (Cam Efektli)</option>
+              <option value="ios">🍏 Ultra Sade iOS (Cupertino Minimal)</option>
+            </select>
           </div>
 
           <!-- Uygulama Dili -->

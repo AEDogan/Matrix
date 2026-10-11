@@ -66,7 +66,8 @@ class AppController {
       }
     }
 
-    // 2. Klinik ayarlarını inputlara doldur
+    // 2. Tema ve Klinik ayarlarını yükle
+    this.applyTheme();
     this.loadClinicSettingsToInputs();
 
     // 3. Modülleri başlat
@@ -1193,6 +1194,37 @@ class AppController {
     };
   }
 
+  applyTheme() {
+    const isDark = localStorage.getItem('vetassist_theme') === 'dark';
+    const themeStyle = localStorage.getItem('vetassist_theme_style') || 'classic';
+
+    if (isDark) {
+      document.body.classList.add('theme-dark');
+      document.documentElement.classList.add('theme-dark');
+    } else {
+      document.body.classList.remove('theme-dark');
+      document.documentElement.classList.remove('theme-dark');
+    }
+
+    if (themeStyle === 'ios') {
+      document.body.classList.add('theme-style-ios');
+      document.documentElement.classList.add('theme-style-ios');
+    } else {
+      document.body.classList.remove('theme-style-ios');
+      document.documentElement.classList.remove('theme-style-ios');
+    }
+
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+      themeIcon.textContent = isDark ? '🌙' : '☀️';
+    }
+
+    const themeStyleSelect = document.getElementById('settingThemeStyle');
+    if (themeStyleSelect) {
+      themeStyleSelect.value = themeStyle;
+    }
+  }
+
   loadClinicSettingsToInputs() {
     if (!window.receiptGenerator) return;
     const info = window.receiptGenerator.getClinicInfo();
@@ -1208,6 +1240,7 @@ class AppController {
     const distToggle = document.getElementById('globalDistributeExpenseToggle');
     const langSelect = document.getElementById('settingLanguage');
     const currSelect = document.getElementById('settingCurrency');
+    const themeStyleSelect = document.getElementById('settingThemeStyle');
 
     if (nameInput) nameInput.value = info.title || '';
     if (bankInput) bankInput.value = info.bank || '';
@@ -1231,6 +1264,9 @@ class AppController {
     }
     if (currSelect && window.i18n) {
       currSelect.value = window.i18n.getCurrency();
+    }
+    if (themeStyleSelect) {
+      themeStyleSelect.value = localStorage.getItem('vetassist_theme_style') || 'classic';
     }
 
     this.updateClinicLockUI();
@@ -1448,20 +1484,29 @@ class AppController {
       });
     }
 
-    // 3. Theme Toggle
+    // 3. Theme Toggle & Theme Style
     const themeBtn = document.getElementById('themeToggleBtn');
     if (themeBtn) {
       themeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('theme-dark');
-        const isDark = document.body.classList.contains('theme-dark');
-        document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+        const isDark = !document.body.classList.contains('theme-dark');
         localStorage.setItem('vetassist_theme', isDark ? 'dark' : 'light');
+        this.applyTheme();
+        const themeStyle = localStorage.getItem('vetassist_theme_style') || 'classic';
+        const msg = isDark
+          ? (themeStyle === 'ios' ? '🍏 iOS Koyu Mod Aktif 🌙' : (window.i18n ? window.i18n.t('theme_dark_active') : 'Koyu Saha Teması Aktif 🌙'))
+          : (themeStyle === 'ios' ? '🍏 iOS Açık Mod Aktif ☀️' : 'Açık Saha Teması Aktif ☀️');
+        this.showToast(msg);
       });
+    }
 
-      if (localStorage.getItem('vetassist_theme') === 'dark') {
-        document.body.classList.add('theme-dark');
-        document.getElementById('themeIcon').textContent = '🌙';
-      }
+    const themeStyleSelect = document.getElementById('settingThemeStyle');
+    if (themeStyleSelect) {
+      themeStyleSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        localStorage.setItem('vetassist_theme_style', val);
+        this.applyTheme();
+        this.showToast(val === 'ios' ? '🍏 Ultra Sade iOS Teması Aktif' : '💎 Klasik VetAssist Teması Aktif');
+      });
     }
 
     // 4. Mode Switcher

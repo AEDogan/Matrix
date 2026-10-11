@@ -112,6 +112,227 @@ body.theme-dark {
   --glass-shadow-float: 0 12px 36px rgba(0, 0, 0, 0.6);
 }
 
+/* ==========================================================================
+   ULTRA SADE iOS TEMASI (CUPERTINO MINIMAL & GROUPED DESIGN SYSTEM)
+   ========================================================================== */
+
+/* 1. iOS Açık Tema (iOS Light - Apple Grouped Minimal) */
+body.theme-style-ios {
+  --bg-app: #f2f2f7;
+  --bg-gradient: #f2f2f7;
+
+  --glass-bg: #ffffff;
+  --glass-bg-card: #ffffff;
+  --glass-bg-alt: #f2f2f7;
+  --glass-bg-drawer: rgba(242, 242, 247, 0.96);
+  --glass-bg-floating: rgba(255, 255, 255, 0.92);
+
+  --glass-border: rgba(60, 60, 67, 0.12);
+  --glass-border-subtle: rgba(60, 60, 67, 0.07);
+  --glass-border-active: #007aff;
+
+  --text-main: #000000;
+  --text-muted: #6c6c70;
+  --text-light: #8e8e93;
+
+  --primary: #007aff;
+  --primary-hover: #0062cc;
+  --primary-bg: rgba(0, 122, 255, 0.08);
+  --primary-text: #007aff;
+
+  --accent-amber: #ff9500;
+  --accent-amber-bg: rgba(255, 149, 0, 0.1);
+
+  --success: #34c759;
+  --success-hover: #28a745;
+  --success-bg: rgba(52, 199, 89, 0.1);
+
+  --danger: #ff3b30;
+  --danger-hover: #d70015;
+  --danger-bg: rgba(255, 59, 48, 0.08);
+
+  --grand-total-bg: #ffffff;
+  --grand-total-border: 1px solid rgba(0, 122, 255, 0.22);
+  --grand-total-shadow: 0 4px 16px rgba(0, 122, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --grand-total-text: #007aff;
+  --grand-total-val: #007aff;
+
+  --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 0.5px 1.5px rgba(0, 0, 0, 0.02);
+  --glass-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.07);
+  --glass-shadow-float: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+}
+
+/* 2. iOS Koyu Tema (iOS Dark - True OLED Black & Secondary Grouped Cards) */
+body.theme-style-ios.theme-dark {
+  --bg-app: #000000;
+  --bg-gradient: #000000;
+
+  --glass-bg: #1c1c1e;
+  --glass-bg-card: #1c1c1e;
+  --glass-bg-alt: #2c2c2e;
+  --glass-bg-drawer: rgba(28, 28, 30, 0.96);
+  --glass-bg-floating: rgba(28, 28, 30, 0.92);
+
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-border-active: #0a84ff;
+
+  --text-main: #ffffff;
+  --text-muted: #8e8e93;
+  --text-light: #636366;
+
+  --primary: #0a84ff;
+  --primary-hover: #409cff;
+  --primary-bg: rgba(10, 132, 255, 0.18);
+  --primary-text: #0a84ff;
+
+  --accent-amber: #ff9f0a;
+  --accent-amber-bg: rgba(255, 159, 10, 0.18);
+
+  --success: #30d158;
+  --success-hover: #34c759;
+  --success-bg: rgba(48, 209, 88, 0.18);
+
+  --danger: #ff453a;
+  --danger-hover: #ff6961;
+  --danger-bg: rgba(255, 69, 58, 0.18);
+
+  --grand-total-bg: #1c1c1e;
+  --grand-total-border: 1px solid rgba(10, 132, 255, 0.35);
+  --grand-total-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  --grand-total-text: #0a84ff;
+  --grand-total-val: #0a84ff;
+
+  --glass-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  --glass-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+  --glass-shadow-float: 0 6px 24px rgba(0, 0, 0, 0.65);
+}
+
+/* 3. iOS Arayüz Bileşenleri ve Mikro-Etkileşimler */
+body.theme-style-ios .app-nav-top {
+  background: rgba(118, 118, 128, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 13px;
+  padding: 3px;
+  box-shadow: none;
+}
+
+body.theme-style-ios.theme-dark .app-nav-top {
+  background: rgba(118, 118, 128, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.theme-style-ios .nav-pill-tab {
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  box-shadow: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.theme-style-ios .nav-pill-tab.active {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+
+body.theme-style-ios.theme-dark .nav-pill-tab.active {
+  background: #636366;
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-style-ios .glass-card,
+body.theme-style-ios .panel-card,
+body.theme-style-ios .kpi-card {
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+body.theme-style-ios .app-header {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--glass-border);
+}
+
+body.theme-style-ios .form-input,
+body.theme-style-ios .form-select,
+body.theme-style-ios .qty-input,
+body.theme-style-ios .search-input {
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-alt);
+  color: var(--text-main);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.theme-style-ios .form-input:focus,
+body.theme-style-ios .form-select:focus,
+body.theme-style-ios .qty-input:focus,
+body.theme-style-ios .search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+}
+
+body.theme-style-ios.theme-dark .form-input:focus,
+body.theme-style-ios.theme-dark .form-select:focus,
+body.theme-style-ios.theme-dark .qty-input:focus,
+body.theme-style-ios.theme-dark .search-input:focus {
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25);
+}
+
+body.theme-style-ios .autocomplete-dropdown {
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-card);
+}
+
+body.theme-style-ios.theme-dark .autocomplete-dropdown {
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+body.theme-style-ios .btn:active,
+body.theme-style-ios .nav-pill-tab:active,
+body.theme-style-ios .btn-icon-glass:active,
+body.theme-style-ios .tab-subnav-btn:active {
+  transform: scale(0.975);
+  transition: transform 0.1s ease;
+}
+
+body.theme-style-ios .settings-drawer {
+  border-radius: 20px 0 0 20px;
+}
+
+body.theme-style-ios .modal-container {
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+}
+
+body.theme-style-ios.theme-dark .scroll-arrow-hint {
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.95) 60%);
+  color: #0a84ff;
+}
+
+body.theme-style-ios.theme-dark .report-action-hero {
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
 /* Base Reset & Smooth Scroll */
 * {
   box-sizing: border-box;
