@@ -70,6 +70,7 @@ class AppController {
     if (window.stockManager) window.stockManager.renderUI();
     if (window.paramManager) window.paramManager.renderUI();
     if (window.logManager) window.logManager.renderUI();
+    if (window.inseminationManager) window.inseminationManager.updateVisibility();
 
     this.renderPresets();
     this.bindEvents();
@@ -1294,6 +1295,7 @@ class AppController {
     if (window.stockManager) window.stockManager.renderUI();
     if (window.paramManager) window.paramManager.renderUI();
     if (window.logManager) window.logManager.renderUI();
+    if (window.inseminationManager) window.inseminationManager.updateVisibility();
   }
 
   onCurrencyChanged() {

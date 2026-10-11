@@ -449,6 +449,8 @@ public class MainActivity extends Activity {
             if (webView != null) {
                 webView.evaluateJavascript(
                     "(function() {" +
+                    "  const insModal = document.getElementById('inseminationDocPreviewModal');" +
+                    "  if (insModal && insModal.style.display !== 'none') { insModal.style.display = 'none'; return true; }" +
                     "  const pModal = document.getElementById('itsPrescriptionPreviewModal');" +
                     "  if (pModal && pModal.style.display !== 'none') { pModal.style.display = 'none'; return true; }" +
                     "  const scanner = document.getElementById('itsBarcodeScannerModal');" +

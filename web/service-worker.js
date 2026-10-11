@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vetassist-cache-v4';
+const CACHE_NAME = 'vetassist-cache-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './logs.js',
   './receipt.js',
   './its.js',
+  './insemination.js',
   './html5-qrcode.min.js',
   './app.js',
   './manifest.json',

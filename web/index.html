@@ -45,6 +45,15 @@
     <!-- Top Segmented Navigation Bar -->
     <div class="top-nav-container">
       <nav class="app-nav-top">
+        <button class="nav-pill-tab" id="navTabInsemination" data-target="tab-insemination" style="display:none;">
+          <span class="tab-icon">
+            <svg class="pet-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 4C11 4 7 9 7 15C7 21 12 26 16 29C20 26 25 21 25 15C25 9 21 4 16 4Z" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+              <path d="M16 8V24M12 12C14 13 16 16 16 16M20 12C18 13 16 16 16 16M11 17C13 18 16 20 16 20M21 17C19 18 16 20 16 20" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="tab-text">Tohumlama</span>
+        </button>
         <button class="nav-pill-tab active" data-target="tab-calc">
           <span class="tab-icon">
             <svg class="pet-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,7 +122,162 @@
 
     <!-- Main Container -->
     <main class="app-content">
-      
+
+      <!-- ============================================== -->
+      <!-- 0. SUNİ TOHUMLAMA, E-ISLAH & DOĞUM TAKVİMİ SEKME -->
+      <!-- ============================================== -->
+      <section id="tab-insemination" class="tab-pane">
+        <div class="glass-card" style="margin-bottom:14px; border-left:4px solid #059669;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div>
+              <h3 style="font-size:1.05rem; font-weight:800; color:#059669; margin:0; display:flex; align-items:center; gap:6px;">
+                <span>🌾</span> <span>Suni Tohumlama & E-Islah</span>
+              </h3>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:4px 0 0 0;">
+                T.C. Tarım ve Orman Bakanlığı standartlarında resmi tohumlama belgesi ve otomatik üreme takvimi.
+              </p>
+            </div>
+            <span style="background:rgba(5,150,105,0.12); color:#059669; font-size:0.7rem; font-weight:700; padding:3px 8px; border-radius:12px; white-space:nowrap;">
+              STKS / E-Islah
+            </span>
+          </div>
+        </div>
+
+        <!-- Form Kartı -->
+        <div class="glass-card" style="margin-bottom:14px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <!-- Hayvan Küpe No -->
+            <div class="form-group" style="grid-column:span 2;">
+              <label class="form-label" for="insMotherEarTag" style="color:#059669; font-weight:700;">🏷️ Tohumlanan Hayvan Küpe Numarası *</label>
+              <input type="text" id="insMotherEarTag" class="form-input text-mono" placeholder="Örn: TR340001234567" style="font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;" required>
+            </div>
+
+            <!-- Irk -->
+            <div class="form-group">
+              <label class="form-label" for="insAnimalBreed">🐄 Hayvan Irkı</label>
+              <select id="insAnimalBreed" class="form-select text-bold">
+                <option value="Simental" selected>Simental</option>
+                <option value="Holstein">Holstein (Siyah Alaca)</option>
+                <option value="Montofon">Montofon (İsviçre Esmeri)</option>
+                <option value="Şarole">Şarole (Charolais)</option>
+                <option value="Limousin">Limousin</option>
+                <option value="Angus">Angus</option>
+                <option value="Yerli Kara">Yerli Kara / Boz Irk</option>
+                <option value="Jersey">Jersey</option>
+                <option value="Manda">Manda</option>
+                <option value="Diğer">Diğer Melez / Irk</option>
+              </select>
+            </div>
+
+            <!-- Tohumlama Sırası -->
+            <div class="form-group">
+              <label class="form-label" for="insOrder">🔢 Tohumlama Sırası</label>
+              <select id="insOrder" class="form-select text-bold">
+                <option value="1. Tohumlama" selected>1. Tohumlama</option>
+                <option value="2. Tohumlama">2. Tohumlama</option>
+                <option value="3. Tohumlama">3. Tohumlama</option>
+                <option value="4+. Tohumlama">4+. Tohumlama</option>
+              </select>
+            </div>
+
+            <!-- Müşteri / Yetiştirici -->
+            <div class="form-group">
+              <label class="form-label" for="insCustomerName">👤 Yetiştirici / Müşteri</label>
+              <input type="text" id="insCustomerName" class="form-input" placeholder="Hayvan sahibi adı...">
+            </div>
+
+            <!-- İşletme No -->
+            <div class="form-group">
+              <label class="form-label" for="insBusinessNo">🏠 İşletme Numarası</label>
+              <input type="text" id="insBusinessNo" class="form-input text-mono" placeholder="Örn: TR-34-001234">
+            </div>
+
+            <!-- Boğa Adı / Kodu -->
+            <div class="form-group">
+              <label class="form-label" for="insBullName">🐂 Kullanılan Boğa Adı / Kod</label>
+              <input type="text" id="insBullName" class="form-input" placeholder="Örn: GS DER BESTE, HULK...">
+            </div>
+
+            <!-- Sperma Payet / Barkod No -->
+            <div class="form-group">
+              <label class="form-label" for="insSpermBatch">🧪 Payet / Barkod / Parti No</label>
+              <input type="text" id="insSpermBatch" class="form-input text-mono" placeholder="Örn: PAY-2024-8891">
+            </div>
+
+            <!-- Tohumlama Tarihi -->
+            <div class="form-group">
+              <label class="form-label" for="insDate">📅 Tohumlama Tarihi</label>
+              <input type="date" id="insDate" class="form-input">
+            </div>
+
+            <!-- Ücret -->
+            <div class="form-group">
+              <label class="form-label" for="insPrice">💰 Hizmet Ücreti (₺)</label>
+              <input type="number" id="insPrice" class="form-input text-mono" placeholder="0" step="10">
+            </div>
+
+            <!-- Veteriner Hekim Bilgileri -->
+            <div class="form-group">
+              <label class="form-label" for="insVetName">🩺 Uygulayıcı Vet. Hekim</label>
+              <input type="text" id="insVetName" class="form-input" placeholder="Veteriner Hekim Adı">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="insVetRegNo">📜 Hekim Oda/Sicil No</label>
+              <input type="text" id="insVetRegNo" class="form-input text-mono" placeholder="Sicil / Diploma No">
+            </div>
+          </div>
+        </div>
+
+        <!-- Canlı Üreme & Doğum Takvimi Kartı -->
+        <div class="glass-card" style="margin-bottom:14px; background:linear-gradient(135deg, rgba(236,253,245,0.85) 0%, rgba(209,250,229,0.5) 100%); border:1.5px solid #a7f3d0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong style="font-size:0.85rem; color:#065f46; display:flex; align-items:center; gap:6px;">
+              <span>📅</span> <span>Otomatik Üreme & Takip Takvimi</span>
+            </strong>
+            <span style="font-size:0.7rem; color:#059669; font-weight:700;">Otomatik Hesaplanır</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="background:#ffffff; padding:8px 10px; border-radius:8px; border:1px solid #d1fae5;">
+              <span style="font-size:0.7rem; color:#64748b; display:block;">21. Gün Dönüş / Kızgınlık:</span>
+              <strong id="insCalcEstruDay" style="font-size:0.85rem; color:#d97706;" class="text-mono">-</strong>
+            </div>
+
+            <div style="background:#ffffff; padding:8px 10px; border-radius:8px; border:1px solid #d1fae5;">
+              <span style="font-size:0.7rem; color:#64748b; display:block;">60. Gün Gebelik Muayenesi:</span>
+              <strong id="insCalcPregDay" style="font-size:0.85rem; color:#0284c7;" class="text-mono">-</strong>
+            </div>
+
+            <div style="background:#ffffff; padding:8px 10px; border-radius:8px; border:1px solid #d1fae5;">
+              <span style="font-size:0.7rem; color:#64748b; display:block;">210. Gün Kurudaki Dönem:</span>
+              <strong id="insCalcDryDay" style="font-size:0.85rem; color:#64748b;" class="text-mono">-</strong>
+            </div>
+
+            <div style="background:#ffffff; padding:8px 10px; border-radius:8px; border:1px solid #d1fae5;">
+              <span style="font-size:0.7rem; color:#64748b; display:block;">280. Gün Muhtemel Doğum:</span>
+              <strong id="insCalcBirthDay" style="font-size:0.85rem; color:#16a34a;" class="text-mono">-</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alt Eylem Butonları -->
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+          <button type="button" id="btnSaveInsemination" class="btn btn-primary" style="background:#059669; border-color:#059669; padding:12px; font-weight:800; font-size:0.92rem; display:inline-flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(5,150,105,0.3);">
+            <span>💾</span> <span>Kaydet & Resmi Belge Oluştur</span>
+          </button>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <button type="button" id="btnPreviewInsemination" class="btn btn-outline" style="border-color:#059669; color:#059669; font-weight:700; padding:10px; font-size:0.82rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+              <span>👁️</span> <span>Belge Önizle</span>
+            </button>
+            <button type="button" id="btnWhatsappInsemination" class="btn btn-outline-success" style="border-color:#16a34a; color:#16a34a; font-weight:700; padding:10px; font-size:0.82rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+              <span>📱</span> <span>WhatsApp Bildir</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- ============================================== -->
       <!-- 1. HESAPLAMA & ADİSYON SEKME (ANA ÇALIŞMA ALANI) -->
       <!-- ============================================== -->
@@ -1044,6 +1208,19 @@
           <div style="margin-bottom:12px;">
             <h4 class="section-title" data-i18n="other_settings_title">🛠️ Diğer Ayarlar</h4>
             <p class="section-desc" data-i18n="other_settings_desc">Uygulama dili, Google Sheets bağlantısı, kapalı test katılımı ve sistem seçenekleri.</p>
+          </div>
+
+          <!-- Tohumlama & E-Islah Modülü Aç / Kapat (Yalnızca TR) -->
+          <div id="wrapperSettingInseminationModule" class="form-group" style="margin-bottom:14px; padding:10px 12px; background:var(--glass-bg-card); border:1px solid var(--glass-border-subtle); border-radius:10px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="font-size:0.88rem; display:block; color:#059669;">🌾 Suni Tohumlama & E-Islah</strong>
+                <span style="font-size:0.73rem; color:var(--text-muted); display:block;">Üreme takvimi, bakanlık belgesi & payet sekmesi.</span>
+              </div>
+              <label style="display:inline-flex; align-items:center; cursor:pointer; margin:0;">
+                <input type="checkbox" id="settingInseminationModuleToggle" checked style="width:22px; height:22px; accent-color:#059669; cursor:pointer;">
+              </label>
+            </div>
           </div>
 
           <!-- Uygulama Dili -->
@@ -1978,6 +2155,29 @@ function doPost(e) {
     </div>
   </div>
 
+  <!-- MODAL: RESMİ SUNİ TOHUMLAMA BELGESİ BASKI / PDF ÖNİZLEME -->
+  <div id="inseminationDocPreviewModal" class="modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.88); z-index:9999; align-items:center; justify-content:center; padding:12px; overflow-y:auto;">
+    <div class="glass-card" style="width:100%; max-width:680px; background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.35); border:1px solid #cbd5e1; max-height:94vh; display:flex; flex-direction:column;">
+      
+      <!-- Sticky Top Bar (Geri Dön, Yazdır, Kapat) -->
+      <div style="padding:10px 14px; background:#065f46; color:#ffffff; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <button type="button" id="closeInsPreviewBtn" class="btn" style="background:rgba(255,255,255,0.18); color:#ffffff; font-size:0.78rem; font-weight:700; padding:7px 12px; border-radius:8px; border:none; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+          <span>⬅</span> <span>Forma Dön</span>
+        </button>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button type="button" id="btnInsPrintExecute" class="btn" style="background:#10b981; color:#ffffff; font-size:0.78rem; font-weight:700; padding:7px 14px; border-radius:8px; border:none; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+            <span>🖨️</span> <span>Yazdır / PDF İndir</span>
+          </button>
+          <button type="button" id="closeInsPreviewX" style="background:none; border:none; color:#ffffff; font-size:1.3rem; cursor:pointer; padding:2px 8px; line-height:1;">✕</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Preview Area -->
+      <div id="inseminationDocPreviewContent" style="padding:18px 16px; overflow-y:auto; flex:1; background:#ffffff; color:#0f172a;">
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="html5-qrcode.min.js"></script>
   <script src="i18n.js"></script>
@@ -1987,6 +2187,7 @@ function doPost(e) {
   <script src="logs.js"></script>
   <script src="receipt.js"></script>
   <script src="its.js"></script>
+  <script src="insemination.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -74,6 +74,7 @@ const allowedWebFiles = [
   'receipt.js',
   'logs.js',
   'its.js',
+  'insemination.js',
   'html5-qrcode.min.js',
   'manifest.json',
   'service-worker.js',
