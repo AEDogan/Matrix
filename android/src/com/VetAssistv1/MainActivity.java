@@ -71,35 +71,9 @@ public class MainActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        if (rewardedAd != null) {
-                            rewardedAd.show(MainActivity.this, new OnUserEarnedRewardListener() {
-                                @Override
-                                public void onUserEarnedReward(RewardItem rewardItem) {
-                                    Log.d(TAG, "User earned reward for action: " + actionType);
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (webView != null) {
-                                                webView.evaluateJavascript("if (window.onRewardedAdSuccess) { window.onRewardedAdSuccess('" + actionType + "'); }", null);
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                        } else {
-                            Log.w(TAG, "RewardedAd not ready, attempting reload and letting action proceed.");
-                            Toast.makeText(MainActivity.this, "Reklam haz\u0131rlan\u0131yor, i\u015fleminiz ger\u00e7ekle\u015ftiriliyor...", Toast.LENGTH_SHORT).show();
-                            loadRewardedAd();
-                            if (webView != null) {
-                                webView.evaluateJavascript("if (window.onRewardedAdSuccess) { window.onRewardedAdSuccess('" + actionType + "'); }", null);
-                            }
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error showing RewardedAd: " + e.getMessage(), e);
-                        if (webView != null) {
-                            webView.evaluateJavascript("if (window.onRewardedAdSuccess) { window.onRewardedAdSuccess('" + actionType + "'); }", null);
-                        }
+                    // Reklamsiz profesyonel mod: Islem beklemeden ve reklamsiz dogrudan gerceklesir
+                    if (webView != null) {
+                        webView.evaluateJavascript("if (window.onRewardedAdSuccess) { window.onRewardedAdSuccess('" + actionType + "'); }", null);
                     }
                 }
             });
@@ -107,7 +81,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean isRewardedAdLoaded() {
-            return rewardedAd != null;
+            return true;
         }
 
         @JavascriptInterface
@@ -389,22 +363,15 @@ public class MainActivity extends Activity {
 
         webView.loadUrl("file:///android_asset/index.html");
 
-        // Safe AdMob Banner & Rewarded Ad initialization
+        // Reklamlar tamamen devre disi birakildi (Tamamen reklamsiz, temiz profesyonel surum)
         try {
-            MobileAds.initialize(this, new OnInitializationCompleteListener() {
-                @Override
-                public void onInitializationComplete(InitializationStatus initializationStatus) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            initAdMobBanner();
-                            loadRewardedAd();
-                        }
-                    });
-                }
-            });
+            final FrameLayout adContainer = findViewById(R.id.ad_container);
+            if (adContainer != null) {
+                adContainer.setVisibility(View.GONE);
+                adContainer.removeAllViews();
+            }
         } catch (Throwable t) {
-            Log.e(TAG, "AdMob setup failed: " + t.getMessage(), t);
+            Log.d(TAG, "Ad container hidden");
         }
 
         try {
@@ -418,141 +385,15 @@ public class MainActivity extends Activity {
 
     private void initAdMobBanner() {
         final FrameLayout adContainer = findViewById(R.id.ad_container);
-        if (adContainer == null) return;
-
-        try {
-            if (adView != null) {
-                adView.destroy();
-            }
+        if (adContainer != null) {
+            adContainer.setVisibility(View.GONE);
             adContainer.removeAllViews();
-
-            adView = new AdView(MainActivity.this);
-            adView.setAdSize(AdSize.BANNER);
-            adView.setAdUnitId(getString(R.string.banner_ad_unit_id));
-
-            adView.setAdListener(new AdListener() {
-                @Override
-                public void onAdLoaded() {
-                    Log.d(TAG, "AdMob Live Banner loaded successfully.");
-                }
-
-                @Override
-                public void onAdFailedToLoad(LoadAdError adError) {
-                    Log.w(TAG, "Live Banner failed (Code " + adError.getCode() + ": " + adError.getMessage() + "). Loading fallback test banner...");
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                if (adView != null) {
-                                    adView.destroy();
-                                }
-                                adContainer.removeAllViews();
-
-                                adView = new AdView(MainActivity.this);
-                                adView.setAdSize(AdSize.BANNER);
-                                adView.setAdUnitId(getString(R.string.test_banner_ad_unit_id));
-                                adView.setAdListener(new AdListener() {
-                                    @Override
-                                    public void onAdLoaded() {
-                                        Log.d(TAG, "AdMob Test Banner loaded successfully.");
-                                    }
-
-                                    @Override
-                                    public void onAdFailedToLoad(LoadAdError err) {
-                                        Log.w(TAG, "AdMob Test Banner failed to load: " + err.getMessage());
-                                    }
-                                });
-                                adContainer.addView(adView);
-                                adView.loadAd(new AdRequest.Builder().build());
-                            } catch (Throwable t) {
-                                Log.e(TAG, "Fallback banner error: " + t.getMessage(), t);
-                            }
-                        }
-                    });
-                }
-            });
-
-            adContainer.addView(adView);
-            adView.loadAd(new AdRequest.Builder().build());
-        } catch (Throwable t) {
-            Log.e(TAG, "Error initializing banner: " + t.getMessage(), t);
         }
     }
 
     private void loadRewardedAd() {
-        if (isRewardedAdLoading || rewardedAd != null) return;
-        isRewardedAdLoading = true;
-
-        AdRequest adRequest = new AdRequest.Builder().build();
-        String configuredId = getString(R.string.rewarded_ad_unit_id);
-        if (configuredId.contains("~")) {
-            Log.w(TAG, "rewarded_ad_unit_id is configured with App ID (~). Using test rewarded ID fallback.");
-            configuredId = getString(R.string.test_rewarded_ad_unit_id);
-        }
-
-        final String targetAdUnitId = configuredId;
-        RewardedAd.load(this, targetAdUnitId, adRequest, new RewardedAdLoadCallback() {
-            @Override
-            public void onAdLoaded(RewardedAd ad) {
-                rewardedAd = ad;
-                isRewardedAdLoading = false;
-                Log.d(TAG, "AdMob RewardedAd loaded successfully with ID: " + targetAdUnitId);
-
-                rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                    @Override
-                    public void onAdShowedFullScreenContent() {
-                        Log.d(TAG, "AdMob RewardedAd showed full screen.");
-                    }
-
-                    @Override
-                    public void onAdFailedToShowFullScreenContent(AdError adError) {
-                        Log.e(TAG, "AdMob RewardedAd failed to show: " + adError.getMessage());
-                        rewardedAd = null;
-                        loadRewardedAd();
-                    }
-
-                    @Override
-                    public void onAdDismissedFullScreenContent() {
-                        Log.d(TAG, "AdMob RewardedAd dismissed.");
-                        rewardedAd = null;
-                        loadRewardedAd();
-                    }
-                });
-            }
-
-            @Override
-            public void onAdFailedToLoad(LoadAdError loadAdError) {
-                Log.w(TAG, "AdMob RewardedAd failed to load: " + loadAdError.getMessage() + " (Code: " + loadAdError.getCode() + "). Loading fallback test ad...");
-                isRewardedAdLoading = false;
-                rewardedAd = null;
-
-                if (!targetAdUnitId.equals(getString(R.string.test_rewarded_ad_unit_id))) {
-                    RewardedAd.load(MainActivity.this, getString(R.string.test_rewarded_ad_unit_id), new AdRequest.Builder().build(), new RewardedAdLoadCallback() {
-                        @Override
-                        public void onAdLoaded(RewardedAd fallbackAd) {
-                            rewardedAd = fallbackAd;
-                            Log.d(TAG, "AdMob Test RewardedAd fallback loaded successfully.");
-                            rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                                @Override
-                                public void onAdDismissedFullScreenContent() {
-                                    rewardedAd = null;
-                                    loadRewardedAd();
-                                }
-                                @Override
-                                public void onAdFailedToShowFullScreenContent(AdError adError) {
-                                    rewardedAd = null;
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onAdFailedToLoad(LoadAdError err) {
-                            Log.w(TAG, "AdMob Test RewardedAd fallback also failed: " + err.getMessage());
-                        }
-                    });
-                }
-            }
-        });
+        isRewardedAdLoading = false;
+        rewardedAd = null;
     }
 
     @Override

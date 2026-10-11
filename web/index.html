@@ -692,13 +692,15 @@
           </div>
 
           <!-- Aktif Kaynak Hızlı Seçici -->
-          <div class="glass-card" style="padding:10px 12px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(15,23,42,0.03);">
-            <span style="font-size:0.78rem; font-weight:700; color:var(--text-main);">Aktif Senkronizasyon Modu:</span>
-            <div style="display:flex; gap:6px;">
-              <button type="button" id="btnSelectModeSheets" class="btn btn-primary btn-sm" style="font-size:0.74rem; padding:5px 10px;">
+          <div class="glass-card" style="padding:10px 12px; margin-bottom:12px; display:flex; flex-direction:column; gap:8px; background:rgba(15,23,42,0.03);">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:0.8rem; font-weight:700; color:var(--text-main);">Aktif Senkronizasyon Modu:</span>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%;">
+              <button type="button" id="btnSelectModeSheets" class="btn btn-primary btn-sm" style="font-size:0.74rem; padding:7px 6px; justify-content:center; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                 📊 Google Sheets
               </button>
-              <button type="button" id="btnSelectModeSyncra" class="btn btn-outline-primary btn-sm" style="font-size:0.74rem; padding:5px 10px;">
+              <button type="button" id="btnSelectModeSyncra" class="btn btn-outline-primary btn-sm" style="font-size:0.74rem; padding:7px 6px; justify-content:center; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                 🔗 Syncra ERP Modülü
               </button>
             </div>
