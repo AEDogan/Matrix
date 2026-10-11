@@ -54,6 +54,9 @@ class AppController {
   }
 
   init() {
+    // 0. Güvenlik Kalkanı: Sıfırlanma durumunda yerel dosya yedeğinden otomatik kurtar
+    this.checkAndRestoreAutoBackup();
+
     // 1. Dil başlatma
     if (window.i18n) {
       window.i18n.translateDOM();
@@ -78,6 +81,69 @@ class AppController {
     this.checkNetworkStatus();
     this.registerServiceWorker();
     this.initSyncraBridge();
+
+    // İlk açılışta güncel durumu yedekle
+    setTimeout(() => this.triggerSecureAutoBackup(), 3000);
+  }
+
+  // ================= SECURE LOCAL BACKUP SHIELD =================
+  checkAndRestoreAutoBackup() {
+    if (!window.AndroidBridge || typeof window.AndroidBridge.loadSecureBackup !== 'function') return;
+    try {
+      const hasLogs = localStorage.getItem('vetassist_sales_logs_v2');
+      const hasStock = localStorage.getItem('vetassist_stock_items_v2');
+      if (!hasLogs && !hasStock) {
+        const raw = window.AndroidBridge.loadSecureBackup();
+        if (raw && raw.trim().startsWith('{')) {
+          const data = JSON.parse(raw);
+          let restored = 0;
+          for (const key in data) {
+            if (Object.prototype.hasOwnProperty.call(data, key) && data[key]) {
+              localStorage.setItem(key, data[key]);
+              restored++;
+            }
+          }
+          if (restored > 0) {
+            console.log('🛡️ Güvenli dosya yedeğinden kurtarıldı:', restored, 'anahtar.');
+            setTimeout(() => {
+              this.showToast('🛡️ Yerel güvenlik kalkanından verileriniz başarıyla kurtarıldı!');
+            }, 500);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Backup restore failed:', e);
+    }
+  }
+
+  triggerSecureAutoBackup() {
+    if (!window.AndroidBridge || typeof window.AndroidBridge.saveSecureBackup !== 'function') return;
+    if (this._backupTimeout) clearTimeout(this._backupTimeout);
+    this._backupTimeout = setTimeout(() => {
+      try {
+        const keys = [
+          'vetassist_sales_logs_v2',
+          'vetassist_stock_items_v2',
+          'vetassist_presets_v05',
+          'vetassist_clinic_info_v2',
+          'vetassist_its_doctor_name',
+          'vetassist_its_vet_reg_no',
+          'vetassist_ins_vet_name',
+          'vetassist_ins_vet_reg',
+          'vetassist_module_insemination',
+          'vetassist_lang',
+          'vetassist_currency'
+        ];
+        const payload = {};
+        keys.forEach(k => {
+          const val = localStorage.getItem(k);
+          if (val !== null) payload[k] = val;
+        });
+        window.AndroidBridge.saveSecureBackup(JSON.stringify(payload));
+      } catch (err) {
+        console.warn('Auto-backup dispatch error:', err);
+      }
+    }, 1500);
   }
 
   // ================= SYNCRA ERP SAHA KÖPRÜSÜ =================

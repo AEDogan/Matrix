@@ -62,6 +62,9 @@ class LogManager {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.logs));
       this.updateKPIs();
+      if (window.app && typeof window.app.triggerSecureAutoBackup === 'function') {
+        window.app.triggerSecureAutoBackup();
+      }
     } catch (e) {
       console.error('Loglar kaydedilirken hata:', e);
     }

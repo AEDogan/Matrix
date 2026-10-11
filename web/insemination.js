@@ -120,6 +120,11 @@ class InseminationManager {
       });
     }
 
+    const btnCloneLast = document.getElementById('btnInsCloneLast');
+    if (btnCloneLast) {
+      btnCloneLast.addEventListener('click', () => this.cloneLastTemplate());
+    }
+
     const closeBtn = document.getElementById('closeInsPreviewBtn');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.closePreviewModal());
@@ -226,11 +231,54 @@ class InseminationManager {
       });
     }
 
+    // Son şablonu hatırla (Seri Tohumlama / Sürü Takibi için)
+    try {
+      localStorage.setItem('vetassist_last_ins_template', JSON.stringify({
+        animalBreed: data.animalBreed,
+        customerName: data.customerName,
+        businessNo: data.businessNo,
+        bullName: data.bullName,
+        spermBatch: data.spermBatch,
+        price: data.price
+      }));
+    } catch (e) {}
+
+    if (window.app && typeof window.app.triggerSecureAutoBackup === 'function') {
+      window.app.triggerSecureAutoBackup();
+    }
+
     if (window.app && typeof window.app.showToast === 'function') {
       window.app.showToast('✅ Suni Tohumlama kaydı yapıldı ve Geçmiş Tedaviler sekmesine eklendi!');
     }
 
     this.showPreviewModal(data);
+  }
+
+  cloneLastTemplate() {
+    const raw = localStorage.getItem('vetassist_last_ins_template');
+    if (!raw) {
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast('ℹ️ Henüz kayıtlı şablon yok. Önce bir tohumlama kaydedin.');
+      }
+      return;
+    }
+    try {
+      const t = JSON.parse(raw);
+      if (t.animalBreed && document.getElementById('insAnimalBreed')) document.getElementById('insAnimalBreed').value = t.animalBreed;
+      if (t.customerName && document.getElementById('insCustomerName')) document.getElementById('insCustomerName').value = t.customerName;
+      if (t.businessNo && document.getElementById('insBusinessNo')) document.getElementById('insBusinessNo').value = t.businessNo;
+      if (t.bullName && document.getElementById('insBullName')) document.getElementById('insBullName').value = t.bullName;
+      if (t.spermBatch && document.getElementById('insSpermBatch')) document.getElementById('insSpermBatch').value = t.spermBatch;
+      if (t.price && document.getElementById('insPrice')) document.getElementById('insPrice').value = t.price;
+      const earInput = document.getElementById('insMotherEarTag');
+      if (earInput) {
+        earInput.value = '';
+        earInput.focus();
+      }
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast('📋 Son tohumlama şablonu yüklendi! Yeni küpe no girin.');
+      }
+    } catch (e) {}
   }
 
   renderDocumentHtml(data) {

@@ -47,6 +47,7 @@ import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 public class MainActivity extends Activity {
@@ -170,6 +171,39 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        @JavascriptInterface
+        public boolean saveSecureBackup(final String jsonPayload) {
+            try {
+                if (jsonPayload == null || jsonPayload.isEmpty()) return false;
+                File backupFile = new File(getFilesDir(), "vetassist_local_backup.json");
+                FileOutputStream fos = new FileOutputStream(backupFile);
+                fos.write(jsonPayload.getBytes("UTF-8"));
+                fos.flush();
+                fos.close();
+                Log.d(TAG, "Secure local backup written successfully: " + backupFile.length() + " bytes");
+                return true;
+            } catch (Exception e) {
+                Log.e(TAG, "Secure backup save error: " + e.getMessage(), e);
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public String loadSecureBackup() {
+            try {
+                File backupFile = new File(getFilesDir(), "vetassist_local_backup.json");
+                if (!backupFile.exists() || backupFile.length() == 0) return "";
+                FileInputStream fis = new FileInputStream(backupFile);
+                byte[] data = new byte[(int) backupFile.length()];
+                fis.read(data);
+                fis.close();
+                return new String(data, "UTF-8");
+            } catch (Exception e) {
+                Log.e(TAG, "Secure backup load error: " + e.getMessage(), e);
+                return "";
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -215,8 +249,8 @@ public class MainActivity extends Activity {
         settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-        settings.setAllowFileAccessFromFileURLs(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);

@@ -123,6 +123,9 @@ class StockManager {
       if (window.app && typeof window.app.onInventoryChanged === 'function') {
         window.app.onInventoryChanged();
       }
+      if (window.app && typeof window.app.triggerSecureAutoBackup === 'function') {
+        window.app.triggerSecureAutoBackup();
+      }
     } catch (e) {
       console.error('Envanter kaydedilirken hata:', e);
     }
