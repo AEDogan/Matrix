@@ -151,7 +151,7 @@ $allInputsForD8 = $classFiles + $admobJars
 $paramsFile = "$androidDir\d8_inputs.txt"
 $d8Params = @(
     "--release",
-    "--min-api", "21",
+    "--min-api", "24",
     "--lib", "$androidJar",
     "--output", "$androidDir"
 ) + $allInputsForD8

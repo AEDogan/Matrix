@@ -1,13 +1,16 @@
-const CACHE_NAME = 'vetassist-cache-v3';
+const CACHE_NAME = 'vetassist-cache-v4';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
+  './icons.js',
   './i18n.js',
   './parameters.js',
   './stock.js',
   './logs.js',
   './receipt.js',
+  './its.js',
+  './html5-qrcode.min.js',
   './app.js',
   './manifest.json',
   './sample_data.csv'
@@ -34,6 +37,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only intercept GET requests from the same origin that are not API calls
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin) || event.request.url.includes('/api/')) {
+    return;
+  }
+
   // Stale-while-revalidate / Cache first for offline capability
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

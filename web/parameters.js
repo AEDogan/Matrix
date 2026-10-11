@@ -69,7 +69,10 @@ class ParameterManager {
 
   loadParameters() {
     try {
-      const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('sahavet_parameters_v2');
+      const saved = localStorage.getItem(this.storageKey) || 
+                    localStorage.getItem('sahavet_parameters_v2') ||
+                    localStorage.getItem('vetassist_parameters') ||
+                    localStorage.getItem('sahavet_parameters');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -80,6 +83,9 @@ class ParameterManager {
               merged.push(JSON.parse(JSON.stringify(def)));
             }
           });
+          if (!localStorage.getItem(this.storageKey)) {
+            localStorage.setItem(this.storageKey, JSON.stringify(merged));
+          }
           return merged;
         }
       }

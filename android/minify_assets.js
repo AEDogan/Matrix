@@ -73,7 +73,8 @@ const allowedWebFiles = [
   'parameters.js',
   'receipt.js',
   'logs.js',
-  'tester-tracker-client.js',
+  'its.js',
+  'html5-qrcode.min.js',
   'manifest.json',
   'service-worker.js',
   'sample_data.csv',
@@ -101,7 +102,12 @@ allowedWebFiles.forEach(file => {
 
   let processedContent = originalContent;
 
-  if (file.endsWith('.js')) {
+  if (file.endsWith('.min.js')) {
+    fs.writeFileSync(destPath, originalContent);
+    totalMinified += originalSize;
+    console.log(`  ✓ ${file.padEnd(25)} : ${(originalSize/1024).toFixed(1)} KB (Önceden sıkıştırılmış kütüphane kopyalandı)`);
+    return;
+  } else if (file.endsWith('.js')) {
     const minStr = safeMinifyJs(originalContent.toString('utf8'), file);
     processedContent = Buffer.from(minStr, 'utf8');
   } else if (file.endsWith('.css')) {

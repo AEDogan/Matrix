@@ -36,27 +36,42 @@ public class NightlyUpdateReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent != null ? intent.getAction() : null;
-        Log.d(TAG, "Update/Reminder receiver triggered with action: " + action);
-
-        // Cihaz yeniden başlatıldığında veya uygulama güncellendiğinde sadece alarmı tekrar kur
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action) || "android.intent.action.MY_PACKAGE_REPLACED".equals(action)) {
-            Log.d(TAG, "Device rebooted or package replaced, rescheduling 12:00 daily alarm.");
-            scheduleDailyAlarm(context, 12, 0);
-            return;
-        }
-
-        // Bildirimi Göster
-        showReminderNotification(context);
-
-        // Bir sonraki gün için alarmı tekrar kur
-        scheduleDailyAlarm(context, 12, 0);
+        Log.d(TAG, "Update/Reminder receiver triggered with action: " + action + " - Reminder disabled.");
+        cancelDailyAlarm(context);
     }
 
     /**
-     * Varsayılan olarak saat 12:00'de tetiklenecek AlarmManager zamanlayıcısını kurar
+     * Günlük alarmı tamamen iptal eder
+     */
+    public static void cancelDailyAlarm(Context context) {
+        try {
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager == null) return;
+
+            Intent intent = new Intent(context, NightlyUpdateReceiver.class);
+            intent.setAction(ACTION_NIGHTLY_CHECK);
+
+            int flags = PendingIntent.FLAG_NO_CREATE;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                flags |= PendingIntent.FLAG_IMMUTABLE;
+            }
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 100, intent, flags);
+            if (pendingIntent != null) {
+                alarmManager.cancel(pendingIntent);
+                pendingIntent.cancel();
+                Log.d(TAG, "Daily reminder alarm cancelled.");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to cancel daily alarm: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Varsayılan olarak saat 12:00'de tetiklenecek AlarmManager zamanlayıcısını kurar (Devre Dışı)
      */
     public static void scheduleDailyAlarm(Context context) {
-        scheduleDailyAlarm(context, 12, 0);
+        cancelDailyAlarm(context);
     }
 
     /**

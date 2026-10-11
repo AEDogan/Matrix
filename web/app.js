@@ -76,6 +76,349 @@ class AppController {
     this.recalculate();
     this.checkNetworkStatus();
     this.registerServiceWorker();
+    this.initSyncraBridge();
+  }
+
+  // ================= SYNCRA ERP SAHA KÖPRÜSÜ =================
+  getSyncMode() {
+    return localStorage.getItem('vetassist_sync_mode_v2') === 'syncra' ? 'syncra' : 'sheets';
+  }
+
+  setSyncMode(mode) {
+    localStorage.setItem('vetassist_sync_mode_v2', mode === 'syncra' ? 'syncra' : 'sheets');
+    this.renderSyncModeUI();
+  }
+
+  renderSyncModeUI() {
+    const isSyncra = this.getSyncMode() === 'syncra';
+    const btnSheets = document.getElementById('btnSelectModeSheets');
+    const btnSyncra = document.getElementById('btnSelectModeSyncra');
+    if (btnSheets) btnSheets.className = 'btn btn-sm ' + (isSyncra ? 'btn-outline-primary' : 'btn-primary');
+    if (btnSyncra) btnSyncra.className = 'btn btn-sm ' + (isSyncra ? 'btn-primary' : 'btn-outline-primary');
+    const sheetsCard = document.getElementById('sheetsConfigCard');
+    const syncraCard = document.getElementById('syncraConfigCard');
+    if (sheetsCard) sheetsCard.style.opacity = isSyncra ? '0.75' : '1';
+    if (syncraCard) syncraCard.style.opacity = isSyncra ? '1' : '0.75';
+    const sheetsBadge = document.getElementById('sheetsActiveBadge');
+    const syncraBadge = document.getElementById('syncraActiveBadge');
+    if (sheetsBadge) {
+      sheetsBadge.textContent = isSyncra ? 'E-Tablo (Pasif)' : 'Aktif Kaynak';
+      sheetsBadge.style.background = isSyncra ? 'rgba(100,116,139,0.15)' : 'rgba(2,132,199,0.2)';
+      sheetsBadge.style.color = isSyncra ? 'var(--text-muted)' : 'var(--primary)';
+    }
+    if (syncraBadge) {
+      syncraBadge.textContent = isSyncra ? 'Aktif Köprü' : 'Beklemede';
+      syncraBadge.style.background = isSyncra ? 'rgba(16,185,129,0.22)' : 'rgba(100,116,139,0.15)';
+      syncraBadge.style.color = isSyncra ? '#059669' : 'var(--text-muted)';
+    }
+    const headerBtnLabel = document.querySelector('#syncSheetsBtn [data-i18n="btn_sync_sheets"]');
+    if (headerBtnLabel) headerBtnLabel.textContent = isSyncra ? 'Syncra' : 'Sheets';
+    this.updateSyncraQueueInfo();
+  }
+
+  updateSyncraQueueInfo(extraText) {
+    const el = document.getElementById('syncraPendingQueueInfo');
+    if (!el) return;
+    const pending = window.logManager ? window.logManager.getUnsyncedLogs().length : 0;
+    const last = localStorage.getItem('vetassist_syncra_last_sync_v2');
+    const parts = [];
+    if (this.getSyncMode() === 'syncra') {
+      parts.push(pending > 0 ? `⏳ Syncra'ya gönderilmeyi bekleyen ${pending} kayıt var (internet gelince otomatik gider).` : '✅ Bekleyen kayıt yok.');
+    }
+    if (last) parts.push(`Son eşitleme: ${new Date(parseInt(last, 10)).toLocaleString('tr-TR')}`);
+    if (extraText) parts.push(extraText);
+    el.textContent = parts.join(' • ');
+  }
+
+  updateCustomerPortfolioBadge() {
+    const input = document.getElementById('calcCustomerInput');
+    const badge = document.getElementById('customerPortfolioBadge');
+    if (!input || !badge || !window.stockManager) return;
+    const match = window.stockManager.findPartnerByName(input.value || '');
+    badge.style.display = match ? 'inline-block' : 'none';
+  }
+
+  initSyncraBridge() {
+    const urlInput = document.getElementById('settingSyncraServerUrl');
+    const keyInput = document.getElementById('settingSyncraApiKey');
+    if (urlInput) urlInput.value = localStorage.getItem('vetassist_syncra_url_v2') || urlInput.value || 'http://localhost:3000';
+    if (keyInput) keyInput.value = localStorage.getItem('vetassist_syncra_key_v2') || '';
+
+    const btnSheets = document.getElementById('btnSelectModeSheets');
+    const btnSyncra = document.getElementById('btnSelectModeSyncra');
+    if (btnSheets) btnSheets.addEventListener('click', () => {
+      this.setSyncMode('sheets');
+      const acc = document.getElementById('accordionSheets');
+      if (acc) acc.open = true;
+      this.showToast('📊 Google Sheets modu aktif. Syncra ayarlarınız saklı kalır.');
+    });
+    if (btnSyncra) btnSyncra.addEventListener('click', () => {
+      const acc = document.getElementById('accordionSyncra');
+      if (acc) acc.open = true;
+      if (!localStorage.getItem('vetassist_syncra_key_v2')) {
+        this.showToast('🔑 Önce Syncra QR kodunu tarayın veya API anahtarını girin.');
+        if (keyInput) keyInput.focus();
+        return;
+      }
+      this.setSyncMode('syncra');
+      this.runSyncraSync({ manual: true });
+    });
+
+    const saveBtn = document.getElementById('saveSyncraConfigBtn');
+    if (saveBtn) saveBtn.addEventListener('click', async () => {
+      const url = (urlInput ? urlInput.value : '').trim() || 'http://localhost:3000';
+      const key = (keyInput ? keyInput.value : '').trim();
+      if (!key) {
+        this.showToast('⚠️ Syncra API anahtarı boş olamaz.');
+        return;
+      }
+      const isFirstConnect = !localStorage.getItem('vetassist_syncra_since_v2');
+      if (isFirstConnect) {
+        const ok = window.confirm(
+          'Syncra\'ya ilk bağlantı:\n\n' +
+          '• Telefondaki mevcut ürünleriniz SİLİNMEZ; Syncra\'da olmayanlar Syncra\'ya yeni ürün olarak eklenir.\n' +
+          '• Google Sheets linkiniz saklı kalır, istediğiniz zaman geri dönebilirsiniz.\n' +
+          '• Bu andan ÖNCEKİ eski adisyonlar Syncra\'ya gönderilmez (mükerrer stok düşümünü önlemek için). Bundan sonraki tüm kayıtlar otomatik gider.\n\nDevam edilsin mi?'
+        );
+        if (!ok) return;
+      }
+      localStorage.setItem('vetassist_syncra_url_v2', url);
+      localStorage.setItem('vetassist_syncra_key_v2', key);
+      if (isFirstConnect) localStorage.setItem('vetassist_syncra_since_v2', String(Date.now()));
+      this.setSyncMode('syncra');
+      await this.runSyncraSync({ manual: true, mergeLocal: true });
+    });
+
+    const manualBtn = document.getElementById('btnManualSyncraPushPull');
+    if (manualBtn) manualBtn.addEventListener('click', () => this.runSyncraSync({ manual: true }));
+
+    // QR Kod ile Eşleşme Butonları
+    const btnScanQr = document.getElementById('btnScanSyncraQr');
+    if (btnScanQr) {
+      btnScanQr.addEventListener('click', () => this.startSyncraQrScanner());
+    }
+    const btnCloseQrModal = document.getElementById('btnCloseSyncraQrModal');
+    if (btnCloseQrModal) {
+      btnCloseQrModal.addEventListener('click', () => this.stopSyncraQrScanner());
+    }
+    const btnForget = document.getElementById('btnForgetSyncraDevice');
+    if (btnForget) {
+      btnForget.addEventListener('click', () => {
+        if (window.confirm('Bu cihazın Syncra klinik bağlantısını silmek istediğinize emin misiniz?')) {
+          localStorage.removeItem('vetassist_syncra_device_token_v2');
+          localStorage.removeItem('vetassist_syncra_doctor_name_v2');
+          localStorage.removeItem('vetassist_syncra_clinic_name_v2');
+          localStorage.removeItem('vetassist_syncra_key_v2');
+          if (keyInput) keyInput.value = '';
+          this.renderActiveDeviceInfo();
+          this.showToast('ℹ️ Klinik bağlantısı bu cihazdan silindi.');
+        }
+      });
+    }
+
+    // İnternet geri gelince otomatik gönder
+    window.addEventListener('online', () => this.triggerSyncraAutoSync());
+    // Uygulama öne gelince ve her 2 dakikada bir bekleyen kuyruğu dene
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.triggerSyncraAutoSync();
+    });
+    setInterval(() => this.triggerSyncraAutoSync(), 120000);
+
+    this.renderActiveDeviceInfo();
+    this.renderSyncModeUI();
+    this.updateCustomerPortfolioBadge();
+    setTimeout(() => this.triggerSyncraAutoSync(), 1500);
+  }
+
+  renderActiveDeviceInfo() {
+    const card = document.getElementById('syncraActiveDeviceInfo');
+    const doctorDisplay = document.getElementById('syncraDoctorNameDisplay');
+    const clinicDisplay = document.getElementById('syncraClinicNameDisplay');
+    const docName = localStorage.getItem('vetassist_syncra_doctor_name_v2');
+    const clinicName = localStorage.getItem('vetassist_syncra_clinic_name_v2') || 'Syncra ERP';
+
+    if (card && doctorDisplay && clinicDisplay) {
+      if (docName) {
+        doctorDisplay.textContent = docName;
+        clinicDisplay.textContent = clinicName;
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    }
+  }
+
+  startSyncraQrScanner() {
+    const modal = document.getElementById('syncraQrScanModal');
+    if (modal) modal.style.display = 'flex';
+
+    if (typeof Html5Qrcode === 'undefined') {
+      this.showToast('⚠️ QR tarayıcı kütüphanesi hazır değil. Lütfen sayfayı yenileyin.');
+      return;
+    }
+
+    try {
+      if (this._html5QrScanner) {
+        this._html5QrScanner.stop().catch(() => {}).finally(() => {
+          this._html5QrScanner = null;
+          this._initAndStartQrScanner();
+        });
+      } else {
+        this._initAndStartQrScanner();
+      }
+    } catch (e) {
+      console.error('QR scanner başlatma hatası:', e);
+      this.showToast('⚠️ Kamera başlatılamadı: ' + (e.message || e));
+    }
+  }
+
+  _initAndStartQrScanner() {
+    this._html5QrScanner = new Html5Qrcode('syncraQrReader');
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    this._html5QrScanner.start(
+      { facingMode: 'environment' },
+      config,
+      (decodedText) => {
+        this.handlePairQrData(decodedText);
+      },
+      (errorMessage) => {
+        // Okuma anındaki ara hatalar yutulur
+      }
+    ).catch(err => {
+      console.error('Kamera açma hatası:', err);
+      this.showToast('⚠️ Kamera açılamadı: ' + (err.message || 'Lütfen kamera iznini kontrol edin.'));
+    });
+  }
+
+  stopSyncraQrScanner() {
+    const modal = document.getElementById('syncraQrScanModal');
+    if (modal) modal.style.display = 'none';
+    if (this._html5QrScanner) {
+      this._html5QrScanner.stop().catch(() => {}).finally(() => {
+        this._html5QrScanner = null;
+      });
+    }
+  }
+
+  async handlePairQrData(decodedText) {
+    this.stopSyncraQrScanner();
+    try {
+      const payload = JSON.parse(decodedText);
+      if (!payload || payload.type !== 'syncra_vetassist_pair' || !payload.apiKey) {
+        this.showToast('⚠️ Geçersiz QR kod! Lütfen Syncra ERP ekranındaki VetAssist QR kodunu tarayın.');
+        return;
+      }
+
+      const serverUrl = (payload.serverUrl || 'http://localhost:3000').replace(/\/+$/, '');
+      const apiKey = payload.apiKey;
+      const clinicName = payload.clinicName || 'Klinik';
+
+      // Hekim adını al
+      const existingDoc = localStorage.getItem('vetassist_syncra_doctor_name_v2') || '';
+      const doctorName = (window.prompt(
+        `"${clinicName}" kliniğine bağlanılıyor.\n\nLütfen adınızı veya unvanınızı girin:`,
+        existingDoc || 'Veteriner Hekim'
+      ) || '').trim();
+
+      if (!doctorName) {
+        this.showToast('⚠️ Hekim adı girilmediği için eşleşme iptal edildi.');
+        return;
+      }
+
+      this.showToast('⏳ Syncra ile güvenli eşleşme kuruluyor...');
+
+      // Syncra backend pair ucuna istek at
+      const resp = await fetch(`${serverUrl}/api/vetassist-bridge/pair`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey,
+          doctorName,
+          clinicName
+        })
+      });
+
+      const resData = await resp.json();
+      if (!resp.ok || !resData.success) {
+        throw new Error(resData.error || resData.message || 'Eşleşme başarısız oldu.');
+      }
+
+      const deviceToken = resData.deviceToken;
+      localStorage.setItem('vetassist_syncra_url_v2', serverUrl);
+      localStorage.setItem('vetassist_syncra_key_v2', apiKey);
+      localStorage.setItem('vetassist_syncra_device_token_v2', deviceToken);
+      localStorage.setItem('vetassist_syncra_doctor_name_v2', doctorName);
+      localStorage.setItem('vetassist_syncra_clinic_name_v2', resData.clinicName || clinicName);
+      if (!localStorage.getItem('vetassist_syncra_since_v2')) {
+        localStorage.setItem('vetassist_syncra_since_v2', String(Date.now()));
+      }
+
+      const urlInput = document.getElementById('settingSyncraServerUrl');
+      const keyInput = document.getElementById('settingSyncraApiKey');
+      if (urlInput) urlInput.value = serverUrl;
+      if (keyInput) keyInput.value = apiKey;
+
+      this.setSyncMode('syncra');
+      this.renderActiveDeviceInfo();
+      this.showToast(`✅ Başarılı! ${doctorName} olarak "${clinicName}" kliniğine bağlandınız.`);
+
+      // İlk eşitlemeyi otomatik başlat
+      await this.runSyncraSync({ manual: true, mergeLocal: true });
+
+    } catch (err) {
+      console.error('QR Eşleşme Hatası:', err);
+      this.showToast('❌ Bağlantı başarısız: ' + (err.message || 'Hata oluştu'));
+    }
+  }
+
+  triggerSyncraAutoSync() {
+    if (this.getSyncMode() !== 'syncra') return;
+    if (!localStorage.getItem('vetassist_syncra_key_v2')) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      this.updateSyncraQueueInfo('📴 Çevrimdışı');
+      return;
+    }
+    clearTimeout(this._syncraDebounce);
+    this._syncraDebounce = setTimeout(() => this.runSyncraSync({ manual: false }), 800);
+  }
+
+  async runSyncraSync({ manual = false, mergeLocal = false } = {}) {
+    if (this._syncraSyncing) return;
+    if (!window.stockManager) return;
+    this._syncraSyncing = true;
+
+    // Loading State
+    const manualBtn = document.getElementById('btnManualSyncraPushPull');
+    const originalText = manualBtn ? manualBtn.innerHTML : '';
+    if (manualBtn && manual) {
+      manualBtn.disabled = true;
+      manualBtn.innerHTML = '⏳ <span>Eşitleniyor...</span>';
+    }
+
+    try {
+      const res = await window.stockManager.syncWithSyncra({ mergeLocal });
+      localStorage.setItem('vetassist_syncra_last_sync_v2', String(Date.now()));
+      this.updateCustomerPortfolioBadge();
+      const sent = (res.processedLogsCount || 0) + (res.reviewLogsCount || 0);
+      if (manual || sent > 0) {
+        const parts = [];
+        if (res.processedLogsCount) parts.push(`${res.processedLogsCount} kayıt işlendi`);
+        if (res.reviewLogsCount) parts.push(`${res.reviewLogsCount} kayıt Syncra'da eşleştirme bekliyor`);
+        if (res.mergedProductsCount) parts.push(`${res.mergedProductsCount} yerel ürün Syncra'ya eklendi`);
+        this.showToast('🔗 Syncra eşitlendi' + (parts.length ? ': ' + parts.join(', ') : '.'));
+      }
+      this.updateSyncraQueueInfo();
+    } catch (err) {
+      console.warn('Syncra senkronizasyon hatası:', err);
+      this.updateSyncraQueueInfo('⚠️ Bağlantı yok, kayıtlar telefonda güvende bekliyor.');
+      if (manual) this.showToast('⚠️ ' + (err.message || 'Syncra\'ya ulaşılamadı. Kayıtlar kuyrukta bekliyor.'));
+    } finally {
+      this._syncraSyncing = false;
+      if (manualBtn && manual) {
+        manualBtn.disabled = false;
+        manualBtn.innerHTML = originalText;
+      }
+    }
   }
 
   registerServiceWorker() {
@@ -115,8 +458,21 @@ class AppController {
 
   loadPresets() {
     try {
-      const saved = localStorage.getItem(this.presetsKey);
-      if (saved) return JSON.parse(saved);
+      const saved = localStorage.getItem(this.presetsKey) ||
+                    localStorage.getItem('vetassist_presets_v04') ||
+                    localStorage.getItem('vetassist_presets_v03') ||
+                    localStorage.getItem('vetassist_presets_v02') ||
+                    localStorage.getItem('vetassist_presets') ||
+                    localStorage.getItem('sahavet_presets');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (!localStorage.getItem(this.presetsKey)) {
+            localStorage.setItem(this.presetsKey, JSON.stringify(parsed));
+          }
+          return parsed;
+        }
+      }
     } catch (e) {
       console.error('Preset yüklenirken hata:', e);
     }
@@ -789,7 +1145,9 @@ class AppController {
     if (phoneInput) phoneInput.value = info.phone || '';
     if (vatInput) vatInput.value = info.vatRate !== undefined ? info.vatRate : 18;
 
-    const savedUrl = localStorage.getItem('vetassist_sheets_url_v2') || '';
+    const savedUrl = localStorage.getItem('vetassist_sheets_url_v2') || 
+                     localStorage.getItem('vetassist_sheets_url') || 
+                     localStorage.getItem('sahavet_sheets_url') || '';
     if (sheetsUrlInput) sheetsUrlInput.value = savedUrl;
     if (stockSheetsInput) stockSheetsInput.value = savedUrl;
 
@@ -829,27 +1187,32 @@ class AppController {
     });
 
     const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-    const lockIcon = document.getElementById('clinicLockIcon');
     const lockText = document.getElementById('clinicLockText');
     const toggleBtn = document.getElementById('toggleClinicLockBtn');
     const saveFormBtn = document.getElementById('saveClinicFormBtn');
 
-    if (lockIcon) lockIcon.textContent = isLocked ? '🔒' : '🔓';
     if (lockText) {
-      lockText.textContent = isLocked
-        ? (isEn ? '🔒 Bilgiler kilitli ve güvendedir.' : '🔒 Bilgileriniz kilitli ve güvendedir.')
-        : (isEn ? '🔓 Bilgilerinizi girip kilitleyin.' : '🔓 Bilgilerinizi girip kilitleyin.');
+      if (window.i18n) {
+        lockText.textContent = isLocked ? window.i18n.t('clinic_locked_badge') : window.i18n.t('clinic_unlocked_badge');
+      } else {
+        lockText.textContent = isLocked
+          ? (isEn ? 'Clinic details are locked and protected.' : 'Bilgileriniz kilitli ve güvendedir.')
+          : (isEn ? 'Fill in details and tap "Save & Lock".' : 'Bilgilerinizi girip kilitleyin.');
+      }
     }
 
     if (toggleBtn) {
       toggleBtn.className = isLocked ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm';
-      toggleBtn.innerHTML = isLocked
-        ? `<span>🔓</span> <span>${isEn ? 'Kilidi Aç & Düzenle' : 'Kilidi Aç & Düzenle'}</span>`
-        : `<span>🔒</span> <span>${isEn ? 'Bilgileri Kaydet ve Kilitle' : 'Bilgileri Kaydet ve Kilitle'}</span>`;
+      const btnText = isLocked 
+        ? (window.i18n ? window.i18n.t('clinic_unlock_btn') : (isEn ? 'Unlock & Edit' : 'Kilidi Aç & Düzenle')) 
+        : (window.i18n ? window.i18n.t('clinic_lock_save_btn') : (isEn ? 'Save & Lock' : 'Bilgileri Kaydet ve Kilitle'));
+      toggleBtn.innerHTML = `<span>${btnText}</span>`;
     }
 
     if (saveFormBtn) {
       saveFormBtn.style.display = isLocked ? 'none' : 'block';
+      const btnText = window.i18n ? window.i18n.t('clinic_lock_save_btn') : (isEn ? 'Save & Lock' : 'Bilgileri Kaydet ve Kilitle');
+      saveFormBtn.innerHTML = `<span>${btnText}</span>`;
     }
   }
 
@@ -858,11 +1221,11 @@ class AppController {
       this.saveClinicSettingsFromInputs();
       localStorage.setItem('vetassist_clinic_locked', 'true');
       this.updateClinicLockUI();
-      this.showToast(window.i18n ? window.i18n.t('toast_clinic_locked') : '🔒 Bilgiler kaydedildi ve kilitlendi.');
+      this.showToast(window.i18n ? window.i18n.t('toast_clinic_locked') : 'Bilgiler kaydedildi ve kilitlendi.');
     } else {
       localStorage.setItem('vetassist_clinic_locked', 'false');
       this.updateClinicLockUI();
-      this.showToast(window.i18n ? window.i18n.t('toast_clinic_unlocked') : '🔓 Düzenleme moduna alındı.');
+      this.showToast(window.i18n ? window.i18n.t('toast_clinic_unlocked') : 'Düzenleme moduna alındı.');
       document.getElementById('settingClinicName')?.focus();
     }
   }
@@ -1037,13 +1400,29 @@ class AppController {
     // 5. Customer Input
     const custInput = document.getElementById('calcCustomerInput');
     if (custInput) {
-      custInput.addEventListener('input', () => this.recalculate());
+      custInput.addEventListener('input', () => {
+        this.updateCustomerPortfolioBadge();
+        this.recalculate();
+      });
     }
 
     // 6. Quick Autocomplete Search
     const searchInput = document.getElementById('quickSearchInput');
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     const dropdown = document.getElementById('autocompleteDropdown');
+    const searchCard = searchInput ? (searchInput.closest('.search-card-container') || searchInput.closest('.glass-card')) : null;
+
+    const setDropdownVisible = (visible) => {
+      if (!dropdown) return;
+      dropdown.style.display = visible ? 'block' : 'none';
+      if (searchCard) {
+        if (visible) {
+          searchCard.classList.add('has-dropdown-open');
+        } else {
+          searchCard.classList.remove('has-dropdown-open');
+        }
+      }
+    };
 
     if (searchInput && dropdown) {
       searchInput.addEventListener('input', (e) => {
@@ -1051,7 +1430,7 @@ class AppController {
         if (clearSearchBtn) clearSearchBtn.style.display = query ? 'block' : 'none';
 
         if (query.length === 0 || !window.stockManager) {
-          dropdown.style.display = 'none';
+          setDropdownVisible(false);
           return;
         }
 
@@ -1060,7 +1439,7 @@ class AppController {
         );
 
         if (matches.length === 0) {
-          dropdown.style.display = 'none';
+          setDropdownVisible(false);
           return;
         }
 
@@ -1081,19 +1460,25 @@ class AppController {
           div.addEventListener('click', () => {
             this.addToCart(prod, 1);
             searchInput.value = '';
-            dropdown.style.display = 'none';
+            setDropdownVisible(false);
             if (clearSearchBtn) clearSearchBtn.style.display = 'none';
           });
           dropdown.appendChild(div);
         });
 
-        dropdown.style.display = 'block';
+        setDropdownVisible(true);
+      });
+
+      searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim().length > 0) {
+          searchInput.dispatchEvent(new Event('input'));
+        }
       });
 
       if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', () => {
           searchInput.value = '';
-          dropdown.style.display = 'none';
+          setDropdownVisible(false);
           clearSearchBtn.style.display = 'none';
           searchInput.focus();
         });
@@ -1101,7 +1486,7 @@ class AppController {
 
       document.addEventListener('click', (e) => {
         if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.style.display = 'none';
+          setDropdownVisible(false);
         }
       });
     }
@@ -1297,21 +1682,6 @@ class AppController {
       });
     }
 
-    // Rewarded Ad - Developer Support Buttons (Ana Sayfa & Ayarlar)
-    const triggerSupportAd = () => {
-      if (window.AndroidBridge && typeof window.AndroidBridge.showRewardedAd === 'function') {
-        window.AndroidBridge.showRewardedAd('support_developer');
-      } else {
-        this.showToast('🌟 VetAssist\'e desteğiniz için teşekkürler! Sponsorlu reklam mobil uygulamada aktiftir.');
-      }
-    };
-
-    const watchAdBtn = document.getElementById('btnWatchRewardedAd');
-    if (watchAdBtn) watchAdBtn.addEventListener('click', triggerSupportAd);
-
-    const watchAdBtnMain = document.getElementById('btnWatchRewardedAdMain');
-    if (watchAdBtnMain) watchAdBtnMain.addEventListener('click', triggerSupportAd);
-
     // Guide Modal Events
     const openGuideBtn = document.getElementById('openGuideModalBtn');
     const closeGuideBtn = document.getElementById('closeGuideModalBtn');
@@ -1333,8 +1703,9 @@ class AppController {
         if (window.AndroidBridge && typeof window.AndroidBridge.checkForUpdates === 'function') {
           window.AndroidBridge.checkForUpdates();
         } else {
-          const ver = (window.i18n && window.i18n.t('version_text')) || 'v1.0.13';
-          this.showToast(`🔍 Güncellemeler denetleniyor... VetAssist ${ver} en güncel sürümdür.`);
+          const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+          const ver = (window.i18n && window.i18n.t('version_text')) || 'v1.0.15';
+          this.showToast(isEn ? `🔍 Checking updates... VetAssist ${ver} is up to date.` : `🔍 Güncellemeler denetleniyor... VetAssist ${ver} en güncel sürümdür.`);
         }
       });
     }
@@ -1498,17 +1869,6 @@ class AppController {
       exportCsvBtn.addEventListener('click', () => window.stockManager.exportCsv());
     }
 
-    const loadSampleBtn = document.getElementById('loadSampleDataBtn');
-    if (loadSampleBtn && window.stockManager) {
-      loadSampleBtn.addEventListener('click', () => {
-        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-        if (confirm(isEn ? 'Load sample dataset?' : 'Örnek stok verisi yüklensin mi?')) {
-          window.stockManager.resetToInitial();
-          this.showToast(isEn ? 'Sample data loaded.' : 'Örnek veriler yüklendi.');
-        }
-      });
-    }
-
     const csvFileInput = document.getElementById('csvFileInput');
     if (csvFileInput && window.stockManager) {
       csvFileInput.addEventListener('change', (e) => {
@@ -1527,21 +1887,37 @@ class AppController {
       });
     }
 
-    // Sync Sheets btn in stock header
+    // Sync btn in stock header (Aktif moda göre Google Sheets veya Syncra)
     const syncSheetsBtn = document.getElementById('syncSheetsBtn');
     if (syncSheetsBtn) {
       syncSheetsBtn.addEventListener('click', () => {
-        this.triggerSheetsSyncWithRewardedAd();
+        if (this.getSyncMode() === 'syncra') {
+          this.runSyncraSync({ manual: true });
+        } else {
+          this.triggerSheetsSync();
+        }
       });
     }
 
     // Logs search & filter
     const logSearch = document.getElementById('logSearchInput');
+    const clearLogSearchBtn = document.getElementById('clearLogSearchBtn');
     if (logSearch && window.logManager) {
       logSearch.addEventListener('input', (e) => {
-        window.logManager.searchTerm = e.target.value.trim();
+        const val = e.target.value.trim();
+        window.logManager.searchTerm = val;
+        if (clearLogSearchBtn) clearLogSearchBtn.style.display = val ? 'block' : 'none';
         window.logManager.renderUI();
       });
+      if (clearLogSearchBtn) {
+        clearLogSearchBtn.addEventListener('click', () => {
+          logSearch.value = '';
+          clearLogSearchBtn.style.display = 'none';
+          window.logManager.searchTerm = '';
+          window.logManager.renderUI();
+          logSearch.focus();
+        });
+      }
     }
 
     document.querySelectorAll('.log-filter-tab').forEach(btn => {
@@ -1555,21 +1931,88 @@ class AppController {
       });
     });
 
+    // Consumption Report Modal bindings
+    const openReportBtn = document.getElementById('btnOpenConsumptionReport');
+    const closeReportBtn = document.getElementById('closeConsumptionReportModalBtn');
+    const cancelReportBtn = document.getElementById('cancelConsumptionReportBtn');
+    const copySheetsBtn = document.getElementById('btnCopyReportToSheets');
+    const downloadCsvBtn = document.getElementById('btnDownloadReportCsv');
+    const confirmDeductBtn = document.getElementById('btnConfirmDeductAndArchive');
+    const reportModal = document.getElementById('consumptionReportModal');
+
+    if (openReportBtn) {
+      openReportBtn.addEventListener('click', () => this.openConsumptionReportModal());
+    }
+    if (closeReportBtn && reportModal) {
+      closeReportBtn.addEventListener('click', () => { reportModal.style.display = 'none'; });
+    }
+    if (cancelReportBtn && reportModal) {
+      cancelReportBtn.addEventListener('click', () => { reportModal.style.display = 'none'; });
+    }
+    if (copySheetsBtn && window.logManager) {
+      copySheetsBtn.addEventListener('click', async () => {
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        const ok = await window.logManager.exportToClipboard(this.currentReportConsumptions);
+        if (ok) {
+          this.showToast(isEn ? 'Copied to clipboard in Google Sheets format!' : 'Google Sheets formatında panoya kopyalandı! E-tablonuza Ctrl+V ile yapıştırabilirsiniz.');
+        } else {
+          this.showToast(isEn ? 'Could not access clipboard.' : 'Panoya kopyalanamadı.');
+        }
+      });
+    }
+    if (downloadCsvBtn && window.logManager) {
+      downloadCsvBtn.addEventListener('click', () => {
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        this.promptExportFormat({
+          title: isEn ? 'Export Current Period Report' : 'Dönem Tüketim Raporunu İndir',
+          subtitle: isEn ? 'Choose file format to export current consumptions and sales' : 'Aktif tüketim ve adisyon raporunu hangi formatta indirmek istersiniz?',
+          onSelect: (format) => {
+            window.logManager.exportPendingLogs(format, this.currentReportConsumptions);
+            this.showToast(isEn ? `✅ Exported as .${format.toUpperCase()}` : `✅ .${format.toUpperCase()} formatında indirildi.`);
+          }
+        });
+      });
+    }
+    if (confirmDeductBtn && window.logManager) {
+      confirmDeductBtn.addEventListener('click', () => {
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        if (confirm(isEn ? 'Confirm deducting consumptions from stock and archiving current history?' : 'Tüketimlerin stoktan düşülmesini ve aktif geçmişin arşivlenmesini onaylıyor musunuz?')) {
+          window.logManager.deductAndArchive(this.currentReportConsumptions);
+          if (reportModal) reportModal.style.display = 'none';
+          this.showToast(isEn ? 'Stock deducted, history archived, and counter reset to 0.' : 'Tüketimler stoktan düşüldü, geçmiş arşivlendi ve sayaç sıfırlandı.');
+          if (window.stockManager) window.stockManager.renderUI();
+        }
+      });
+    }
+
+    // Archive Modal bindings
+    const openArchiveBtn = document.getElementById('btnOpenArchiveLogs');
+    const closeArchiveBtn = document.getElementById('closeArchiveLogsModalBtn');
+    const closeArchiveFooterBtn = document.getElementById('closeArchiveLogsModalFooterBtn');
+    const archiveModal = document.getElementById('archiveLogsModal');
+
+    if (openArchiveBtn) {
+      openArchiveBtn.addEventListener('click', () => this.openArchiveModal());
+    }
+    if (closeArchiveBtn && archiveModal) {
+      closeArchiveBtn.addEventListener('click', () => { archiveModal.style.display = 'none'; });
+    }
+    if (closeArchiveFooterBtn && archiveModal) {
+      closeArchiveFooterBtn.addEventListener('click', () => { archiveModal.style.display = 'none'; });
+    }
+
     const exportLogsBtn = document.getElementById('exportLogsCsvBtn');
     if (exportLogsBtn && window.logManager) {
       exportLogsBtn.addEventListener('click', () => {
-        let csv = 'Tarih,Islem_Tipi,Musteri,Kalemler,Mesafe_KM,Net_Ara_Toplam,Genel_Toplam\n';
-        window.logManager.getAll().forEach(l => {
-          csv += `"${l.dateStr}","${l.modeLabel}","${l.customer}","${l.itemsSummary}",${l.distanceKm},${l.subTotal},${l.grandTotal}\n`;
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        this.promptExportFormat({
+          title: isEn ? 'Export Current Period Logs' : 'Aktif Dönem Adisyonlarını İndir',
+          subtitle: isEn ? 'Choose file format to export current transactions' : 'Aktif dönem adisyon kayıtlarını hangi formatta indirmek istersiniz?',
+          onSelect: (format) => {
+            window.logManager.exportPendingLogs(format);
+            this.showToast(isEn ? `✅ Exported as .${format.toUpperCase()}` : `✅ .${format.toUpperCase()} formatında indirildi.`);
+          }
         });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `VetAssist_Satis_Loglari_${new Date().toISOString().slice(0,10)}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
       });
     }
 
@@ -1577,31 +2020,78 @@ class AppController {
     if (clearLogsBtn && window.logManager) {
       clearLogsBtn.addEventListener('click', () => {
         const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-        if (confirm(isEn ? 'Clear all history logs?' : 'Tüm satış ve teklif geçmişini temizlemek istediğinize emin misiniz?')) {
+        if (confirm(isEn ? 'Clear all pending history logs?' : 'Bekleyen tüm adisyon geçmişini temizlemek istediğinize emin misiniz?')) {
           window.logManager.clearAll();
           this.showToast(window.i18n ? window.i18n.t('toast_logs_cleared') : 'Tüm geçmiş temizlendi.');
         }
       });
     }
+
+    // Google Apps Script Modal bindings
+    const openAppsScriptBtn = document.getElementById('btnOpenAppsScriptModal');
+    const closeAppsScriptBtn = document.getElementById('closeAppsScriptModalBtn');
+    const closeAppsScriptFooterBtn = document.getElementById('closeAppsScriptModalFooterBtn');
+    const copyAppsScriptBtn = document.getElementById('btnCopyAppsScriptCode');
+    const appsScriptModal = document.getElementById('appsScriptModal');
+    const appsScriptArea = document.getElementById('appsScriptCodeArea');
+
+    if (openAppsScriptBtn && appsScriptModal) {
+      openAppsScriptBtn.addEventListener('click', () => { appsScriptModal.style.display = 'flex'; });
+    }
+    if (closeAppsScriptBtn && appsScriptModal) {
+      closeAppsScriptBtn.addEventListener('click', () => { appsScriptModal.style.display = 'none'; });
+    }
+    if (closeAppsScriptFooterBtn && appsScriptModal) {
+      closeAppsScriptFooterBtn.addEventListener('click', () => { appsScriptModal.style.display = 'none'; });
+    }
+    if (copyAppsScriptBtn && appsScriptArea) {
+      copyAppsScriptBtn.addEventListener('click', async () => {
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(appsScriptArea.value);
+          } else {
+            appsScriptArea.select();
+            document.execCommand('copy');
+          }
+          this.showToast(isEn ? 'Google Apps Script code copied to clipboard!' : '📋 Google Apps Script kodu panoya kopyalandı!');
+        } catch (e) {
+          appsScriptArea.select();
+          this.showToast(isEn ? 'Please select and copy the code.' : 'Lütfen kutudaki kodu seçip kopyalayın.');
+        }
+      });
+    }
+
+    // Setup horizontal scroll indicators
+    this.setupHorizontalScrollIndicators();
   }
 
   finalizeTransaction() {
     if (!this.currentReceiptData) return;
 
-    // Tedavi Modundaysa Stoktan Düş
-    if (this.mode === 'treatment' && window.stockManager) {
+    // 1. Tedavi modunda yerel stok anında düşer (internetsiz çevrimdışı sahada kesin stok takibi)
+    if (this.mode === 'treatment' && window.stockManager && Array.isArray(this.cart)) {
       this.cart.forEach(ci => {
-        window.stockManager.adjustStock(ci.item.id, -ci.qty);
+        if (ci.item && ci.item.id) {
+          window.stockManager.adjustStock(ci.item.id, -Number(ci.qty || 1));
+        }
       });
     }
 
-    // Loglara Kaydet
+    // 2. Loglara Kaydet
     if (window.logManager) {
       const itemsSummary = this.cart.map(ci => `${ci.qty}x ${ci.item.name}`).join(', ');
       window.logManager.addLog({
         mode: this.mode,
         customer: this.currentReceiptData.customer,
-        items: this.currentReceiptData.allItems,
+        items: this.cart.map(ci => ({
+          id: ci.item.id,
+          name: ci.item.name,
+          unitCost: ci.item.unitCost,
+          category: ci.item.category,
+          qty: ci.qty
+        })),
+        allItems: this.currentReceiptData.allItems,
         itemsSummary: itemsSummary,
         distanceKm: this.distanceKm,
         distanceTotal: this.currentReceiptData.distanceTotal,
@@ -1610,7 +2100,8 @@ class AppController {
         vatRate: this.currentReceiptData.vatRate,
         vatAmount: this.currentReceiptData.vatAmount,
         grandTotal: this.currentReceiptData.grandTotal,
-        distributedExpense: this.currentReceiptData.distributedExpense
+        distributedExpense: this.currentReceiptData.distributedExpense,
+        partnerId: (window.stockManager && window.stockManager.findPartnerByName(this.currentReceiptData.customer || '') || {}).id || null
       });
     }
 
@@ -1622,7 +2113,11 @@ class AppController {
     if (custInput) custInput.value = '';
     this.recalculate();
 
-    this.showToast(window.i18n ? window.i18n.t('toast_whatsapp_opened') : 'İşlem tamamlandı ve kaydedildi.');
+    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+    const msg = this.mode === 'treatment'
+      ? (isEn ? '✅ Treatment saved & products deducted from local stock.' : '✅ Tedavi kaydedildi ve satılan ürünler yerel stoktan anında düşüldü.')
+      : (isEn ? '✅ Price quote saved to history.' : '✅ Fiyat teklifi geçmişe eklendi.');
+    this.showToast(msg);
   }
 
   bindBatchModalEvents() {
@@ -1737,81 +2232,414 @@ class AppController {
   }
 
   bindStockSheetsLockEvents() {
-    const lockBtn = document.getElementById('toggleStockUrlLockBtn');
-    const input = document.getElementById('stockTabSheetsUrlInput');
-    const hint = document.getElementById('stockUrlLockHint');
-    const saveBtn = document.getElementById('saveStockUrlBtn');
-    const syncBtn = document.getElementById('syncStockTabSheetsBtn');
-
-    let isLocked = true;
-
-    if (lockBtn && input) {
-      lockBtn.addEventListener('click', () => {
-        isLocked = !isLocked;
-        input.readOnly = isLocked;
-        if (isLocked) {
-          document.getElementById('stockUrlLockIcon').textContent = '🔒';
-          document.getElementById('stockUrlLockText').textContent = window.i18n ? window.i18n.t('lock_unlock_btn') : 'Kilidi Aç';
-          if (hint) hint.textContent = window.i18n ? window.i18n.t('lock_hint_locked') : '🔒 Link kilitlidir.';
-          if (saveBtn) saveBtn.style.display = 'none';
-        } else {
-          document.getElementById('stockUrlLockIcon').textContent = '🔓';
-          document.getElementById('stockUrlLockText').textContent = window.i18n ? window.i18n.t('lock_locked_btn') : 'Kilitle';
-          if (hint) hint.textContent = window.i18n ? window.i18n.t('lock_hint_unlocked') : '🔓 Link düzenlenebilir.';
-          if (saveBtn) saveBtn.style.display = 'inline-block';
-          input.focus();
-        }
+    // Stok sekmesindeki "Stok & Bulut Entegrasyonu" butonu
+    const openSyncSettingsBtn = document.getElementById('btnOpenStockSyncSettings');
+    if (openSyncSettingsBtn) {
+      openSyncSettingsBtn.addEventListener('click', () => {
+        const drawerEl = document.getElementById('settingsDrawer');
+        if (drawerEl) drawerEl.style.display = 'flex';
+        const tabBtn = document.getElementById('drawerTabStockSyncBtn');
+        if (tabBtn) tabBtn.click();
       });
     }
 
-    if (saveBtn && input) {
-      saveBtn.addEventListener('click', () => {
-        const url = input.value.trim();
-        localStorage.setItem('vetassist_sheets_url_v2', url);
-        const settingsInput = document.getElementById('settingSheetsUrl');
-        if (settingsInput) settingsInput.value = url;
-        this.showToast(window.i18n ? window.i18n.t('toast_url_saved') : 'Link kaydedildi.');
-        
-        isLocked = true;
-        input.readOnly = true;
-        document.getElementById('stockUrlLockIcon').textContent = '🔒';
-        document.getElementById('stockUrlLockText').textContent = window.i18n ? window.i18n.t('lock_unlock_btn') : 'Kilidi Aç';
-        saveBtn.style.display = 'none';
+    // Drawer içindeki Manuel Senkronizasyon butonu
+    const syncDrawerBtn = document.getElementById('btnManualSyncSheetsDrawer');
+    if (syncDrawerBtn) {
+      syncDrawerBtn.addEventListener('click', () => {
+        this.triggerSheetsSync();
       });
     }
 
-    if (syncBtn) {
-      syncBtn.addEventListener('click', () => {
-        this.triggerSheetsSyncWithRewardedAd();
+    // Drawer içindeki CSV İçe/Dışa Aktar
+    const drawerCsvInput = document.getElementById('drawerCsvFileInput');
+    if (drawerCsvInput && window.stockManager) {
+      drawerCsvInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) window.stockManager.importCsv(file);
+      });
+    }
+
+    const drawerExportCsvBtn = document.getElementById('drawerExportCsvBtn');
+    if (drawerExportCsvBtn && window.stockManager) {
+      drawerExportCsvBtn.addEventListener('click', () => {
+        window.stockManager.exportCsv();
+      });
+    }
+
+    // JSON Veri Yedekleme (Tüm Sistem)
+    const exportJsonBtn = document.getElementById('btnExportFullBackupJson');
+    if (exportJsonBtn) {
+      exportJsonBtn.addEventListener('click', () => {
+        const backup = {
+          version: '1.0.18',
+          exportedAt: new Date().toISOString(),
+          stock: window.stockManager ? window.stockManager.getAll().map(i => ({
+            id: i.id,
+            syncraId: i.syncraId || null,
+            sku: i.sku || null,
+            name: i.name,
+            unitCost: i.unitCost !== undefined ? i.unitCost : 0,
+            currentStock: i.currentStock,
+            minStock: i.minStock,
+            category: i.category
+          })) : [],
+          presets: this.presets || [],
+          parameters: window.paramManager ? window.paramManager.getAll() : [],
+          logs: window.logManager ? window.logManager.getAll() : [],
+          archivedLogs: window.logManager ? window.logManager.getArchivedLogs() : [],
+          clinicInfo: window.receiptGenerator ? window.receiptGenerator.getClinicInfo() : {},
+          sheetsUrl: localStorage.getItem('vetassist_sheets_url_v2') || ''
+        };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `VetAssist_Yedek_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        this.showToast('✅ Tüm veriler JSON yedeği olarak indirildi.');
+      });
+    }
+
+    // JSON Veri Geri Yükleme
+    const importJsonInput = document.getElementById('btnImportFullBackupJson');
+    if (importJsonInput) {
+      importJsonInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = JSON.parse(evt.target.result);
+            if (data.stock && window.stockManager) {
+              window.stockManager.mergeExternalInventory(data.stock);
+            }
+            if (data.presets && Array.isArray(data.presets)) {
+              this.presets = data.presets;
+              this.savePresets();
+            }
+            if (data.parameters && window.paramManager) {
+              window.paramManager.parameters = data.parameters;
+              window.paramManager.saveParams();
+            }
+            if (data.logs && window.logManager) {
+              window.logManager.logs = data.logs;
+              window.logManager.saveLogs();
+            }
+            if (data.archivedLogs && window.logManager) {
+              window.logManager.archivedLogs = data.archivedLogs;
+              window.logManager.saveArchivedLogs();
+            }
+            if (data.clinicInfo && window.receiptGenerator) {
+              window.receiptGenerator.saveClinicInfo(data.clinicInfo);
+            }
+            if (data.sheetsUrl) {
+              localStorage.setItem('vetassist_sheets_url_v2', data.sheetsUrl);
+            }
+            this.showToast('✅ Yedek başarıyla geri yüklendi!');
+            setTimeout(() => location.reload(), 1000);
+          } catch (err) {
+            alert('Geçersiz yedek dosyası: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
       });
     }
   }
 
-  triggerSheetsSyncWithRewardedAd() {
-    const input = document.getElementById('stockTabSheetsUrlInput');
-    const url = (input ? input.value.trim() : '') || localStorage.getItem('vetassist_sheets_url_v2');
+  triggerSheetsSync() {
+    const url = (document.getElementById('settingSheetsUrl')?.value || '').trim() || localStorage.getItem('vetassist_sheets_url_v2');
     if (!url) {
-      alert(window.i18n ? window.i18n.t('sheets_sync_desc') : 'Lütfen önce geçerli bir Google Sheets CSV linki girin.');
+      const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+      if (confirm(isEn ? 'Google Sheets link is not configured yet. Would you like to open Stock Settings to configure it?' : 'Henüz Google Sheets linki girilmedi. Ayarlamak için Stok Yönetimi sekmesini açmak ister misiniz?')) {
+        const drawerEl = document.getElementById('settingsDrawer');
+        if (drawerEl) drawerEl.style.display = 'flex';
+        const tabBtn = document.getElementById('drawerTabStockSyncBtn');
+        if (tabBtn) tabBtn.click();
+      }
       return;
     }
 
-    if (window.AndroidBridge && typeof window.AndroidBridge.showRewardedAd === 'function') {
-      const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-      const msg = isEn 
-        ? '🎬 To synchronize your inventory with Google Sheets, please watch a short video ad. Would you like to proceed?'
-        : '🎬 Google Sheets ile stok senkronizasyonu yapmak için kısa bir video reklam izlemeniz gerekmektedir. İzlemek istiyor musunuz?';
-      
-      if (confirm(msg)) {
-        window.AndroidBridge.showRewardedAd('sync_google_sheets');
-      }
-    } else {
-      // Browser or testing fallback
-      if (window.stockManager) {
-        window.stockManager.syncGoogleSheets(url)
-          .then(count => this.showToast(`${count} ürün güncellendi.`))
-          .catch(err => alert('Senkronizasyon Hatası: ' + err.message));
-      }
+    if (window.stockManager) {
+      this.showToast('⏳ Google Sheets senkronizasyonu yapılıyor...');
+      window.stockManager.syncGoogleSheets(url)
+        .then(count => this.showToast(`✅ ${count} ürün başarıyla güncellendi.`))
+        .catch(err => alert('Senkronizasyon Hatası: ' + err.message));
     }
+  }
+
+  setupHorizontalScrollIndicators() {
+    const attachIndicator = (containerEl, arrowEl) => {
+      if (!containerEl || !arrowEl) return;
+      const updateVisibility = () => {
+        const hasScroll = containerEl.scrollWidth > containerEl.clientWidth + 6;
+        const isAtEnd = containerEl.scrollLeft >= (containerEl.scrollWidth - containerEl.clientWidth - 10);
+        if (hasScroll && !isAtEnd) {
+          arrowEl.style.opacity = '1';
+          arrowEl.style.pointerEvents = 'auto';
+        } else {
+          arrowEl.style.opacity = '0';
+          arrowEl.style.pointerEvents = 'none';
+        }
+      };
+
+      containerEl.addEventListener('scroll', updateVisibility, { passive: true });
+      window.addEventListener('resize', updateVisibility, { passive: true });
+      arrowEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        containerEl.scrollBy({ left: 160, behavior: 'smooth' });
+      });
+
+      setTimeout(updateVisibility, 300);
+    };
+
+    attachIndicator(document.getElementById('presetsScrollRow'), document.getElementById('presetsScrollArrow'));
+    attachIndicator(document.getElementById('drawerTabsRow'), document.getElementById('drawerTabsScrollArrow'));
+    attachIndicator(document.getElementById('categoryPills'), document.getElementById('categoryPillsScrollArrow'));
+  }
+
+  openConsumptionReportModal() {
+    if (!window.logManager) return;
+    const modal = document.getElementById('consumptionReportModal');
+    if (!modal) return;
+
+    this.currentReportConsumptions = window.logManager.getPendingConsumptions();
+    const pendingLogs = window.logManager.getAll().filter(l => l.mode === 'treatment');
+    
+    let totalRevenue = 0;
+    pendingLogs.forEach(l => { totalRevenue += parseFloat(l.grandTotal) || 0; });
+
+    const kpiPendingEl = document.getElementById('reportPendingTreatmentsCount');
+    const kpiDistinctEl = document.getElementById('reportDistinctItemsCount');
+    const kpiRevenueEl = document.getElementById('reportTotalRevenue');
+
+    if (kpiPendingEl) kpiPendingEl.textContent = pendingLogs.length;
+    if (kpiDistinctEl) kpiDistinctEl.textContent = this.currentReportConsumptions.length;
+    if (kpiRevenueEl) kpiRevenueEl.textContent = window.i18n ? window.i18n.formatMoney(totalRevenue) : `${totalRevenue.toFixed(2)} TL`;
+
+    this.renderConsumptionReportItems();
+    modal.style.display = 'flex';
+  }
+
+  renderConsumptionReportItems() {
+    const container = document.getElementById('reportConsumptionsContainer');
+    if (!container) return;
+
+    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+
+    if (!this.currentReportConsumptions || this.currentReportConsumptions.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:16px;">
+          <span class="empty-icon">📦</span>
+          <p style="font-size:0.85rem; font-weight:700;">${isEn ? 'No pending treatment consumptions to report.' : 'Stoktan düşülecek bekleyen tedavi adisyonu bulunmuyor.'}</p>
+          <small style="font-size:0.75rem;">${isEn ? 'Create treatments from Adisyon tab to see consumptions here.' : 'Adisyon sekmesinden tedavi uygulandıkça tüketimler burada listelenir.'}</small>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = '';
+    this.currentReportConsumptions.forEach((item, idx) => {
+      const remaining = item.currentStock - item.totalQty;
+      const isCritical = remaining < (item.minStock || 0);
+
+      const row = document.createElement('div');
+      row.className = `report-consumption-card ${isCritical ? 'is-critical-warning' : ''}`;
+      row.innerHTML = `
+        <div style="flex:1;">
+          <div class="report-item-title">${item.name}</div>
+          <div class="report-item-sub">
+            <span>📁 ${item.category || 'Genel'}</span>
+            <span>•</span>
+            <span>${isEn ? 'Stock:' : 'Mevcut:'} <strong class="text-mono">${item.currentStock}</strong></span>
+            <span>•</span>
+            <span style="color:${isCritical ? 'var(--danger)' : 'var(--success)'}; font-weight:700;">
+              ${isEn ? 'Remaining:' : 'Kalan:'} ${remaining} ${isCritical ? '🚨' : '✅'}
+            </span>
+          </div>
+        </div>
+
+        <div class="report-qty-stepper">
+          <button type="button" class="report-qty-btn report-minus-btn" data-idx="${idx}">➖</button>
+          <input type="number" class="report-qty-input report-qty-val" data-idx="${idx}" value="${item.totalQty}" min="0" step="1">
+          <button type="button" class="report-qty-btn report-plus-btn" data-idx="${idx}">➕</button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+
+    // Stepper event handlers
+    container.querySelectorAll('.report-minus-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        if (this.currentReportConsumptions[idx]) {
+          this.currentReportConsumptions[idx].totalQty = Math.max(0, this.currentReportConsumptions[idx].totalQty - 1);
+          this.renderConsumptionReportItems();
+        }
+      });
+    });
+
+    container.querySelectorAll('.report-plus-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        if (this.currentReportConsumptions[idx]) {
+          this.currentReportConsumptions[idx].totalQty += 1;
+          this.renderConsumptionReportItems();
+        }
+      });
+    });
+
+    container.querySelectorAll('.report-qty-val').forEach(input => {
+      input.addEventListener('change', () => {
+        const idx = parseInt(input.getAttribute('data-idx'));
+        const val = Math.max(0, parseFloat(input.value) || 0);
+        if (this.currentReportConsumptions[idx]) {
+          this.currentReportConsumptions[idx].totalQty = val;
+          this.renderConsumptionReportItems();
+        }
+      });
+    });
+  }
+
+  promptExportFormat({ title, subtitle, onSelect }) {
+    const modal = document.getElementById('exportFormatModal');
+    if (!modal) {
+      if (typeof onSelect === 'function') onSelect('csv');
+      return;
+    }
+
+    const titleEl = document.getElementById('exportModalTitle');
+    const subEl = document.getElementById('exportModalSubtitle');
+    const closeBtn = document.getElementById('closeExportFormatModalBtn');
+    const closeFooterBtn = document.getElementById('closeExportFormatModalFooterBtn');
+    const buttons = modal.querySelectorAll('.export-choice-btn');
+
+    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+    if (titleEl) titleEl.textContent = title || (isEn ? 'Choose Export Format' : 'Dışa Aktarma Formatı Seçin');
+    if (subEl) subEl.textContent = subtitle || (isEn ? 'Select your desired file format to download.' : 'Verileri hangi dosya formatında indirmek istersiniz?');
+
+    const closeModal = () => {
+      modal.style.display = 'none';
+      if (closeBtn) closeBtn.onclick = null;
+      if (closeFooterBtn) closeFooterBtn.onclick = null;
+      buttons.forEach(b => { b.onclick = null; });
+    };
+
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (closeFooterBtn) closeFooterBtn.onclick = closeModal;
+
+    buttons.forEach(btn => {
+      btn.onclick = () => {
+        const format = btn.getAttribute('data-format') || 'csv';
+        closeModal();
+        if (typeof onSelect === 'function') {
+          onSelect(format);
+        }
+      };
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  openArchiveModal() {
+    if (!window.logManager) return;
+    const modal = document.getElementById('archiveLogsModal');
+    const container = document.getElementById('archiveBatchesContainer');
+    const topActions = document.getElementById('archiveModalTopActions');
+    const countSummary = document.getElementById('archiveCountSummary');
+    const exportAllBtn = document.getElementById('btnExportAllArchivesModal');
+    const exportAllFooterBtn = document.getElementById('btnExportAllArchivesFooterBtn');
+    if (!modal || !container) return;
+
+    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+    const archived = window.logManager.getArchived();
+
+    const handleExportAll = () => {
+      this.promptExportFormat({
+        title: isEn ? 'Export All Archives' : 'Tüm Arşivleri İndir',
+        subtitle: isEn ? 'Choose file format to export all archived period reports' : 'Tüm geçmiş dönem arşivlerini hangi formatta indirmek istersiniz?',
+        onSelect: (format) => {
+          window.logManager.exportAllArchives(format);
+          this.showToast(isEn ? `✅ All archives downloaded as .${format.toUpperCase()}` : `✅ Tüm arşivler .${format.toUpperCase()} formatında indirildi.`);
+        }
+      });
+    };
+
+    if (!archived || archived.length === 0) {
+      if (topActions) topActions.style.display = 'none';
+      if (exportAllFooterBtn) exportAllFooterBtn.style.display = 'none';
+      container.innerHTML = `
+        <div class="empty-state" style="padding:16px;">
+          <span class="empty-icon">📦</span>
+          <p style="font-weight:700;">${isEn ? 'No archived batches yet.' : 'Henüz arşivlenmiş dönem kaydı bulunmuyor.'}</p>
+          <small>${isEn ? 'When you deduct stock and complete reports, archives are saved here.' : 'Tüketim raporunu onaylayıp stoktan düştüğünüzde dönemler burada saklanır.'}</small>
+        </div>
+      `;
+    } else {
+      if (topActions) {
+        topActions.style.display = 'flex';
+        if (countSummary) {
+          countSummary.textContent = isEn ? `${archived.length} Archived Period(s)` : `${archived.length} Arşivlenmiş Dönem`;
+        }
+      }
+      if (exportAllFooterBtn) exportAllFooterBtn.style.display = 'inline-flex';
+
+      if (exportAllBtn) exportAllBtn.onclick = handleExportAll;
+      if (exportAllFooterBtn) exportAllFooterBtn.onclick = handleExportAll;
+
+      container.innerHTML = '';
+      archived.forEach((batch, idx) => {
+        const card = document.createElement('div');
+        card.className = 'archive-batch-card';
+        card.innerHTML = `
+          <div class="archive-batch-header">
+            <div>
+              <div class="archive-batch-title">🗓️ ${batch.dateStr}</div>
+              <small style="font-size:0.75rem; color:var(--text-muted);">${batch.logsCount || (batch.logs || []).length} ${isEn ? 'Receipts Processed' : 'Adisyon İşlendi'}</small>
+            </div>
+            <div>
+              <strong class="text-mono" style="color:var(--primary); font-size:0.95rem;">${window.i18n ? window.i18n.formatMoney(batch.totalRevenue) : parseFloat(batch.totalRevenue || 0).toFixed(2) + ' TL'}</strong>
+            </div>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px; line-height:1.4;">
+            <strong>${isEn ? 'Deducted Medicines:' : 'Düşülen İlaçlar:'}</strong> 
+            ${(batch.consumptions || []).map(c => `${c.totalQty}x ${c.name}`).join(', ') || (isEn ? 'No item details' : 'Kalem detayı yok')}
+          </div>
+          <div class="archive-batch-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px dashed var(--glass-border-subtle);">
+            <span style="font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono);">${batch.batchId || ''}</span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-outline-primary btn-xs download-batch-btn" data-batch-idx="${idx}" style="font-weight:700; padding:4px 10px;">
+                <span>📥</span> <span>${isEn ? 'Export Period' : 'Dönemi İndir'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Bind individual batch download buttons
+      container.querySelectorAll('.download-batch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const batchIdx = parseInt(btn.getAttribute('data-batch-idx'));
+          const targetBatch = archived[batchIdx];
+          if (!targetBatch) return;
+
+          this.promptExportFormat({
+            title: isEn ? `Export Period (${targetBatch.dateStr})` : `Dönem Raporunu İndir (${targetBatch.dateStr})`,
+            subtitle: isEn ? 'Select file format to download this archived period' : 'Bu arşivlenmiş dönemi hangi formatta indirmek istersiniz?',
+            onSelect: (format) => {
+              window.logManager.exportBatch(targetBatch, format);
+              this.showToast(isEn ? `✅ Period report downloaded as .${format.toUpperCase()}` : `✅ Dönem raporu .${format.toUpperCase()} formatında indirildi.`);
+            }
+          });
+        });
+      });
+    }
+
+    modal.style.display = 'flex';
   }
 }
 
@@ -1824,7 +2652,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.onRewardedAdSuccess = function(actionType) {
   console.log('AdMob Rewarded Ad completed for action:', actionType);
   if (actionType === 'sync_google_sheets') {
-    const input = document.getElementById('stockTabSheetsUrlInput');
+    const input = document.getElementById('stockTabSheetsUrlInput') || document.getElementById('settingSheetsUrl');
     const url = (input ? input.value.trim() : '') || localStorage.getItem('vetassist_sheets_url_v2');
     if (url && window.stockManager) {
       if (window.app) window.app.showToast('🔄 Reklam tamamlandı, Google Sheets senkronizasyonu yapılıyor...');

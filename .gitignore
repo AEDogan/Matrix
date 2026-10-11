@@ -29,3 +29,4 @@ Thumbs.db
 node_modules/
 google_play_key.json
 android/google_play_key.json
+/releases/

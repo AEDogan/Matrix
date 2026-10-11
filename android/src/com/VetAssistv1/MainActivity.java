@@ -407,24 +407,13 @@ public class MainActivity extends Activity {
             Log.e(TAG, "AdMob setup failed: " + t.getMessage(), t);
         }
 
-        // =========================================================================
-        // [GEÇİCİ MODÜL: 14 GÜNLÜK KAPALI TEST BİLDİRİMİ (SAAT 12:00) & GÜNCELLEME]
-        // 14 günlük test süreci tamamlandığında bu blok kolayca silinebilir.
-        // =========================================================================
         try {
             versionUpdateManager = new VersionUpdateManager(this);
             versionUpdateManager.checkForUpdates(false);
-            NightlyUpdateReceiver.scheduleDailyAlarm(this, 12, 0);
-
-            if (Build.VERSION.SDK_INT >= 33) {
-                if (checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 3001);
-                }
-            }
+            NightlyUpdateReceiver.cancelDailyAlarm(this);
         } catch (Throwable t) {
             Log.w(TAG, "Version update manager init error: " + t.getMessage());
         }
-        // =========================================================================
     }
 
     private void initAdMobBanner() {

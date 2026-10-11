@@ -1,6 +1,6 @@
 param(
     [string]$Track = "VetAssist Test Group,internal",
-    [string]$ReleaseNotes = "9 dil desteği (TR, EN, DE, FR, ES, IT, PT, RU, AR), çoklu para birimi seçimi, WhatsApp adisyon motoru, modern landing page ve genel kararlılık güncellemeleri.",
+    [string]$ReleaseNotes = "Veteriner E-Reçete & İTS Bildirim Servisi, Seri No Karekod Tarayıcı, Tüketim Raporlama, kesintisiz veri koruma ve kararlılık güncellemeleri.",
     [switch]$SkipBump = $false
 )
 

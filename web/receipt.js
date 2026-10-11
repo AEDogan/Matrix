@@ -21,26 +21,16 @@ class ReceiptGenerator {
   }
 
   saveClinicInfo(info) {
-    if (info.title) {
-      localStorage.setItem('vetassist_clinic_title', info.title);
-      localStorage.setItem('sahavet_clinic_title', info.title);
-    }
-    if (info.bank) {
-      localStorage.setItem('vetassist_bank_name', info.bank);
-      localStorage.setItem('sahavet_bank_name', info.bank);
-    }
-    if (info.iban) {
-      localStorage.setItem('vetassist_iban', info.iban);
-      localStorage.setItem('sahavet_iban', info.iban);
-    }
-    if (info.address) {
-      localStorage.setItem('vetassist_address', info.address);
-      localStorage.setItem('sahavet_address', info.address);
-    }
-    if (info.phone) {
-      localStorage.setItem('vetassist_phone', info.phone);
-      localStorage.setItem('sahavet_phone', info.phone);
-    }
+    localStorage.setItem('vetassist_clinic_title', info.title || '');
+    localStorage.setItem('sahavet_clinic_title', info.title || '');
+    localStorage.setItem('vetassist_bank_name', info.bank || '');
+    localStorage.setItem('sahavet_bank_name', info.bank || '');
+    localStorage.setItem('vetassist_iban', info.iban || '');
+    localStorage.setItem('sahavet_iban', info.iban || '');
+    localStorage.setItem('vetassist_address', info.address || '');
+    localStorage.setItem('sahavet_address', info.address || '');
+    localStorage.setItem('vetassist_phone', info.phone || '');
+    localStorage.setItem('sahavet_phone', info.phone || '');
     if (info.vatRate !== undefined) {
       localStorage.setItem('vetassist_vat_rate', info.vatRate);
       localStorage.setItem('sahavet_vat_rate', info.vatRate);

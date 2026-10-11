@@ -24,26 +24,90 @@ const INITIAL_INVENTORY = [
 class StockManager {
   constructor() {
     this.storageKey = 'vetassist_inventory_v2';
+    this.partnersKey = 'vetassist_partners_v2';
     this.inventory = this.loadInventory();
+    this.partners = this.loadPartners();
     this.activeFilter = 'all'; // 'all' | 'critical'
     this.activeCategory = 'all';
     this.searchTerm = '';
+    setTimeout(() => this.renderPartnersDatalist(), 100);
+  }
+
+  loadPartners() {
+    try {
+      const saved = localStorage.getItem(this.partnersKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error('Partner portföyü yüklenirken hata:', e);
+    }
+    return [];
+  }
+
+  savePartners(partnersList) {
+    try {
+      if (Array.isArray(partnersList)) {
+        this.partners = partnersList;
+        localStorage.setItem(this.partnersKey, JSON.stringify(this.partners));
+        this.renderPartnersDatalist();
+      }
+    } catch (e) {
+      console.error('Partner portföyü kaydedilirken hata:', e);
+    }
+  }
+
+  getPartners() {
+    return this.partners || [];
+  }
+
+  findPartnerByName(name) {
+    if (!name) return null;
+    const clean = name.trim().toLowerCase();
+    return (this.partners || []).find(p => (p.name || '').trim().toLowerCase() === clean) || null;
+  }
+
+  renderPartnersDatalist() {
+    const dl = document.getElementById('vetassistPartnersDatalist');
+    if (!dl) return;
+    dl.innerHTML = (this.partners || []).map(pt => {
+      const debtInfo = pt.currentDebt > 0 ? `Borç: ${pt.currentDebt} TL` : '';
+      const limitInfo = pt.creditLimit > 0 ? `Limit: ${pt.creditLimit} TL` : '';
+      const finInfo = [debtInfo, limitInfo].filter(Boolean).join(' / ');
+      const meta = [pt.phone, finInfo, pt.city, pt.district].filter(Boolean).join(' • ');
+      const roleLabel = pt.isVendor && !pt.isCustomer ? 'Tedarikçi' : 'Müşteri';
+      const label = meta ? `${roleLabel}: ${meta}` : roleLabel;
+      const escapedName = String(pt.name || '').replace(/"/g, '&quot;');
+      const escapedLabel = String(label).replace(/"/g, '&quot;');
+      return `<option value="${escapedName}" label="${escapedLabel}"></option>`;
+    }).join('');
   }
 
   loadInventory() {
     try {
-      const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('sahavet_inventory_v2');
+      const saved = localStorage.getItem(this.storageKey) || 
+                    localStorage.getItem('sahavet_inventory_v2') ||
+                    localStorage.getItem('vetassist_inventory') ||
+                    localStorage.getItem('sahavet_inventory');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map(item => ({
+          const loaded = parsed.map(item => ({
             id: item.id || ('prod_' + Math.random().toString(36).substr(2, 9)),
+            syncraId: item.syncraId || null,
+            sku: item.sku || null,
             name: item.name || '',
             unitCost: parseFloat(item.unitCost !== undefined ? item.unitCost : (item.cost !== undefined ? item.cost : (item.price !== undefined ? item.price : 0))) || 0,
-            currentStock: parseInt(item.currentStock) || 0,
-            minStock: parseInt(item.minStock) || 0,
+            currentStock: parseFloat(item.currentStock) || 0,
+            minStock: parseFloat(item.minStock) || 0,
             category: item.category || 'Genel'
           }));
+          // Eğer eski anahtardan geldiyse güncel anahtara da yaz
+          if (!localStorage.getItem(this.storageKey)) {
+            localStorage.setItem(this.storageKey, JSON.stringify(loaded));
+          }
+          return loaded;
         }
       }
     } catch (e) {
@@ -69,7 +133,7 @@ class StockManager {
   }
 
   get(id) {
-    return this.inventory.find(item => item.id === id);
+    return this.inventory.find(item => item.id === id || item.syncraId === id);
   }
 
   getCategories() {
@@ -256,26 +320,6 @@ class StockManager {
         </div>
       `;
       container.appendChild(card);
-
-      // Organic Glass Inline Ad Banner (Banner #2) after 5th item or at bottom
-      if (index === 4 || (filtered.length < 5 && index === filtered.length - 1)) {
-        const adCard = document.createElement('div');
-        adCard.className = 'inline-ad-card';
-        adCard.innerHTML = `
-          <div class="inline-ad-header">
-            <span class="ad-pill-badge">${isEn ? 'SPONSORED / TIP' : 'SPONSOR / SAHA İPUCU'}</span>
-            <small style="color:var(--text-muted); font-size:0.7rem;">VetAssist Partner</small>
-          </div>
-          <div class="inline-ad-body">
-            <div class="inline-ad-icon">🩺</div>
-            <div class="inline-ad-content">
-              <div class="inline-ad-title">${isEn ? 'Veterinary Field Supplies & Cold Chain Bags' : 'Veteriner Klinik & Soğuk Zincir Ekipmanları'}</div>
-              <div class="inline-ad-subtitle">${isEn ? 'High quality drug storage boxes, digital refractometers and field diagnostic sets.' : 'Aşı ve soğuk zincir taşıma çantaları, dijital refraktometreler ve modern saha tedavi setleri.'}</div>
-            </div>
-          </div>
-        `;
-        container.appendChild(adCard);
-      }
     });
 
     this.attachCardEvents();
@@ -338,6 +382,39 @@ class StockManager {
   }
 
   /**
+   * Google Sheets Linklerini CSV Export Formatına Normalize Eder
+   */
+  normalizeSheetsUrl(rawUrl) {
+    if (!rawUrl) return '';
+    let url = rawUrl.trim();
+
+    if (url.includes('docs.google.com/spreadsheets')) {
+      // 1. Web'de yayınlanan link (/pubhtml -> /pub?output=csv)
+      if (url.includes('/pubhtml') || url.includes('/pub')) {
+        url = url.split('?')[0].replace(/\/pubhtml$/, '/pub');
+        if (!url.endsWith('/pub')) {
+          url = url.replace(/\/pub.*/, '/pub');
+        }
+        return url + '?output=csv';
+      }
+
+      // 2. Normal düzenleme/paylaşım linki (/d/{ID}/edit...)
+      const docMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (docMatch) {
+        const docId = docMatch[1];
+        let gid = '0';
+        const gidMatch = url.match(/[?&#]gid=([0-9]+)/);
+        if (gidMatch) {
+          gid = gidMatch[1];
+        }
+        return `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
+      }
+    }
+
+    return url;
+  }
+
+  /**
    * Google Sheets CSV Senkronizasyonu
    */
   async syncGoogleSheets(csvUrl) {
@@ -346,12 +423,60 @@ class StockManager {
       throw new Error(isEn ? 'Google Sheets CSV link is not configured. Please enter a published URL in Settings or Stock tab.' : 'Google Sheets CSV bağlantı adresi girilmedi. Lütfen Stok sekmesindeki link alanından veya Ayarlar sekmesinden URL tanımlayın.');
     }
 
-    const response = await fetch(csvUrl);
-    if (!response.ok) {
-      throw new Error(isEn ? `Could not access Google Sheets table: Status Code ${response.status}` : `Google Sheets tablosuna erişilemedi: Durum Kodu ${response.status}`);
+    const normalizedUrl = this.normalizeSheetsUrl(csvUrl);
+    let csvText = null;
+
+    // 1. Doğrudan Tarayıcı Fetch Dene
+    try {
+      const response = await fetch(normalizedUrl);
+      if (response.ok) {
+        const text = await response.text();
+        if (text && !text.trim().toLowerCase().startsWith('<!doctype') && !text.trim().toLowerCase().startsWith('<html')) {
+          csvText = text;
+        }
+      }
+    } catch (err) {
+      console.warn('Doğrudan fetch başarısız (CORS koruması aktif olabilir):', err);
     }
 
-    const csvText = await response.text();
+    // 2. Yerel Node.js Proxy Endpoint (/api/proxy-csv) Dene (Localhost / Test Ortamları İçin)
+    if (!csvText && !normalizedUrl.startsWith('/') && !normalizedUrl.startsWith('.')) {
+      try {
+        const proxyUrl = `/api/proxy-csv?url=${encodeURIComponent(normalizedUrl)}`;
+        const response = await fetch(proxyUrl);
+        if (response.ok) {
+          const text = await response.text();
+          if (text && !text.trim().toLowerCase().startsWith('<!doctype') && !text.trim().toLowerCase().startsWith('<html')) {
+            csvText = text;
+          }
+        }
+      } catch (err) {
+        console.warn('Yerel proxy fetch başarısız:', err);
+      }
+    }
+
+    // 3. Genel CORS Proxy (allorigins) Dene
+    if (!csvText && (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://'))) {
+      try {
+        const publicProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(normalizedUrl)}`;
+        const response = await fetch(publicProxyUrl);
+        if (response.ok) {
+          const text = await response.text();
+          if (text && !text.trim().toLowerCase().startsWith('<!doctype') && !text.trim().toLowerCase().startsWith('<html')) {
+            csvText = text;
+          }
+        }
+      } catch (err) {
+        console.warn('Genel CORS proxy fetch başarısız:', err);
+      }
+    }
+
+    if (!csvText) {
+      const tipTr = 'Google Sheets tablosuna erişilemedi.\n\nLütfen şunları kontrol edin:\n1. Google Sheets\'te: Dosya > Paylaş > Web\'de Yayınla > CSV seçeneğini kullanın.\n2. Veya "Paylaş" ayarını "Bağlantıya sahip herkes (Görüntüleyen)" yapın.';
+      const tipEn = 'Could not access Google Sheets table.\n\nPlease check:\n1. In Google Sheets: File > Share > Publish to web > CSV.\n2. Or set Link Sharing to "Anyone with the link can view".';
+      throw new Error(isEn ? tipEn : tipTr);
+    }
+
     return this.parseAndImportCsv(csvText);
   }
 
@@ -425,9 +550,7 @@ class StockManager {
     }
 
     if (newInventory.length > 0) {
-      this.inventory = newInventory;
-      this.saveInventory();
-      this.renderUI();
+      this.mergeExternalInventory(newInventory);
       return newInventory.length;
     } else {
       throw new Error(isEn ? 'Valid product rows could not be parsed.' : 'Geçerli ürün satırları okunamadı.');
@@ -435,23 +558,120 @@ class StockManager {
   }
 
   /**
-   * Mevcut envanteri CSV formatında dışa aktarır
+   * Dış kaynaktan (Google Sheets veya Syncra API) gelen envanteri mevcut yerel ürünlerle veri kaybetmeden birleştirir
    */
-  exportCsv() {
-    let csv = 'Urun_Adi,Birim_Maliyet,Mevcut_Stok,Min_Stok,Kategori\n';
-    this.inventory.forEach(item => {
-      csv += `"${item.name}",${item.unitCost},${item.currentStock},${item.minStock},"${item.category}"\n`;
+  mergeExternalInventory(incomingItems) {
+    if (!Array.isArray(incomingItems) || incomingItems.length === 0) return;
+
+    const merged = [...incomingItems.map(inc => ({
+      id: inc.id || ('prod_' + Math.random().toString(36).substr(2, 9)),
+      syncraId: inc.syncraId || inc.id || null,
+      sku: inc.sku || null,
+      name: (inc.name || '').trim(),
+      unitCost: parseFloat(inc.unitCost) || 0,
+      currentStock: Math.max(0, parseFloat(inc.currentStock) || 0),
+      minStock: Math.max(0, parseFloat(inc.minStock) || 0),
+      category: inc.category || 'Genel'
+    }))];
+
+    // Yerelde olup gelen listede olmayan ürünleri koru (veri kaybını engelle)
+    this.inventory.forEach(localItem => {
+      const localName = (localItem.name || '').trim().toLowerCase();
+      if (!localName) return;
+      const existsInIncoming = merged.some(
+        m => (m.syncraId && m.syncraId === localItem.syncraId) ||
+             m.id === localItem.id ||
+             m.name.toLowerCase() === localName
+      );
+      if (!existsInIncoming) {
+        merged.push(localItem);
+      }
     });
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `VetAssist_Stok_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    this.inventory = merged;
+    this.saveInventory();
+    this.renderUI();
+  }
+
+  /**
+   * Syncra ERP Saha Köprüsü ile Çift Yönlü Senkronizasyon (Stok + Müşteri Portföyü + Bekleyen Çevrimdışı Kayıtlar)
+   */
+  async syncWithSyncra(options = {}) {
+    const serverUrl = (options.serverUrl || localStorage.getItem('vetassist_syncra_url_v2') || 'http://localhost:3000').replace(/\/+$/, '');
+    const apiKey = (options.apiKey || localStorage.getItem('vetassist_syncra_key_v2') || '').trim();
+    const deviceToken = (options.deviceToken || localStorage.getItem('vetassist_syncra_device_token_v2') || '').trim();
+    const doctorName = (options.doctorName || localStorage.getItem('vetassist_syncra_doctor_name_v2') || '').trim();
+    const mergeLocal = options.mergeLocal !== false;
+
+    if (!apiKey && !deviceToken) {
+      throw new Error('Syncra Klinik bağlantısı bulunamadı. Lütfen QR kod okutarak veya API anahtarınızı girerek kliniğe bağlanın.');
+    }
+
+    const unsyncedLogs = (window.logManager && typeof window.logManager.getUnsyncedLogs === 'function')
+      ? window.logManager.getUnsyncedLogs()
+      : [];
+
+    const payload = {
+      apiKey,
+      deviceToken,
+      doctorName,
+      localProducts: mergeLocal ? this.inventory : [],
+      logs: unsyncedLogs.map(l => ({ ...l, doctorName }))
+    };
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (apiKey) headers['x-vetassist-key'] = apiKey;
+    if (deviceToken) headers['x-vetassist-device-token'] = deviceToken;
+
+    const response = await fetch(`${serverUrl}/api/vetassist-bridge/push`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error(`🚫 ERİŞİM İPTALİ: ${data.error || 'Bu cihazın klinik bağlantısı başhekim tarafından iptal edilmiştir.'}`);
+      }
+      throw new Error(data.error || 'Syncra sunucusu ile bağlantı kurulamadı.');
+    }
+
+    // 1. Güncel Syncra ürünlerini yerel envanterle birleştir
+    if (Array.isArray(data.products) && data.products.length > 0) {
+      this.mergeExternalInventory(data.products.map(p => ({
+        ...p,
+        syncraId: p.id
+      })));
+    }
+
+    // 2. Güncel Müşteri & Tedarikçi (Partner) portföyünü kaydet ve otomatik tamamlamayı yenile
+    if (Array.isArray(data.partners)) {
+      this.savePartners(data.partners);
+    }
+
+    // 3. Gönderilen logları 'syncraSynced = true' olarak işaretle
+    if (window.logManager && Array.isArray(data.syncedLogIds) && data.syncedLogIds.length > 0) {
+      window.logManager.markLogsSyncedWithSyncra(data.syncedLogIds);
+    }
+
+    return data;
+  }
+
+  /**
+   * Fiyat ve stok listesinin toplu dışa aktarımı güvenlik nedeniyle engellenmiştir.
+   */
+  exportCsv() {
+    const msg = '🔒 Güvenlik Politikası: Kurumsal fiyat ve ürün kataloğunun toplu olarak cihaz dışına aktarılması veya indirilmesi güvenlik nedeniyle engellenmiştir.';
+    if (window.app && window.app.showToast) {
+      window.app.showToast(msg);
+    } else {
+      alert(msg);
+    }
   }
 }
 
 window.stockManager = new StockManager();
+

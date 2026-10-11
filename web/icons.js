@@ -73,18 +73,14 @@
       </svg>
     `,
 
-    // 4. Uygulanan Tedavi: Canlı Kırmızı Kalp & Mavi Şırınga (Seçenek A - YENİ & GÖZE ÇARPAN)
+    // 4. Uygulanan Tedavi: Veteriner Medikal Rozeti (Zümrüt Yeşil & Beyaz Haç & V)
     'treatment-mode': `
       <svg class="pet-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 28C16 28 4 20.5 4 11C4 6.5 7.5 3.5 12 3.5C14.5 3.5 16.8 5 18 7C19.2 5 21.5 3.5 24 3.5C28.5 3.5 32 6.5 32 11C32 20.5 20 28 20 28H16Z" fill="#ef4444" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
-        <path d="M8 8C9.5 6 12 5.5 13.5 6.5" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
-        <path d="M7 25L11 21" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
-        <path d="M7 25L11 21" stroke="#0f172a" stroke-width="1.4" stroke-linecap="round"/>
-        <rect x="11" y="9.5" width="7" height="15" rx="2" transform="rotate(-45 11 9.5)" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
-        <path d="M14 17.5L16.5 15L21.5 20L19 22.5Z" fill="#0284c7"/>
-        <line x1="16" y1="13" x2="18" y2="15" stroke="#0f172a" stroke-width="1.6"/>
-        <path d="M21 7.5L26.5 13" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
-        <path d="M24 4.5L29.5 10" stroke="#0f172a" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="13.5" fill="#10b981" stroke="#0f172a" stroke-width="2.2"/>
+        <circle cx="16" cy="16" r="11" fill="#34d399" fill-opacity="0.35"/>
+        <path d="M12 6.5C12 5.7 12.7 5 13.5 5H18.5C19.3 5 20 5.7 20 6.5V12H25.5C26.3 12 27 12.7 27 13.5V18.5C27 19.3 26.3 20 25.5 20H20V25.5C20 26.3 19.3 27 18.5 27H13.5C12.7 27 12 26.3 12 25.5V20H6.5C5.7 20 5 19.3 5 18.5V13.5C5 12.7 5.7 12 6.5 12H12V6.5Z" fill="#ffffff" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12.5 12.5L16 19.5L19.5 12.5" stroke="#0f172a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12.5 12.5L16 19.5L19.5 12.5" stroke="#0284c7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `,
 
