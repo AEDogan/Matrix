@@ -102,7 +102,7 @@ class ITSPrescriptionManager {
     if (btnOpenPortal) {
       btnOpenPortal.addEventListener('click', () => {
         // T.C. Tarım ve Orman Bakanlığı Hayvan Bilgi Sistemi (HBS) E-Reçete / İTS Resmi Girişi
-        window.open('https://hbs.tarbil.gov.tr/', '_blank');
+        window.open('https://hbs.tarbil.gov.tr/', '_blank', 'noopener,noreferrer');
       });
     }
 

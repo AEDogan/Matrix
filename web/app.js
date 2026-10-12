@@ -1461,6 +1461,11 @@ class AppController {
     };
     if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
     if (closeDrawerFooterBtn) closeDrawerFooterBtn.addEventListener('click', closeDrawer);
+    if (drawerEl) {
+      drawerEl.addEventListener('click', (e) => {
+        if (e.target === drawerEl) closeDrawer();
+      });
+    }
 
     document.querySelectorAll('.drawer-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {

@@ -520,7 +520,7 @@ class ReceiptGenerator {
       // 3. Masaüstü / Tarayıcı Fallback: Görseli İndir ve WhatsApp Web Aç
       this.downloadBlob(jpgBlob, filename);
       const waUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(caption);
-      window.open(waUrl, '_blank');
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
     }
 
     return { success: true };

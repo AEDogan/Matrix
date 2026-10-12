@@ -1349,6 +1349,12 @@ body.theme-dark .autocomplete-dropdown {
   gap: 6px;
   border-bottom: 1px solid var(--glass-border-subtle);
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.drawer-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .drawer-tab-btn {
