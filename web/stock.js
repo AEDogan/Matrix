@@ -223,7 +223,7 @@ class StockManager {
     if (navBadge) {
       if (criticalCount > 0) {
         navBadge.textContent = criticalCount;
-        navBadge.style.display = 'inline-block';
+        navBadge.style.display = 'inline-flex';
       } else {
         navBadge.style.display = 'none';
       }

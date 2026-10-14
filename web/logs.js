@@ -679,7 +679,7 @@ class LogManager {
     if (logsCountBadge) {
       if (this.logs.length > 0) {
         logsCountBadge.textContent = this.logs.length;
-        logsCountBadge.style.display = 'inline-block';
+        logsCountBadge.style.display = 'inline-flex';
       } else {
         logsCountBadge.style.display = 'none';
       }

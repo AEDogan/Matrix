@@ -911,22 +911,20 @@ class AppController {
     const btnTreatment = document.getElementById('modeBtnTreatment');
     const btnQuote = document.getElementById('modeBtnQuote');
     const hintEl = document.getElementById('modeHintText');
-    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-
     if (newMode === 'treatment') {
       if (btnTreatment) btnTreatment.classList.add('active');
       if (btnQuote) btnQuote.classList.remove('active');
       if (hintEl) {
-        hintEl.innerHTML = isEn 
-          ? '💉 <strong>Applied Treatment:</strong> When completed, medications used are automatically deducted from inventory and logged into sales history.' 
+        hintEl.innerHTML = window.i18n 
+          ? window.i18n.t('mode_treatment_hint') 
           : '💉 <strong>Uygulanan Tedavi:</strong> İşlem tamamlandığında kullanılan ilaçlar otomatik olarak stoktan düşülür ve satış kaydı işlenir.';
       }
     } else {
       if (btnQuote) btnQuote.classList.add('active');
       if (btnTreatment) btnTreatment.classList.remove('active');
       if (hintEl) {
-        hintEl.innerHTML = isEn 
-          ? '📄 <strong>Price Quote:</strong> Informational breakdown. Stock is untouched and recorded as a quote in history.' 
+        hintEl.innerHTML = window.i18n 
+          ? window.i18n.t('mode_quote_hint') 
           : '📄 <strong>Fiyat Teklifi:</strong> Bilgilendirme amaçlıdır. Stoktan düşüm yapılmaz ve loglara teklif olarak kaydedilir.';
       }
     }
@@ -1196,7 +1194,7 @@ class AppController {
 
   applyTheme() {
     const isDark = localStorage.getItem('vetassist_theme') === 'dark';
-    const themeStyle = localStorage.getItem('vetassist_theme_style') || 'classic';
+    const themeStyle = localStorage.getItem('vetassist_theme_style') || 'ios';
 
     if (isDark) {
       document.body.classList.add('theme-dark');
@@ -1266,7 +1264,7 @@ class AppController {
       currSelect.value = window.i18n.getCurrency();
     }
     if (themeStyleSelect) {
-      themeStyleSelect.value = localStorage.getItem('vetassist_theme_style') || 'classic';
+      themeStyleSelect.value = localStorage.getItem('vetassist_theme_style') || 'ios';
     }
 
     this.updateClinicLockUI();
@@ -1496,10 +1494,10 @@ class AppController {
         const isDark = !document.body.classList.contains('theme-dark');
         localStorage.setItem('vetassist_theme', isDark ? 'dark' : 'light');
         this.applyTheme();
-        const themeStyle = localStorage.getItem('vetassist_theme_style') || 'classic';
+        const themeStyle = localStorage.getItem('vetassist_theme_style') || 'ios';
         const msg = isDark
-          ? (themeStyle === 'ios' ? '🍏 iOS Koyu Mod Aktif 🌙' : (window.i18n ? window.i18n.t('theme_dark_active') : 'Koyu Saha Teması Aktif 🌙'))
-          : (themeStyle === 'ios' ? '🍏 iOS Açık Mod Aktif ☀️' : 'Açık Saha Teması Aktif ☀️');
+          ? (themeStyle === 'ios' ? '✨ Koyu Mod Aktif 🌙' : (window.i18n ? window.i18n.t('theme_dark_active') : 'Koyu Saha Teması Aktif 🌙'))
+          : (themeStyle === 'ios' ? '✨ Açık Mod Aktif ☀️' : 'Açık Saha Teması Aktif ☀️');
         this.showToast(msg);
       });
     }
@@ -1510,7 +1508,10 @@ class AppController {
         const val = e.target.value;
         localStorage.setItem('vetassist_theme_style', val);
         this.applyTheme();
-        this.showToast(val === 'ios' ? '🍏 Ultra Sade iOS Teması Aktif' : '💎 Klasik VetAssist Teması Aktif');
+        const toastMsg = val === 'ios'
+          ? (window.i18n ? window.i18n.t('theme_default_active') : '✨ Varsayılan Tema Aktif')
+          : (window.i18n ? window.i18n.t('theme_classic_active') : '☀️ Klasik Tema Aktif');
+        this.showToast(toastMsg);
       });
     }
 
