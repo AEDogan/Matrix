@@ -84,8 +84,8 @@ $buildScript = "$androidDir\build_all.ps1"
 
 $aabPath = "$distDir\VetAssist_SurumKodu$($nextVersionCode)_PlayStore.aab"
 if (-not (Test-Path $aabPath)) {
-    $desktopDir = [Environment]::GetFolderPath('Desktop') + "\VetAssist_PlayStore_GUNCEL_Surum$nextVersionCode"
-    $aabPath = "$desktopDir\VetAssist_SurumKodu$($nextVersionCode)_PlayStore.aab"
+    $releasesDir = "$projectDir\releases\VetAssist_PlayStore_GUNCEL_Surum$nextVersionCode"
+    $aabPath = "$releasesDir\VetAssist_SurumKodu$($nextVersionCode)_PlayStore.aab"
 }
 
 if (-not (Test-Path $aabPath)) {

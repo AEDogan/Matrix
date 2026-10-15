@@ -40,13 +40,9 @@ $appVersion = "Surum $versionCode (v$versionName)"
 $assetsDir = "$androidDir\assets"
 $keystorePath = "$androidDir\sahaveteriner_release.keystore"
 
-# Desktop output paths
-$realDesktop = [Environment]::GetFolderPath('Desktop')
+# Release output paths (only inside project releases folder)
 $desktopOutputs = @(
-    "$realDesktop\VetAssist_PlayStore_GUNCEL_Surum$versionCode",
-    "C:\Users\ahmet\Desktop\VetAssist_PlayStore_GUNCEL_Surum$versionCode",
-    "C:\Users\ahmet\OneDrive\Masaüstü\VetAssist_PlayStore_GUNCEL_Surum$versionCode",
-    "C:\Projeler\VetAssist_PlayStore_GUNCEL_Surum$versionCode"
+    "$projectRoot\releases\VetAssist_PlayStore_GUNCEL_Surum$versionCode"
 )
 
 Write-Host "==========================================================" -ForegroundColor Cyan
